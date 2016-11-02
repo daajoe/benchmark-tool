@@ -1,0 +1,1 @@
+/home/fichte/src/treewidth/bin/clasp-tw-call.sh

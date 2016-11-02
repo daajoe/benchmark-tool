@@ -12,7 +12,7 @@ cd "$(dirname $0)"
 	-M 20000 \
 	-w runsolver.watcher \
 	#-o runsolver.solver \
-	-W {run.timeout} \
+	#-W {run.timeout} \
 	"{run.root}/programs/{run.solver}" {run.args} -f "{run.file}" > runsolver.solver 2>runsolver.err
 
 touch .finished
