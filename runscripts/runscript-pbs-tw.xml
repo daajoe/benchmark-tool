@@ -4,12 +4,58 @@
 	
 	<config name="pbs-generic" template="templates/seq-tw.sh"/>
 	<system name="clasp-tw-call" version="1.0" measures="clasp" config="pbs-generic">
-		<!--<setting name="one-as" tag="one-as" cmdline="" ppn="8" procs="1 2 4 8 16 28" pbstemplate="templates/impi.pbs"/>-->
-		<setting name="bb" tag="bb" cmdline="-s bb" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
-		<!--<setting name="usc" tag="usc" cmdline="-s usc" ppn="1" procs="1" pbstemplate="templates/impi.pbs"/>-->
-	</system>
+ 		<setting name="bb-handy-plain" tag="bb" cmdline="-s bb -c handy" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-frumpy-plain" tag="bb" cmdline="-s bb -c frumpy" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-jumpy-plain" tag="bb" cmdline="-s bb -c jumpy" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-tweety-plain" tag="bb" cmdline="-s bb -c tweety" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-crafty-plain" tag="bb" cmdline="-s bb -c crafty" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-trendy-plain" tag="bb" cmdline="-s bb -c trendy" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<!-- -->
+ 		<setting name="bb-handy-lp_iclp16" tag="bb-iclp16" cmdline="-s bb -c handy -l '-k -ck -ws -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-frumpy-lp_iclp16" tag="bb-iclp16" cmdline="-s bb -c frumpy -l '-k -ck -ws -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-jumpy-lp_iclp16" tag="bb-iclp16" cmdline="-s bb -c jumpy -l '-k -ck -ws -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-tweety-lp_iclp16" tag="bb-iclp16" cmdline="-s bb -c tweety -l '-k -ck -ws -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-crafty-lp_iclp16" tag="bb-iclp16" cmdline="-s bb -c crafty -l '-k -ck -ws -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-trendy-lp_iclp16" tag="bb-iclp16" cmdline="-s bb -c trendy -l '-k -ck -ws -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<!-- -->
+ 		<setting name="bb-handy-lp_wm" tag="bb-wm" cmdline="-s bb -c handy -l '-k -ck -wm -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-frumpy-lp_wm" tag="bb-wm" cmdline="-s bb -c frumpy -l '-k -ck -wm -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-jumpy-lp_wm" tag="bb-wm" cmdline="-s bb -c jumpy -l '-k -ck -wm -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-tweety-lp_wm" tag="bb-wm" cmdline="-s bb -c tweety -l '-k -ck -wm -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-crafty-lp_wm" tag="bb-wm" cmdline="-s bb -c crafty -l '-k -ck -wm -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-trendy-lp_wm" tag="bb-wm" cmdline="-s bb -c trendy -l '-k -ck -wm -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<!-- -->
+ 		<setting name="bb-handy-lp_wu" tag="bb-wu" cmdline="-s bb -c handy -l '-k -ck -wu -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-frumpy-lp_wu" tag="bb-wu" cmdline="-s bb -c frumpy -l '-k -ck -wu -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-jumpy-lp_wu" tag="bb-wu" cmdline="-s bb -c jumpy -l '-k -ck -wu -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-tweety-lp_wu" tag="bb-wu" cmdline="-s bb -c tweety -l '-k -ck -wu -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-crafty-lp_wu" tag="bb-wu" cmdline="-s bb -c crafty -l '-k -ck -wu -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-trendy-lp_wu" tag="bb-wu" cmdline="-s bb -c trendy -l '-k -ck -wu -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<!-- -->
+ 		<setting name="bb-handy-lp_wq" tag="bb-wq" cmdline="-s bb -c handy -l '-k -ck -wq -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-frumpy-lp_wq" tag="bb-wq" cmdline="-s bb -c frumpy -l '-k -ck -wq -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-jumpy-lp_wq" tag="bb-wq" cmdline="-s bb -c jumpy -l '-k -ck -wq -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-tweety-lp_wq" tag="bb-wq" cmdline="-s bb -c tweety -l '-k -ck -wq -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-crafty-lp_wq" tag="bb-wq" cmdline="-s bb -c crafty -l '-k -ck -wq -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-trendy-lp_wq" tag="bb-wq" cmdline="-s bb -c trendy -l '-k -ck -wq -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<!-- -->
+ 		<setting name="bb-handy-lp_wb" tag="bb-wb" cmdline="-s bb -c handy -l '-k -ck -wb -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-frumpy-lp_wb" tag="bb-wb" cmdline="-s bb -c frumpy -l '-k -ck -wb -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-jumpy-lp_wb" tag="bb-wb" cmdline="-s bb -c jumpy -l '-k -ck -wb -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-tweety-lp_wb" tag="bb-wb" cmdline="-s bb -c tweety -l '-k -ck -wb -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-crafty-lp_wb" tag="bb-wb" cmdline="-s bb -c crafty -l '-k -ck -wb -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-trendy-lp_wb" tag="bb-wb" cmdline="-s bb -c trendy -l '-k -ck -wb -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<!-- -->
+ 		<setting name="bb-handy-lp_wz" tag="bb-wz" cmdline="-s bb -c handy -l '-k -ck -wz -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-frumpy-lp_wz" tag="bb-wz" cmdline="-s bb -c frumpy -l '-k -ck -wz -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-jumpy-lp_wz" tag="bb-wz" cmdline="-s bb -c jumpy -l '-k -ck -wz -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-tweety-lp_wz" tag="bb-wz" cmdline="-s bb -c tweety -l '-k -ck -wz -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-crafty-lp_wz" tag="bb-wz" cmdline="-s bb -c crafty -l '-k -ck -wz -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="bb-trendy-lp_wz" tag="bb-wz" cmdline="-s bb -c trendy -l '-k -ck -wz -ko -osle -oqh'" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<!--<setting name="usc" tag="usc" cmdline="-s usc" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>-->
+ 	</system>
 	
-	<pbsjob name="pbs-generic" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59"/>
+	<pbsjob name="pbs-generic" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59"/>
 
 	<benchmark name="famous">
 		<folder path="benchmarks/graphs/famous"/>
@@ -20,11 +66,15 @@
 	<benchmark name="compiler">
 		<folder path="benchmarks/graphs/compiler"/>
 	</benchmark>
+	<benchmark name="selection">
+		<folder path="benchmarks/graphs/selection/atmost-numV-200"/>
+	</benchmark>
 
-	<project name="treewidth" job="pbs-generic">
-		<runtag machine="zuse" benchmark="famous" tag="*all*"/>
-		<!--<runtag machine="zuse" benchmark="twlib" tag="*all*"/>
-		<runtag machine="zuse" benchmark="compiler" tag="*all*"/>-->
+	<project name="treewidth-sel-bb" job="pbs-generic">
+		<!--<runtag machine="zuse" benchmark="famous" tag="*all*"/>-->
+		<!--<runtag machine="zuse" benchmark="twlib" tag="*all*"/>-->
+		<!--<runtag machine="zuse" benchmark="compiler" tag="*all*"/>-->
+		<runtag machine="zuse" benchmark="selection" tag="*all*"/>
 	</project>
 
 </runscript>
