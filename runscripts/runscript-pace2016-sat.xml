@@ -1,0 +1,22 @@
+<runscript output="output">
+
+	<machine name="zuse" cpu="24x8xE5520@2.27GHz" memory="24GB"/>
+	
+	<config name="pbs-generic" template="templates/seq-tw-sv.sh"/>
+	<system name="get_tw_dgf" version="1.0" measures="clasp" config="pbs-generic">
+ 		<setting name="ubound-sv" tag="sat" cmdline="-u -1" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<!--<setting name="ubound-sv-card" tag="sat" cmdline="-u -1 -c" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>-->
+ 		<setting name="ubound-sv-lower" tag="sat" cmdline="" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<!--<setting name="ubound-sv-card-lower" tag="sat" cmdline="-c" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>-->
+ 	</system>
+	
+	<pbsjob name="pbs-generic" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59"/>
+
+	<benchmark name="pace2016">
+		<folder path="benchmarks/graphs/pace2016/"/>
+	</benchmark>
+	<project name="pace-sat" job="pbs-generic">
+		<runtag machine="zuse" benchmark="pace2016" tag="*all*"/>
+	</project>
+
+</runscript>
