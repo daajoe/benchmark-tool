@@ -19,11 +19,16 @@ function cleanup() if [[ $temp == /dev/shm/tmp.* ]] ; then rm -r $temp; fi; echo
 
 trap cleanup EXIT
 
+#core=$("{run.root}/programs/lscpu" -p | "{run.root}/programs/map_core.py" $1 2)
+#echo "Using CORE <$core> on $(hostname)"
+
 #[[ -e .finished ]] || $CAT "{run.file}" | "{run.root}/programs/runsolver-3.3.4" \
-[[ -e .finished ]] ||  "{run.root}/programs/runsolver-3.3.1" \
+[[ -e .finished ]] ||  {run.root}/programs/runsolver-3.3.5 #--phys-cores $core
+#"{run.root}/programs/runsolver-3.3.1" \
 	-M 20000 \
 	-w runsolver.watcher \
 	-W {run.timeout} \
+	-d 120
 	"{run.root}/programs/{run.solver}" {run.args} -p $temp -f "{run.file}" > runsolver.solver 2>>runsolver.err
 
 touch .finished

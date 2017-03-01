@@ -3,20 +3,42 @@
 	<machine name="zuse" cpu="24x8xE5520@2.27GHz" memory="24GB"/>
 	
 	<config name="pbs-generic" template="templates/seq-tw-sv.sh"/>
-	<system name="get_tw_dgf" version="1.0" measures="clasp" config="pbs-generic">
- 		<setting name="ubound-sv" tag="sat" cmdline="-u -1" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
- 		<!--<setting name="ubound-sv-card" tag="sat" cmdline="-u -1 -c" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>-->
- 		<setting name="ubound-sv-lower" tag="sat" cmdline="" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
- 		<!--<setting name="ubound-sv-card-lower" tag="sat" cmdline="-c" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>-->
+	<system name="get_tw" version="1.0" measures="clasp" config="pbs-generic">
+		<!-- UPPER BOUNDS -->
+ 		<setting name="up-minisat" tag="sat" cmdline="-u -1 -s minisat_static -e tw2cnf_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="up-minisat_simp" tag="sat" cmdline="-u -1 -s minisat_simp -e tw2cnf_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="up-glucose" tag="sat" cmdline="-u -1 -s glucose -e tw2cnf_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="up-glucose_simp" tag="sat" cmdline="-u -1 -s glucose-4-simp -e tw2cnf_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<setting name="up-clasp" tag="sat" cmdline="-u -1 -s clasp-3.2.2 -e tw2cnf_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+
+ 		<setting name="up-sv-minisat" tag="sat" cmdline="-u -1 -s minisat_static -e tw2cnf_SV_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="up-sv-minisat_simp" tag="sat" cmdline="-u -1 -s minisat_simp -e tw2cnf_SV_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="up-sv-glucose" tag="sat" cmdline="-u -1 -s glucose -e tw2cnf_SV_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="up-sv-glucose_simp" tag="sat" cmdline="-u -1 -s glucose-4-simp -e tw2cnf_SV_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+		<setting name="up-sv-clasp" tag="sat" cmdline="-u -1 -s clasp-3.2.2 -e tw2cnf_SV_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+
+ 		<setting name="up-minicard" tag="sat" cmdline="-u -1 -s minicard_encodings_static -e tw2card_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+ 		<setting name="up-minicard_simp" tag="sat" cmdline="-u -1 -s minicard_simp_encodings_static -e tw2card_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+
+                <setting name="up-graphsat" tag="sat" cmdline="-u -1 -s graphsat_static -e tw2acyc_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+                <setting name="up-graphsat_simp" tag="sat" cmdline="-u -1 -s graphsat_simp -e tw2acyc_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+
+                <setting name="tc-meiji" tag="dp" cmdline="-w -s tc-meiji" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
  	</system>
 	
 	<pbsjob name="pbs-generic" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59"/>
 
-	<benchmark name="pace2016">
-		<folder path="benchmarks/graphs/pace2016/"/>
+	<benchmark name="pace2016-sel">
+		<folder path="benchmarks/graphs/pace2016/selection"/>
 	</benchmark>
-	<project name="pace-sat" job="pbs-generic">
-		<runtag machine="zuse" benchmark="pace2016" tag="*all*"/>
+	<benchmark name="pace2016-all">
+		<folder path="benchmarks/graphs/pace2016/all/100"/>
+		<folder path="benchmarks/graphs/pace2016/all/1000"/>
+		<folder path="benchmarks/graphs/pace2016/all/3600"/>
+	</benchmark>
+	<project name="treewidth-pace2016-sat-all" job="pbs-generic">
+		<!--<runtag machine="zuse" benchmark="pace2016" tag="*all*"/>-->
+		<runtag machine="zuse" benchmark="pace2016-all" tag="*all*"/>
 	</project>
 
 </runscript>

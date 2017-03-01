@@ -2,7 +2,7 @@
 
 	<machine name="zuse" cpu="24x8xE5520@2.27GHz" memory="24GB"/>
 	
-	<config name="pbs-generic" template="templates/seq-tw-sv.sh"/>
+	<config name="seq-generic" template="templates/seq-tw-sv.sh"/>
 	<system name="get_tw" version="1.0" measures="clasp" config="seq-generic">
  		<setting name="ubound-sv-minisat-upper" tag="sat" cmdline="-u -1 -s minisat_static -e tw2cnf_SV_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
  		<setting name="ubound-sv-minisat-lower" tag="sat" cmdline="-s minisat_static -e tw2cnf_SV_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
@@ -30,10 +30,10 @@
 	</benchmark>
 
 	<benchmark name="pace2016">
-		<folder path="benchmarks/graphs/pace2016/"/>
+		<folder path="benchmarks/graphs/pace2016/easy"/>
 	</benchmark>
 
-	<project name="treewidth-sel-sat-sv-orig" job="pbs-generic">
+	<project name="treewidth-pace2016-sat-sv-orig" job="seq-generic">
 <!--		<runtag machine="zuse" benchmark="famous" tag="*all*"/>-->
 <!-- 		<runtag machine="zuse" benchmark="twlib" tag="*all*"/> -->
 <!-- 		<runtag machine="zuse" benchmark="compiler" tag="*all*"/> -->

@@ -1,0 +1,34 @@
+<runscript output="output">
+        <machine name="zuse" cpu="24x8xE5520@2.27GHz" memory="24GB"/>
+
+        <config name="pbs-generic" template="templates/seq-tw-sv.sh"/>
+        <system name="get_tw" version="1.0" measures="clasp" config="pbs-generic">
+                <setting name="clasp-acyc-upper" tag="sat" cmdline="-u -1 -s 'clasp-3.2.2 --parse-ext' -e tw2acyc_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+                <setting name="clasp-acyc-lower" tag="sat" cmdline="-s 'clasp-3.2.2 --parse-ext' -e tw2acyc_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+                <setting name="clasp-card-upper" tag="sat" cmdline="-u -1 -s clasp-sha82e61b2 --parse-ext' -e tw2acyc_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+                <setting name="clasp-card-lower" tag="sat" cmdline="-s 'clasp-sha82e61b2 --parse-ext' -e tw2acyc_tw" ppn="4" procs="1" pbstemplate="templates/single.pbs"/>
+        </system>
+
+        <pbsjob name="pbs-generic" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59"/>
+
+        <benchmark name="famous">
+                <folder path="benchmarks/graphs/famous"/>
+        </benchmark>
+        <benchmark name="twlib">
+                <folder path="benchmarks/graphs/twlib-graphs"/>
+        </benchmark>
+        <benchmark name="compiler">
+                <folder path="benchmarks/graphs/compiler"/>
+        </benchmark>
+        <benchmark name="selection">
+                <folder path="benchmarks/graphs/selection/atmost-numV-200-renamed-tw"/>
+        </benchmark>
+
+        <project name="treewidth-sel-graphsat" job="pbs-generic">
+<!--            <runtag machine="zuse" benchmark="famous" tag="*all*"/>-->
+<!--            <runtag machine="zuse" benchmark="twlib" tag="*all*"/> -->
+<!--            <runtag machine="zuse" benchmark="compiler" tag="*all*"/> -->
+                <runtag machine="zuse" benchmark="selection" tag="*all*"/>
+        </project>
+
+</runscript>
