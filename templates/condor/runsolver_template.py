@@ -107,8 +107,17 @@ def main(args):
   sys.stdout.write(output)
   sys.stderr.write('%s STDERR %s\n' %('*'*40, '*'*40))
   sys.stderr.write(err)
-  if int(p_solver.returncode) == 0:
+  childreturncode=0
+  with open(args.watcher) as f:
+    for line in f:
+      line=line.split()
+      if line==[]:
+        continue
+      if line[0] == 'Child' and line[1] == 'status:':
+        childreturncode=int(line[2])
+  if int(p_solver.returncode) == 0 and childreturncode == 0:
     open(args.finished,'a').close()
+
 
 if __name__ == "__main__":
   main(args)

@@ -70,7 +70,6 @@ def parse_args(solver_bin):
       sys.stderr.write('File "%s" does not exist.' %args.instance)
   return args
 
-
 def main():
   def debug(value):
     if args.debug:
@@ -80,7 +79,6 @@ def main():
   args = parse_args(solver_bin)
 
   solver_name = os.path.basename(args.solver)
-  claspopts="--strategy challenge --opt width --output width" #  --enable-acyc"
 
   p = Popen(['sha256sum', args.instance], stdout=PIPE, stderr=PIPE)
   output, err = p.communicate()
