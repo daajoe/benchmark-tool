@@ -23,46 +23,53 @@ import sys
 import tempfile
 import time
 
+from os.path import dirname
 
 def handler(signum, frame):
+  sys.stderr.write('SIGNAL received %s\n' %signum)
   current_process = psutil.Process()
   children = current_process.children(recursive=True)
   for child in children:
-    sys.stderr.write('Child pid is {}\n'.format(child.pid))
+    sys.stderr.write('Child pid is %s\n' %(child.pid))
     sys.stderr.write('Killing child\n')
     os.kill(child.pid, 15)
-    sys.stderr.write('SIGNAL received\n')
-  raise RuntimeError('signal')
 
 signal.signal(signal.SIGTERM, handler)
 signal.signal(signal.SIGINT, handler)
 
 
-from os.path import dirname
+class dotdict(dict):
+  """dot.notation access to dictionary attributes"""
+  __getattr__ = dict.get
+  __setattr__ = dict.__setitem__
+  __delattr__ = dict.__delitem__
 
-def parse_args(runsolver):
-  parser = argparse.ArgumentParser(description='%s -f instance')
-  parser.add_argument('-M', '--mem-soft-limit', dest='memlimit', action='store', type=int, help='mem-limit', default=2000)
-  parser.add_argument('-W', '--wall-clock-limit', dest='timelimit', action='store', type=int, help='time-limit', default=900)
-  parser.add_argument('-s', '--solver', dest='solver', action='store', type=str, help='filename', default=[], required=True)
-  parser.add_argument('-a', '--solver--args', dest='solver_args', action='store', type=str, help='solver args', default=[])
-  parser.add_argument('-w', '--watcher-data', dest='watcher', action='store', type=lambda x: os.path.abspath(x), help='watcher filename', default='runsolver.watcher')
-  parser.add_argument('-o', '--stdout', dest='stdout', action='store', type=lambda x: os.path.abspath(x), help='stdout redirect filename', default='/dev/stdout') #default='runsolver.solver')
-  parser.add_argument('-e', '--stderr', dest='stderr', action='store', type=lambda x: os.path.abspath(x), help='stderr redirect filename', default='/dev/stderr') #default='runsolver.err')
-  parser.add_argument('-r', '--runsolver', dest='runsolver', action='store', type=lambda x: find_executable(x), help='filename', default=runsolver)
-  parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='debug', default=False)
-  parser.add_argument('-t', '--tmp', dest='tmp', action='store', type=str, help='tmp folder', default=tempfile.tempdir)
-  parser.add_argument('-j', '--jobid', dest='jobid', action='store', type=str, help='jobid for parallel runs', default='')
-  parser.add_argument('filename', type=str, nargs=1, help='filename')
-  return parser.parse_args()
+args=dotdict()
+args.runsolver = '{run.root}/programs/runsolver-3.3.5'
+args.memlimit = '{run.memlimit}'
+args.timelimit = '{run.timelimit}'
+args.solver = '{run.root}/programs/{run.solver}'
+args.watcher= '{run.root}/{run.path}/{run.instancebase}.watcher'
+args.solver_args='{run.args}'
+args.filename = ['{run.root}/{run.instance}']
+# args.stdout='{run.root}/{run.path}/{run.instancebase}.txt'
+args.stdout='/dev/stdout'
+# args.stderr='{run.root}/{run.path}/{run.instancebase}.err'
+args.stderr='/dev/stderr'
+args.finished = '{run.root}/{run.finished}'
+# args.debug=True
 
-def main():
+
+if os.path.isfile(args.finished):
+  sys.stderr.write('INSTANCE RUN "%s" already exists. Exiting...\n' %args.finished)
+  exit(2)
+
+
+def main(args):
   def debug(value):
     if args.debug:
       sys.stderr.write('%s\n' %value)
-  
-  runsolver = "runsolver-3.3.5"
-  args = parse_args(runsolver=runsolver)
+
   if not args.runsolver:
     sys.stderr.write('\nRunsolver not found. bin=%s\nExiting\n' %args.runsolver)
     exit(1)
@@ -81,7 +88,7 @@ def main():
   if condor:
     tmp=os.environ['_CONDOR_SCRATCH_DIR']
   else:
-    tmp=args.tmp
+    tmp=tempfile.gettempdir()
   
   debug(os.environ)
   debug('hostname = %s ' %socket.gethostname())
@@ -94,12 +101,14 @@ def main():
 
   p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
   output, err = p_solver.communicate()
-  if args.stdout == '/dev/stdout':
-    sys.stdout.write('%s STDOUT %s\n' %('*'*40, '*'*40))
-    sys.stdout.write(output)
-  if args.stderr == '/dev/stderr':
-    sys.stderr.write('%s STDERR %s\n' %('*'*40, '*'*40))
-    sys.stderr.write(err)
+  sys.stdout.write('%s RETCODE %s\n' % ('*' * 40, '*' * 40))
+  sys.stdout.write('ret=%s\n' %p_solver.returncode)
+  sys.stdout.write('%s STDOUT %s\n' %('*'*40, '*'*40))
+  sys.stdout.write(output)
+  sys.stderr.write('%s STDERR %s\n' %('*'*40, '*'*40))
+  sys.stderr.write(err)
+  if int(p_solver.returncode) == 0:
+    open(args.finished,'a').close()
 
 if __name__ == "__main__":
-  main()
+  main(args)

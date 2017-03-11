@@ -6,7 +6,7 @@ representation in form of python classes.
 
 __author__ = "Roland Kaminski"
 
-from benchmarktool.runscript.runscript import Runscript, Project, Benchmark, Config, System, Setting, PbsJob, SeqJob, Machine
+from benchmarktool.runscript.runscript import Runscript, Project, Benchmark, Config, System, Setting, CondorJob, PbsJob, SeqJob, Machine
 import benchmarktool.tools as tools
 try: from StringIO import StringIO
 except: from io import StringIO
@@ -49,6 +49,7 @@ class Parser:
             <xs:element name="config" type="configType"/>
             <xs:element name="benchmark" type="benchmarkType"/>
             <xs:element name="pbsjob" type="pbsjobType"/>
+            <xs:element name="condorjob" type="condorjobType"/>
             <xs:element name="seqjob" type="seqjobType"/>
             <xs:element name="project" type="projectType"/>
         </xs:choice>
@@ -127,7 +128,25 @@ class Parser:
         </xs:attribute>
         <xs:attribute name="walltime" type="timeType" use="required"/>
     </xs:complexType>
-    
+
+    <!-- a condorjob -->
+    <xs:complexType name="condorjobType">
+        <xs:attributeGroup ref="jobAttr"/>
+        <xs:attribute name="script_mode" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="single"/>
+                    <xs:enumeration value="timeout"/>
+                    <xs:enumeration value="memout"/>
+                </xs:restriction>
+             </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="walltime" type="timeType" use="required"/>
+        <xs:attribute name="condortemplate" type="xs:string" use="required"/>
+        <xs:attribute name="basedir" type="xs:string" use="required"/>
+    </xs:complexType>
+
+
     <!-- a config -->
     <xs:complexType name="configType">
         <xs:attribute name="name" type="nameType" use="required"/>
@@ -258,7 +277,7 @@ class Parser:
             <xs:field xpath="@job"/>
         </xs:keyref>
         <xs:key name="jobKey">
-            <xs:selector xpath="seqjob|pbsjob"/>
+            <xs:selector xpath="seqjob|pbsjob|condorjob"/>
             <xs:field xpath="@name"/>
         </xs:key>
         <!-- project keys -->
@@ -280,6 +299,11 @@ class Parser:
         for node in root.xpath("./pbsjob"):
             attr = self._filterAttr(node, ["name", "timeout", "runs", "ppn", "procs", "script_mode", "walltime"])
             job = PbsJob(node.get("name"), tools.xmlTime(node.get("timeout")), int(node.get("runs")), node.get("script_mode"), tools.xmlTime(node.get("walltime")), attr)
+            run.addJob(job)
+
+        for node in root.xpath("./condorjob"):
+            attr = self._filterAttr(node, ["name", "memout", "timeout", "runs", "ppn", "procs", "script_mode", "walltime"])
+            job = CondorJob(node.get("name"), tools.xmlTime(node.get("memout")), tools.xmlTime(node.get("timeout")), int(node.get("runs")), node.get("script_mode"), tools.xmlTime(node.get("walltime")), node.get("condortemplate"),node.get("basedir"), attr)
             run.addJob(job)
 
         for node in root.xpath("./seqjob"):

@@ -38,12 +38,13 @@ environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #=========================================================================
 # LOG
 #=========================================================================
-output = $(FILE).$(Process).condor.out
-error = $(FILE).$(Process).condor.err
-log = $(FILE).$(Process).condor.log
+output = $(FILE).$(RUN).condor.out
+error = $(FILE).$(RUN).condor.err
+log = $(FILE).$(RUN).condor.log
 #TODO: replace json by yaml?
-sout = $(FILE).$(Process)._.out
-serr = $(FILE).$(Process)._.err
+sout = $(FILE).$(RUN)._.out
+serr = $(FILE).$(RUN)._.err
+watcher = $(FILE).$(RUN).runsolver
 #{run.path.benchmark.type}/{run.path.date}/$(IN_SHORT).out
 
 #=========================================================================
@@ -67,21 +68,18 @@ should_transfer_files = NO
 request_cpus = 1
 solver = htd-call-1.1
 solver_args = -i 1000
-Arguments = "-W $(timeout) -o $(sout) -e $(serr) -w $(FILE).$(Process).runsolver -j $(Process) -d -s $(solver) $(benchmarkdir)/$(FILE) -a='$(solver_args)'"
+Arguments = "-W $(timeout) -o $(sout) -e $(serr) -w $(watcher) -j $(Process) -d -s $(solver) $(benchmarkdir)/$(FILE) -a='$(solver_args)'"
 #\"'$(solver_args)'\"
 #=========================================================================
 # JOBS
 #=========================================================================
-#{% for n in my_list %}
-#FILE={{n}}
-FILE=5x5-grid.edge
-ARGS=-s 0
-Queue 3
-#TODO: replace Process for repeat id by Queue 1 then
-FILE=3x3-grid.edge
-ARGS=-s 0
-Queue 3
-#{% endfor %}
-#FILE=test2.lp
-#ARGS=-s 1
-#Queue
+{% for n in instances %}
+{% for r in runs %}
+FILE={{n}}
+RUN={{r}}
+ARGS={{cmdline}}
+#FILE=5x5-grid.edge
+#ARGS=-s 0
+Queue 1
+{% endfor %}
+{% endfor %}
