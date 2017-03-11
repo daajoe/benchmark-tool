@@ -1,0 +1,58 @@
+universe = vanilla 
+Executable = $(HOME)/src/gml2htd/run_lp2htd.sh
+requirements = machine != "cobra-submit"
+#requirements = NumJobMatches < 20
+request_memory = +512
+
+#TODO:
+periodic_remove = (CurrentTime - JobCurrentStartDate) >= 14400
+#(CurrentTime - EnteredCurrentStatus) >= 7200
+#max_run_time
+#remove_kill_sig   = SIGTERM
+remove_kill_sig = 15
+kill_sig = 15
+nice_user = True
+priority = -20
+job_max_vacate_time = 60
+
+#=========================================================================
+# PATHS
+#=========================================================================
+Initialdir = {run.initial}
+
+#=========================================================================
+# ENVIRONMENT
+#=========================================================================
+getenv=True
+#environment =
+
+#=========================================================================
+# OUTPUT
+#=========================================================================
+output = {run.path.benchmark.output}/{run.path.benchmark.type}/{run.path.date}/$(IN_SHORT).out
+error = {run.path.benchmark.output}/{run.path.benchmark.type}/{run.path.date}/error/$(IN_SHORT).error 
+log = {run.path.benchmark.output}/{run.path.benchmark.type}/{run.path.date}/log/$(IN_SHORT).log
+
+#=========================================================================
+# NOTIFICATION
+#=========================================================================
+Notification = Never
+should_transfer_files = NO
+#should_transfer_files = YES
+#when_to_transfer_output = ON_EXIT_OR_EVICT
+#when_to_transfer_output = ON_EXIT
+
+#transfer_input_files = 
+#transfer_output_files =
+
+#=========================================================================
+# ARGUMENTS
+#=========================================================================
+request_cpus = 1
+Arguments = $(IN)
+
+#=========================================================================
+# JOBS
+#=========================================================================
+{}
+Queue

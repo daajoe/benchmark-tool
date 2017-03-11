@@ -318,6 +318,7 @@ class ScriptGen:
         instance - The benchmark instance for the start script
         """
         skip = self.skip
+        #TODO: (0) replace path generation for condor scripts
         for run in range(1, self.job.runs + 1):
             path = self._path(runspec, instance, run)
             tools.mkdir_p(path)
@@ -327,6 +328,7 @@ class ScriptGen:
                 continue
             template  = open(runspec.system.config.template).read()
             startfile = open(startpath, "w")
+            #TODO: (1) replace template engine
             startfile.write(template.format(run=SeqRun(path, run, self.job, runspec, instance)))
             startfile.close()
             self.startfiles.append((runspec, path, "start.sh"))

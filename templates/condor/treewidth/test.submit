@@ -1,0 +1,87 @@
+universe = vanilla 
+Executable = /home/jfichte/src/benchmark-tool/programs/runsolver_wrapper.py
+#Executable = {run.root}/programs/runsolver-wrapper.sh
+#TODO: avoid runsolver if cluster configuration works well
+requirements = machine != "cobra-submit"
+request_memory = +512
+
+#TODO: check cluster timeout and memlimit
+timeout=600
+#periodic_remove = (CurrentTime - JobCurrentStartDate) >= $TIMEOUT
+#RemoteWallClockTime
+
+#(CurrentTime - EnteredCurrentStatus) >= 7200
+#max_run_time
+#remove_kill_sig   = SIGTERM
+remove_kill_sig = 15
+kill_sig = 15
+nice_user = True
+priority = -20
+job_max_vacate_time = 60
+
+#=========================================================================
+# PATHS
+#=========================================================================
+#RUN DIRECTORY AT THE NODE
+initialdir = $ENV(HOME)/benchmark
+#{run.path.benchmark.output}/
+#{run.initial}
+#remote_initialdir = $ENV(HOME)/benchmark
+benchmarkdir=/home/jfichte/src/treewidth/graphs/famous-tw/
+
+#=========================================================================
+# ENVIRONMENT
+#=========================================================================
+getenv=True
+environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/ LD_LIBRARY_PATH=:/home/jfichte/.local/lib"
+
+#=========================================================================
+# LOG
+#=========================================================================
+output = $(FILE).$(Process).condor.out
+error = $(FILE).$(Process).condor.err
+log = $(FILE).$(Process).condor.log
+#TODO: replace json by yaml?
+sout = $(FILE).$(Process)._.out
+serr = $(FILE).$(Process)._.err
+#{run.path.benchmark.type}/{run.path.date}/$(IN_SHORT).out
+
+#=========================================================================
+# NOTIFICATION
+#=========================================================================
+Notification = Never
+should_transfer_files = NO
+#should_transfer_files = YES
+#when_to_transfer_output = ON_EXIT_OR_EVICT
+#when_to_transfer_output = ON_EXIT
+
+#transfer_input_files = 
+#transfer_output_files =
+
+#TODO: add solver instance output; because we might not want to recompute it if it's already been computed
+#TODO: lock file
+#=========================================================================
+# ARGUMENTS
+#=========================================================================
+#{solver.bin}
+request_cpus = 1
+solver = htd-call-1.1
+solver_args = -i 1000
+Arguments = "-W $(timeout) -o $(sout) -e $(serr) -w $(FILE).$(Process).runsolver -j $(Process) -d -s $(solver) $(benchmarkdir)/$(FILE) -a='$(solver_args)'"
+#\"'$(solver_args)'\"
+#=========================================================================
+# JOBS
+#=========================================================================
+#{% for n in my_list %}
+#FILE={{n}}
+FILE=5x5-grid.edge
+ARGS=-s 0
+Queue 3
+#TODO: replace Process for repeat id by Queue 1 then
+FILE=3x3-grid.edge
+ARGS=-s 0
+Queue 3
+#{% endfor %}
+#FILE=test2.lp
+#ARGS=-s 1
+#Queue
