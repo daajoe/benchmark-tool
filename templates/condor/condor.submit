@@ -17,6 +17,7 @@ job_max_vacate_time = 60
 #=========================================================================
 # PATHS
 #=========================================================================
+#initialdir required due to host misconfiguration on the cobra cluster
 initialdir = {{initialdir}}
 #remote_initialdir = $ENV(HOME)/benchmark
 
@@ -36,9 +37,9 @@ should_transfer_files = NO
 # JOBS
 #=========================================================================
 {% for instance in instances %}
-Executable = "{{instance.0}}"
-output = "{{instance.1}}/condor.err"
-error = "{{instance.1}}/condor.err"
-log = "{{instance.1}}/condor.log"
+Executable = {{instance.0}}
+output = {{instance.1}}/condor.txt
+error = {{instance.1}}/condor.err
+log = {{instance.1}}/condor.log
 Queue 1
 {% endfor %}

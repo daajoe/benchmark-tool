@@ -52,10 +52,10 @@ args.solver = '{run.root}/programs/{run.solver}'
 args.watcher= '{run.root}/{run.path}/{run.instancebase}.watcher'
 args.solver_args='{run.args}'
 args.filename = ['{run.root}/{run.instance}']
-# args.stdout='{run.root}/{run.path}/{run.instancebase}.txt'
-args.stdout='/dev/stdout'
-# args.stderr='{run.root}/{run.path}/{run.instancebase}.err'
-args.stderr='/dev/stderr'
+args.stdout='{run.root}/{run.path}/{run.instancebase}.txt'
+#args.stdout='/dev/stdout'
+args.stderr='{run.root}/{run.path}/{run.instancebase}.err'
+#args.stderr='/dev/stderr'
 args.finished = '{run.root}/{run.finished}'
 # args.debug=True
 
