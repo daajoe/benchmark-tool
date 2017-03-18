@@ -731,7 +731,7 @@ class CondorScriptGen(ScriptGen):
             outprefix = os.path.join(self.job.basedir.strip(), instpath)
             instances.append((instance, outprefix))
 
-        startpath = os.path.join(self.job.basedir.strip(),path, "condor.submit")
+        startpath = os.path.join(self.job.basedir.strip(), path, "condor.submit")
         with open(startpath, "w") as condorsubmitfile:
             with open(self.job.condortemplate) as template:
                 t = Template(template.read())
