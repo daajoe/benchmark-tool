@@ -3,25 +3,34 @@ Created on Jan 13, 2010
 
 @author: Roland Kaminski
 '''
-
-from benchmarktool.result.parser import Parser
-import optparse
+import argparse
 import sys
 
+from benchmarktool.result.parser import Parser
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='%s files')
+    parser.add_argument('infile', nargs='?', type=argparse.FileType('r'),
+                        default=sys.stdin)
+    parser.add_argument("-p", "--projects", dest="projects", default="",
+                        help="projects to display (by default all projects are shown)")
+    parser.add_argument("-m", "--measures", dest="measures", default="time:t,timeout:to",
+                        type=str, help="comma separated list of measures of form name[:{t,to,-}] to "
+                                       "include in table (optional argument determines coloring)")
+    parser.add_argument('-c', '--csv', dest='csv', action='store_true',
+                        help='output a csv file', default=False)
+    args = parser.parse_args()
+    if args.csv:
+        #TODO: summary
+        #memout:t,timeout:t
+        args.measures = 'wall:t,time:t,width:t,error:t,error_str:t,run:t,solved:t,stderr:t'
+    return args
+
+
 if __name__ == '__main__':
-    usage  = "usage: %prog [options] [resultfile]"
-    parser = optparse.OptionParser(usage=usage)
-    parser.add_option("-p", "--projects", dest="projects", default="", help="projects to display (by default all projects are shown)")
-    parser.add_option("-m", "--measures", dest="measures", default="time:t,timeout:to", help="comma separated list of measures of form name[:{t,to,-}] to include in table (optional argument determines coloring)")
-
-    opts, files = parser.parse_args(sys.argv[1:])
-
-    if len(files) == 0:
-        inFile = sys.stdin
-    elif len(files) == 1:
-        inFile = open(files[0])
-    else:
-        parser.error("Exactly on file has to be given")
+    opts = parse_args()
+    inFile = opts.infile
 
     if opts.projects != "":  opts.projects = set(opts.projects.split(","))
     if opts.measures != "":
@@ -29,7 +38,7 @@ if __name__ == '__main__':
         for t in opts.measures.split(","):
             x = t.split(":", 1)
             if len(x) == 1:
-                measures.append((x[0],None))
+                measures.append((x[0], None))
             else:
                 measures.append(tuple(x))
         opts.measures = measures
@@ -40,4 +49,8 @@ if __name__ == '__main__':
         out = sys.stdout.buffer
     except AttributeError:
         out = sys.stdout
-    res.genOffice(out, opts.projects, opts.measures)
+    if not opts.csv:
+        res.genOffice(out, opts.projects, opts.measures)
+    else:
+        res.genCSV(out, opts.projects, opts.measures)
+

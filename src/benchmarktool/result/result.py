@@ -5,6 +5,7 @@ Created on Jan 19, 2010
 '''
 
 from benchmarktool.result.soffice import Spreadsheet
+from benchmarktool.result.csv import CSV
 from benchmarktool.tools import Sortable, cmp
 
 class Result:
@@ -37,7 +38,37 @@ class Result:
                         instresult.instance.maxRuns = max(instresult.instance.maxRuns, len(instresult.runs))
                 benchmarks.add(runspec.benchmark)
         return BenchmarkMerge(benchmarks)
-        
+
+    def genCSV(self, out, selProjects, measures):
+        pass
+        projects = []
+        for project in self.projects.values():
+            if selProjects == "" or project.name in selProjects:
+                projects.append(project)
+        benchmarkMerge = self.merge(projects)
+
+
+        sheet = CSV(benchmarkMerge, measures)
+        for project in projects:
+            for runspec in project:
+                sheet.addRunspec(runspec)
+                print 'runspec'
+        print 'finish'
+        sheet.finish()
+        sheet.printSheet(out)
+
+        # for benchclass in benchmarkMerge.benchmarks:
+        #     for instance in benchclass:
+        #         print 'instance', instance
+        # exit(1)
+        # for benchmark in benchmarkMerge.benchmarks:
+        #     print benchmark
+
+        # for project in projects:
+        #     for runspec in project:
+        #         print runspec
+                # sheet.addRunspec(runspec)
+
     def genOffice(self, out, selProjects, measures):
         """
         Prints the current result in open office spreadsheet format.
