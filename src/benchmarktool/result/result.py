@@ -47,12 +47,13 @@ class Result:
                 projects.append(project)
         benchmarkMerge = self.merge(projects)
 
+        # print benchmarkMerge.benchmarks.pop().classes
+        # exit(1)
 
         sheet = CSV(benchmarkMerge, measures)
         for project in projects:
             for runspec in project:
                 sheet.addRunspec(runspec)
-                print 'runspec'
         print 'finish'
         sheet.finish()
         sheet.printSheet(out)

@@ -20,6 +20,10 @@ def parse_args():
                                        "include in table (optional argument determines coloring)")
     parser.add_argument('-c', '--csv', dest='csv', action='store_true',
                         help='output a csv file', default=False)
+    #TODO: ?
+    # parser.add_argument("-o", "--output-folder", dest="output_folder", default="",
+    #                     help="output folder")
+
     args = parser.parse_args()
     if args.csv:
         #TODO: summary
