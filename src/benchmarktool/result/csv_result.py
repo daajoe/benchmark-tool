@@ -7,16 +7,17 @@ Modified on Mar 19, 2017
 '''
 
 import zipfile
-from itertools import izip
+from collections import OrderedDict
+from itertools import izip, count, imap
+from operator import attrgetter, itemgetter
 
 try:
     from cStringIO import StringIO
 except:
     from io import StringIO
-import math
-import sys
-from benchmarktool import tools
 from benchmarktool.tools import Sortable, cmp
+from csv import DictWriter
+import math
 
 
 # Source SO: 1630320
@@ -42,7 +43,8 @@ class CSV:
         self.benchmark = benchmark
         self.measures = measures
         self.results = {}
-        self.instSheet = ResultTable(benchmark, measures, "ta1")
+        self.keys = []
+        self.instSheet = InstanceTable(benchmark, measures, "ta1")
         # self.classSheet = ResultTable(benchmark, measures, "ta2", self.instSheet)
 
     def finish(self):
@@ -66,10 +68,11 @@ class CSV:
         #  SUMMARIZE RUNS, DIFF FOR EACH RUN, STD
         # PACE SET SUMMARY
         #
-        #"Instances"
         out = StringIO()
-        self.instSheet.printSheet(out, self.results)
-        exit(1)
+        self.instSheet.printSheet(out=out, results=self.results, keys=self.keys)
+        print out.getvalue()
+        return
+        # exit(1)
 
         # TODO:
         zipFile = zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED)
@@ -84,21 +87,7 @@ class CSV:
         self.classSheet.printSheet(out, "Classes")
 
     # def addRunspec(self, runspec):
-    #     # TODO: remove duplicate data for runs
-    #     # print xml_string
-    #     # benchmark.class.instance contains all benchmarks (class = folder)
-    #     # benchmark.class.instance.name/id
-    #     # project.runspec.class=id
-    #     # project.runspec.class.instance.id.run.number
-    #     #
-    #     # USED FOR TXT SUMMARY FILE
-    #     # self.summarySheet.addRunspec(runspec)
-    #     # benchmark = runspec.benchmark.name
-    #     # setting = runspec.setting.name
-    #     # solver = runspec.system.name
-    #     # solver_version = runspec.system.version
-    #     # machine = runspec.machine.name
-    #     self.instSheet.addRunspec(runspec)
+
 
 
     def addRunspec(self, runspec):
@@ -128,31 +117,34 @@ class CSV:
                             row[name] = value
                     runs[run.number] = row
                 benchmarks[clazz_name][inst_result.instance.name] = runs
-        solver = runspec.setting.system.name
-        solver_version = runspec.setting.system.version
-        solver_config = runspec.setting.name
-        solver_args = runspec.setting.cmdline
-        benchmark_name = runspec.benchmark.name
-        machine = runspec.machine.name
-        self.results[(benchmark_name, machine, solver, solver_version, solver_config, solver_args)] = benchmarks
+        d = OrderedDict()
+        d['solver'] = runspec.setting.system.name
+        d['solver_version'] = runspec.setting.system.version
+        d['solver_config'] = runspec.setting.name
+        d['solver_args'] = runspec.setting.cmdline
+        d['benchmark_name'] = runspec.benchmark.name
+        d['machine'] = runspec.machine.name
+        self.keys = d.keys()
+        self.results[tuple(d.values())] = benchmarks
 
 
 class Table:
     def __init__(self, name):
-        self.content = []
-        self.cowidth = []
         self.name = name
 
-    def printSheet(self, out, results):
-
-        for row in self.content:
-            for cell, last in lookahead(row):
-                if cell is not None:
-                    cell.printSheet(out)
-                    if not last:
-                        out.write(',')
-                    else:
-                        out.write('\n')
+    def printSheet(self, out, results, keys=None):
+        if len(results) == 0:
+            return
+        keys = results[0].keys()
+        #TODO(1): move sort order to xml-file: use parameter keys
+        sort_order = ['instance', 'width', 'solved', 'time', 'wall', 'solver', 'solver_config']
+        remaining = set(keys) - set(sort_order)
+        sort_order.extend(remaining)
+        sort_order = dict(imap(lambda x: (x[1],x[0]), enumerate(sort_order)))
+        header = sorted(keys, key=lambda val: sort_order[val])
+        writer = DictWriter(out, fieldnames=header)
+        writer.writeheader()
+        writer.writerows(results)
 
 class ResultTable(Table):
     def __init__(self, benchmark, measures, name, instance_table=None):
@@ -163,6 +155,24 @@ class ResultTable(Table):
 
     def finish(self, results):
         pass
+
+
+class InstanceTable(ResultTable):
+    def printSheet(self, out, results, keys):
+        output_results = []
+        for key, values in results.iteritems():
+            benchmark_info=dict(izip(keys, key))
+            for clazz, clazz_val in values.iteritems():
+                for instance, runs in clazz_val.iteritems():
+                    for run_id, res in runs.iteritems():
+                        line = res
+                        line.update(benchmark_info)
+                        line.update({'instance': instance})
+                        output_results.append(line)
+
+        output_results.sort(key=itemgetter('instance'))
+        ResultTable.printSheet(self, out=out, results=output_results)
+
 
 class Summary:
     def __init__(self):
@@ -272,7 +282,6 @@ class SystemColumn(Sortable):
     #         column.summary.calc(n, column.content, minimum, maximum, median)
 
     def addCell(self, line, name, value_type, value):
-        # print line,name,value_type, value
         if not name in self.columns:
             self.columns[name] = ValueColumn(name, value_type)
         self.columns[name].addCell(line, value)

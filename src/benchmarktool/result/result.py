@@ -5,7 +5,7 @@ Created on Jan 19, 2010
 '''
 
 from benchmarktool.result.soffice import Spreadsheet
-from benchmarktool.result.csv import CSV
+from benchmarktool.result.csv_result import CSV
 from benchmarktool.tools import Sortable, cmp
 
 class Result:
@@ -47,28 +47,15 @@ class Result:
                 projects.append(project)
         benchmarkMerge = self.merge(projects)
 
-        # print benchmarkMerge.benchmarks.pop().classes
-        # exit(1)
-
         sheet = CSV(benchmarkMerge, measures)
         for project in projects:
             for runspec in project:
                 sheet.addRunspec(runspec)
-        print 'finish'
         sheet.finish()
+        #TODO(2): output file location
+        #TODO(*): git/upload location
         sheet.printSheet(out)
 
-        # for benchclass in benchmarkMerge.benchmarks:
-        #     for instance in benchclass:
-        #         print 'instance', instance
-        # exit(1)
-        # for benchmark in benchmarkMerge.benchmarks:
-        #     print benchmark
-
-        # for project in projects:
-        #     for runspec in project:
-        #         print runspec
-                # sheet.addRunspec(runspec)
 
     def genOffice(self, out, selProjects, measures):
         """
