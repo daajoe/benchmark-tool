@@ -5,11 +5,14 @@ Created on Jan 20, 2010
 Modified on Mar 19, 2017
 @author: Johannes K. Fichte
 '''
-
+import os
 import zipfile
 from collections import OrderedDict
+from collections import defaultdict
 from itertools import izip, count, imap
 from operator import attrgetter, itemgetter
+
+import numpy as np
 
 try:
     from cStringIO import StringIO
@@ -39,11 +42,12 @@ def lookahead(iterable):
 
 
 class CSV:
-    def __init__(self, benchmark, measures):
+    def __init__(self, benchmark, measures, project_name):
         self.benchmark = benchmark
         self.measures = measures
         self.results = {}
         self.keys = []
+        self.project_name = project_name
         self.instSheet = InstanceTable(benchmark, measures, "ta1")
         # self.classSheet = ResultTable(benchmark, measures, "ta2", self.instSheet)
 
@@ -55,36 +59,50 @@ class CSV:
         # self.summarySheet.finish()
 
     def printSheet(self, out):
-        # PACE INSTANCE SUMMARY
-        # solution quality (improved)
+        # tools have to run from benchmark-tool dir otherwise
+        # /usr/bin/python: can't open file 'src/bconv.py'
+        # hence it's safe to assume cwd here
+        # TODO: replace by a clean way based on the output location;
+        #       likely requires additional output from bconv
+        output_dir = os.path.join(os.getcwd(),'output', self.project_name)
+
+        # zipFile = zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED)
+        # redirect StringIO (zipfile) + debugging purposes only / replace
+
+        with open(os.path.join(output_dir, '%s-instances.csv' % self.project_name), 'w') as outfile2:
+            with open(os.path.join(output_dir,'%s-instances-all_runs.csv' %self.project_name), 'w') as outfile:
+                with open(os.path.join(output_dir, '%s-instances-virtual_best_config.csv' % self.project_name), 'w') as outfile3:
+                    #TODO: vbest
+                    self.instSheet.printSheet(out={'runs': outfile, 'sum': outfile2, 'vbest': outfile3}, results=self.results, keys=self.keys)
+
+        # TODO: warning if difference between multiple runs very high
+        # TODO: solution quality (improved)
         # num solved instances
-        # warning if difference between multiple runs very high
-        # solution time, min, max, std
-        # worst instance
-        # avg width
-        # best configuration
-        # BEST SOLVER: output cactus plot
-        # for sat best sat solver + best encoder
-        #  SUMMARIZE RUNS, DIFF FOR EACH RUN, STD
-        # PACE SET SUMMARY
-        #
-        out = StringIO()
-        self.instSheet.printSheet(out=out, results=self.results, keys=self.keys)
-        print out.getvalue()
+        exit(1)
+        # TODO: class summary
+        # TODO: benchmark set summary
+        with open(os.path.join(output_dir,'%s-classes-virtual_best.csv' %(self.project_name)), 'w') as outfile:
+            pass
+            with open(os.path.join(output_dir,'%s-eval-class-summary.csv' %self.project_name), 'w') as outfile:
+                out = StringIO()
+                self.classSheet.printSheet(out=out, results=self.results, keys=self.keys)
+                outfile.write(out.getvalue())
+
+        with open(os.path.join(output_dir,'%s-solverconfig-by-instance.csv' %self.project_name), 'w') as outfile:
+            #solver,solver_config,
+            #summarize integer fields
+            out = StringIO()
+            # self.classSheet.printSheet(out, "Classes")
+            self.instSheet.printSheet(out=out, results=self.results, keys=self.keys)
+            outfile.write(out.getvalue())
+
+
+
+        #TODO: cactus plot runtime, cactus plot (best 5 configs)
+        #TODO: cactus plot solution-quality, cactus plot (best 5 configs)
+
         return
-        # exit(1)
 
-        # TODO:
-        zipFile = zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED)
-        out = StringIO()
-
-        for sheet in [self.instSheet, self.classSheet]:
-            for i in range(0, len(sheet.cowidth)):
-                # sheet.name, i + 1, sheet.cowidth[i])
-                pass
-
-        self.instSheet.printSheet(out, "Instances")
-        self.classSheet.printSheet(out, "Classes")
 
     # def addRunspec(self, runspec):
 
@@ -127,7 +145,6 @@ class CSV:
         self.keys = d.keys()
         self.results[tuple(d.values())] = benchmarks
 
-
 class Table:
     def __init__(self, name):
         self.name = name
@@ -137,7 +154,14 @@ class Table:
             return
         keys = results[0].keys()
         #TODO(1): move sort order to xml-file: use parameter keys
-        sort_order = ['instance', 'width', 'solved', 'time', 'wall', 'solver', 'solver_config']
+        basic_sort_order = ['instance', 'width', 'solved', 'time', 'wall', 'solver', 'solver_config']
+        sum_order = ['avg', 'min', 'max', 'stdev']
+        sort_order = []
+        for i in basic_sort_order:
+            sort_order.append(i)
+            for j in sum_order:
+                sort_order.append('%s-%s' %(i,j))
+
         remaining = set(keys) - set(sort_order)
         sort_order.extend(remaining)
         sort_order = dict(imap(lambda x: (x[1],x[0]), enumerate(sort_order)))
@@ -159,20 +183,46 @@ class ResultTable(Table):
 
 class InstanceTable(ResultTable):
     def printSheet(self, out, results, keys):
-        output_results = []
+        output = {k: [] for k in out.iterkeys()}
         for key, values in results.iteritems():
             benchmark_info=dict(izip(keys, key))
             for clazz, clazz_val in values.iteritems():
                 for instance, runs in clazz_val.iteritems():
-                    for run_id, res in runs.iteritems():
-                        line = res
+                    if out.has_key('runs'):
+                        for run_id, res in runs.iteritems():
+                            line = {}
+                            for k, measure in res.iteritems():
+                                if type(measure) == float:
+                                    line[k] = round(measure,4)
+                                else:
+                                    line[k] = measure
+                            line.update(benchmark_info)
+                            line.update({'instance': instance})
+                            output['runs'].append(line)
+                    if out.has_key('sum'):
+                        line = {}
                         line.update(benchmark_info)
                         line.update({'instance': instance})
-                        output_results.append(line)
 
-        output_results.sort(key=itemgetter('instance'))
-        ResultTable.printSheet(self, out=out, results=output_results)
+                        results = defaultdict(list)
+                        for run_id, res in runs.iteritems():
+                            for k, measure in res.iteritems():
+                                if type(measure) in (int,float):
+                                    results[k].append(measure)
 
+                        merged_results = {}
+                        for k, v in results.iteritems():
+                            #TODO: move precision to xml file
+                            merged_results['%s-min' %k] = round(min(results[k]),4)
+                            merged_results['%s-max' % k] = round(max(results[k]),4)
+                            merged_results['%s' % k] = round(np.mean(results[k]),4)
+                            merged_results['%s-stdev' % k] = round(np.std(results[k]),4)
+                        line.update(merged_results)
+                        output['sum'].append(line)
+
+        for k in output.iterkeys():
+            output[k].sort(key=itemgetter('instance','time'))
+            ResultTable.printSheet(self, out=out[k], results=output[k])
 
 class Summary:
     def __init__(self):

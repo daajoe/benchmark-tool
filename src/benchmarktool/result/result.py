@@ -3,10 +3,14 @@ Created on Jan 19, 2010
 
 @author: Roland Kaminski
 '''
+import os
 
 from benchmarktool.result.soffice import Spreadsheet
 from benchmarktool.result.csv_result import CSV
 from benchmarktool.tools import Sortable, cmp
+
+from benchmarktool import tools
+
 
 class Result:
     """
@@ -40,22 +44,22 @@ class Result:
         return BenchmarkMerge(benchmarks)
 
     def genCSV(self, out, selProjects, measures):
-        pass
         projects = []
         for project in self.projects.values():
             if selProjects == "" or project.name in selProjects:
                 projects.append(project)
         benchmarkMerge = self.merge(projects)
 
-        sheet = CSV(benchmarkMerge, measures)
+        #generate for each project
         for project in projects:
+            sheet = CSV(benchmarkMerge, measures, project.name)
             for runspec in project:
                 sheet.addRunspec(runspec)
-        sheet.finish()
-        #TODO(2): output file location
-        #TODO(*): git/upload location
-        sheet.printSheet(out)
-
+            sheet.finish()
+            #TODO(2): output file location
+            #TODO(*): float value precision in xml file
+            #TODO(*): git/upload location
+            sheet.printSheet(out)
 
     def genOffice(self, out, selProjects, measures):
         """
