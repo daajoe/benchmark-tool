@@ -23,6 +23,10 @@ from csv import DictWriter
 import math
 
 
+def all_same(iterable):
+    return all(x == iterable[0] for x in iterable)
+
+
 # Source SO: 1630320
 def lookahead(iterable):
     """Pass through all values from the given iterable, augmented by the
@@ -48,11 +52,11 @@ class CSV:
         self.results = {}
         self.keys = []
         self.project_name = project_name
-        self.instSheet = InstanceTable(benchmark, measures, "ta1")
-        # self.classSheet = ResultTable(benchmark, measures, "ta2", self.instSheet)
+        self.instSheets = InstanceTable(benchmark, measures, "ta1")
+        # self.classSheets = ClassTable(benchmark, measures, "ta1")
 
     def finish(self):
-        self.instSheet.finish(self.results)
+        self.instSheets.finish(self.results)
         # TODO:
         # self.classSheet.finish()
         # TODO:
@@ -64,45 +68,53 @@ class CSV:
         # hence it's safe to assume cwd here
         # TODO: replace by a clean way based on the output location;
         #       likely requires additional output from bconv
-        output_dir = os.path.join(os.getcwd(),'output', self.project_name)
+        output_dir = os.path.join(os.getcwd(), 'output', self.project_name)
 
         # zipFile = zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED)
         # redirect StringIO (zipfile) + debugging purposes only / replace
 
-        with open(os.path.join(output_dir, '%s-instances.csv' % self.project_name), 'w') as outfile2:
-            with open(os.path.join(output_dir,'%s-instances-all_runs.csv' %self.project_name), 'w') as outfile:
-                with open(os.path.join(output_dir, '%s-instances-virtual_best_config.csv' % self.project_name), 'w') as outfile3:
-                    #TODO: vbest
-                    self.instSheet.printSheet(out={'runs': outfile, 'sum': outfile2, 'vbest': outfile3}, results=self.results, keys=self.keys)
+        with open(os.path.join(output_dir, '%s-by-instances.csv' % self.project_name), 'w') as outfile2:
+            with open(os.path.join(output_dir, '%s-by-instances-all_runs.csv' % self.project_name), 'w') as outfile:
+                with open(os.path.join(output_dir, '%s-by-instances-virtual_best_config.csv' % self.project_name),
+                          'w') as outfile3:
+                    out = StringIO()
+                    # TODO: vbest
+                    self.instSheets.printSheet(out={'runs': outfile, 'sum': outfile2, 'vbest': outfile3, 'clazz': out},
+                                               results=self.results, keys=self.keys)
+                    print out.getvalue()
 
         # TODO: warning if difference between multiple runs very high
         # TODO: solution quality (improved)
-        # num solved instances
         exit(1)
         # TODO: class summary
-        # TODO: benchmark set summary
-        with open(os.path.join(output_dir,'%s-classes-virtual_best.csv' %(self.project_name)), 'w') as outfile:
+        # num solved instances
+        with open(os.path.join(output_dir, '%s-by-classes.csv' % self.project_name), 'w') as outfile:
+            self.classSheets.printSheet(out={'runs': outfile, 'sum': outfile2, 'vbest': outfile3}, results=self.results,
+                                        keys=self.keys)
+            # with open(os.path.join(output_dir, '%s-by-instances-virtual_best_config.csv' % self.project_name), 'w') as outfile2:
+            #     pass
+
+        with open(os.path.join(output_dir, '%s-classes-virtual_best.csv' % (self.project_name)), 'w') as outfile:
             pass
-            with open(os.path.join(output_dir,'%s-eval-class-summary.csv' %self.project_name), 'w') as outfile:
+            with open(os.path.join(output_dir, '%s-eval-class-summary.csv' % self.project_name), 'w') as outfile:
                 out = StringIO()
-                self.classSheet.printSheet(out=out, results=self.results, keys=self.keys)
+                self.classSheets.printSheet(out=out, results=self.results, keys=self.keys)
                 outfile.write(out.getvalue())
 
-        with open(os.path.join(output_dir,'%s-solverconfig-by-instance.csv' %self.project_name), 'w') as outfile:
-            #solver,solver_config,
-            #summarize integer fields
+        # TODO: benchmark set summary
+
+        with open(os.path.join(output_dir, '%s-solverconfig-by-instance.csv' % self.project_name), 'w') as outfile:
+            # solver,solver_config,
+            # summarize integer fields
             out = StringIO()
             # self.classSheet.printSheet(out, "Classes")
-            self.instSheet.printSheet(out=out, results=self.results, keys=self.keys)
+            self.instSheets.printSheet(out=out, results=self.results, keys=self.keys)
             outfile.write(out.getvalue())
 
-
-
-        #TODO: cactus plot runtime, cactus plot (best 5 configs)
-        #TODO: cactus plot solution-quality, cactus plot (best 5 configs)
+        # TODO: cactus plot runtime, cactus plot (best 5 configs)
+        # TODO: cactus plot solution-quality, cactus plot (best 5 configs)
 
         return
-
 
     # def addRunspec(self, runspec):
 
@@ -145,6 +157,7 @@ class CSV:
         self.keys = d.keys()
         self.results[tuple(d.values())] = benchmarks
 
+
 class Table:
     def __init__(self, name):
         self.name = name
@@ -153,22 +166,23 @@ class Table:
         if len(results) == 0:
             return
         keys = results[0].keys()
-        #TODO(1): move sort order to xml-file: use parameter keys
+        # TODO(1): move sort order to xml-file: use parameter keys
         basic_sort_order = ['instance', 'width', 'solved', 'time', 'wall', 'solver', 'solver_config']
         sum_order = ['avg', 'min', 'max', 'stdev']
         sort_order = []
         for i in basic_sort_order:
             sort_order.append(i)
             for j in sum_order:
-                sort_order.append('%s-%s' %(i,j))
+                sort_order.append('%s-%s' % (i, j))
 
         remaining = set(keys) - set(sort_order)
         sort_order.extend(remaining)
-        sort_order = dict(imap(lambda x: (x[1],x[0]), enumerate(sort_order)))
+        sort_order = dict(imap(lambda x: (x[1], x[0]), enumerate(sort_order)))
         header = sorted(keys, key=lambda val: sort_order[val])
         writer = DictWriter(out, fieldnames=header)
         writer.writeheader()
         writer.writerows(results)
+
 
 class ResultTable(Table):
     def __init__(self, benchmark, measures, name, instance_table=None):
@@ -183,23 +197,27 @@ class ResultTable(Table):
 
 class InstanceTable(ResultTable):
     def printSheet(self, out, results, keys):
+        # inplace because output might be really large
+        # TODO: if really no need, then remove it here and put it in different functions
         output = {k: [] for k in out.iterkeys()}
         for key, values in results.iteritems():
-            benchmark_info=dict(izip(keys, key))
+            benchmark_info = dict(izip(keys, key))
             for clazz, clazz_val in values.iteritems():
+                if 'clazz' in out:
+                    merged_clazz = defaultdict(list)
                 for instance, runs in clazz_val.iteritems():
-                    if out.has_key('runs'):
+                    if 'runs' in out:
                         for run_id, res in runs.iteritems():
                             line = {}
                             for k, measure in res.iteritems():
                                 if type(measure) == float:
-                                    line[k] = round(measure,4)
+                                    line[k] = round(measure, 4)
                                 else:
                                     line[k] = measure
                             line.update(benchmark_info)
                             line.update({'instance': instance})
                             output['runs'].append(line)
-                    if out.has_key('sum'):
+                    if 'sum' in out or 'clazz' in out:
                         line = {}
                         line.update(benchmark_info)
                         line.update({'instance': instance})
@@ -207,22 +225,59 @@ class InstanceTable(ResultTable):
                         results = defaultdict(list)
                         for run_id, res in runs.iteritems():
                             for k, measure in res.iteritems():
-                                if type(measure) in (int,float):
+                                if type(measure) in (int, float):
                                     results[k].append(measure)
 
-                        merged_results = {}
-                        for k, v in results.iteritems():
-                            #TODO: move precision to xml file
-                            merged_results['%s-min' %k] = round(min(results[k]),4)
-                            merged_results['%s-max' % k] = round(max(results[k]),4)
-                            merged_results['%s' % k] = round(np.mean(results[k]),4)
-                            merged_results['%s-stdev' % k] = round(np.std(results[k]),4)
-                        line.update(merged_results)
-                        output['sum'].append(line)
+                        line.update(self.__summarize(results))
+                        if 'sum' in out:
+                            output['sum'].append(line)
+                        if 'clazz' in out:
+                            print line
+                            for k, v in line.iteritems():
+                                merged_clazz[k].append(v)
+                if out.has_key('clazz'):
+                    print merged_clazz
+                    print '*' * 120
+                    print self.__summarize_two(merged_clazz)
+                    exit(1)
 
         for k in output.iterkeys():
-            output[k].sort(key=itemgetter('instance','time'))
+            output[k].sort(key=itemgetter('instance', 'time'))
             ResultTable.printSheet(self, out=out[k], results=output[k])
+
+    def __summarize_two(self, results):
+        merged_results = {}
+        for k, values in results.iteritems():
+            # print k, values
+            if len(values) > 0:
+                # print type(values[0])
+                if type(values[0]) in (float, int):
+                    # TODO: move precision to xml file
+                    merged_results['%s-min' % k] = round(min(values), 4)
+                    merged_results['%s-max' % k] = round(max(values), 4)
+                    merged_results['%s' % k] = round(np.mean(values), 4)
+                    merged_results['%s-stdev' % k] = round(np.std(values), 4)
+                if type(values[0]) in (str, unicode) and all_same(values):
+                    merged_results[k] = values[0]
+                # print merged_results
+                # exit(1)
+        return merged_results
+
+    # noinspection PyMethodMayBeStatic
+    def __summarize(self, results):
+        merged_results = {}
+        for k, v in results.iteritems():
+            print k, v
+            if type(v) in (float, int):
+                # TODO: move precision to xml file
+                merged_results['%s-min' % k] = round(min(results[k]), 4)
+                merged_results['%s-max' % k] = round(max(results[k]), 4)
+                merged_results['%s' % k] = round(np.mean(results[k]), 4)
+                merged_results['%s-stdev' % k] = round(np.std(results[k]), 4)
+            if type(v) == str and len(results[k]) > 0 and all_same(results[k]):
+                merged_results[k] = results[k][0]
+        return merged_results
+
 
 class Summary:
     def __init__(self):
