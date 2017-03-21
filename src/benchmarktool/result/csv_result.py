@@ -71,52 +71,13 @@ class CSV:
         output_dir = os.path.join(os.getcwd(), 'output', self.project_name)
 
         # zipFile = zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED)
-        # redirect StringIO (zipfile) + debugging purposes only / replace
-
-        with open(os.path.join(output_dir, '%s-by-instances.csv' % self.project_name), 'w') as outfile2:
-            with open(os.path.join(output_dir, '%s-by-instances-all_runs.csv' % self.project_name), 'w') as outfile:
-                #TODO: vbest
-                with open(os.path.join(output_dir, '%s-by-instances-virtual_best_config.csv' % self.project_name),
-                          'w') as outfile3:
-                    out = StringIO()
-                    out2 = StringIO()
-
-                    # TODO: vbest
-                    self.instSheets.printSheet(out={'by-run': outfile, 'by-instance': outfile2, 'by-class': out, 'by-benchmark': out2},
-                                               results=self.results, keys=self.keys)
-                    # print out.getvalue()
-                    print out2.getvalue()
-
-        # TODO: warning if difference between multiple runs very high
-        # TODO: solution quality (improved)
-        exit(1)
-        # TODO: class summary
-        # num solved instances
-        with open(os.path.join(output_dir, '%s-by-classes.csv' % self.project_name), 'w') as outfile:
-            self.classSheets.printSheet(out={'runs': outfile, 'sum': outfile2, 'vbest': outfile3}, results=self.results,
-                                        keys=self.keys)
-            # with open(os.path.join(output_dir, '%s-by-instances-virtual_best_config.csv' % self.project_name), 'w') as outfile2:
-            #     pass
-
-        with open(os.path.join(output_dir, '%s-classes-virtual_best.csv' % (self.project_name)), 'w') as outfile:
-            pass
-            with open(os.path.join(output_dir, '%s-eval-class-summary.csv' % self.project_name), 'w') as outfile:
-                out = StringIO()
-                self.classSheets.printSheet(out=out, results=self.results, keys=self.keys)
-                outfile.write(out.getvalue())
-
-        # TODO: benchmark set summary
-
-        with open(os.path.join(output_dir, '%s-solverconfig-by-instance.csv' % self.project_name), 'w') as outfile:
-            # solver,solver_config,
-            # summarize integer fields
-            out = StringIO()
-            # self.classSheet.printSheet(out, "Classes")
-            self.instSheets.printSheet(out=out, results=self.results, keys=self.keys)
-            outfile.write(out.getvalue())
-
-        # TODO: cactus plot runtime, cactus plot (best 5 configs)
-        # TODO: cactus plot solution-quality, cactus plot (best 5 configs)
+        # TODO(1): solution quality (improved over upper bounds)
+        # TODO(*): specify solution quality col in xml file
+        # TODO(*): vbest solver configuration by configuration name
+        # TODO(2): cactus plot runtime, cactus plot (best 5 configs)
+        # TODO(3): cactus plot solution-quality, cactus plot (best 5 configs)
+        self.instSheets.printSheet(prefix=output_dir, project_name=self.project_name, suffix='.csv',
+                                   results=self.results, keys=self.keys)
 
         return
 
@@ -171,7 +132,9 @@ class Table:
             return
         keys = results[0].keys()
         # TODO(1): move sort order to xml-file: use parameter keys
-        basic_sort_order = ['instance', 'number_of_instances', 'width', 'solved', 'time', 'wall', 'solver', 'solver_config']
+        # TODO(3): sort order depending on by-instance, by-whatever
+        basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'solved', 'time',
+                            'wall', 'solver', 'solver_config']
         sum_order = ['avg', 'min', 'max', 'stdev']
         sort_order = []
         for i in basic_sort_order:
@@ -200,7 +163,7 @@ class ResultTable(Table):
 
 
 class InstanceTable(ResultTable):
-    def __summarize(self, aggregated):
+    def __summarize(self, aggregated, instance_str):
         merged_results = {}
         additional_stats = {}
         for k, values in aggregated.iteritems():
@@ -209,19 +172,24 @@ class InstanceTable(ResultTable):
                     # TODO: move precision to xml file
                     additional_stats['%s-min' % k] = round(min(values), 4)
                     additional_stats['%s-max' % k] = round(max(values), 4)
-                    merged_results['%s' % k] = round(np.mean(values), 4)
+                    # todo: move mean vs. sum parameters to xml file
+                    if k != 'number_of_instances':
+                        merged_results['%s' % k] = round(np.mean(values), 4)
+                    else:
+                        merged_results['%s' % k] = round(np.sum(values), 4)
                     additional_stats['%s-stdev' % k] = round(np.std(values), 4)
                 if type(values[0]) in (str, unicode):
                     if all_same(values):
                         merged_results[k] = values[0]
-                    else:
-                        merged_results[k] = 'various'
-        if 'number_of_instances' not in merged_results:
-            merged_results['number_of_instances'] = len(aggregated[0])
+                        # TODO: xml allow various as value instead of deleting cols
+                        # else:
+                        #     merged_results[k] = 'various'
+        if 'number_of_instances' not in aggregated:
+            merged_results['number_of_instances'] = 1
         return merged_results, additional_stats
 
     def store_and_merge(self, to_lines, from_lines, instance_str, output):
-        avg_data, additional_stats = self.__summarize(from_lines)
+        avg_data, additional_stats = self.__summarize(from_lines, instance_str)
         if to_lines is not None:
             for k, v in avg_data.iteritems():
                 to_lines[k].append(v)
@@ -230,7 +198,7 @@ class InstanceTable(ResultTable):
         ret.update(additional_stats)
         output[instance_str].append(ret)
 
-    def printSheet(self, out, results, keys):
+    def printSheet(self, prefix, project_name, suffix, results, keys):
         # inplace because output might be really large
         # TODO: if really no need, then remove it here and put it in different functions
         output = defaultdict(list)
@@ -253,21 +221,20 @@ class InstanceTable(ResultTable):
                         output['by-run'].append(run_line)
                         for k, v in run_line.iteritems():
                             instance_lines[k].append(v)
-                        # instance_lines.update(run_line)
 
                     self.store_and_merge(clazz_lines, instance_lines, 'by-instance', output)
                 self.store_and_merge(benchmark_lines, clazz_lines, 'by-class', output)
-                print output['by-class']
             self.store_and_merge(None, benchmark_lines, 'by-benchmark', output)
 
         for k in output.iterkeys():
-            if k in ('by-instance', 'by-run'):
-                output[k].sort(key=itemgetter('instance', 'time'))
-            if k == 'by-class':
-                output[k].sort(key=itemgetter('class', 'time'))
-            if k == 'by-benchmark':
-                output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
-            ResultTable.printSheet(self, out=out[k], results=output[k])
+            with open(os.path.join(prefix, '%s-%s%s' % (project_name, k, suffix)), 'w') as outfile:
+                if k in ('by-instance', 'by-run'):
+                    output[k].sort(key=itemgetter('instance', 'time'))
+                if k == 'by-class':
+                    output[k].sort(key=itemgetter('class', 'time'))
+                if k == 'by-benchmark':
+                    output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
+                ResultTable.printSheet(self, out=outfile, results=output[k])
 
 
 class Summary:
