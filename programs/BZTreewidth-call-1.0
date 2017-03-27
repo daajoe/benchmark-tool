@@ -62,7 +62,7 @@ def parse_args():
   parser.add_argument('-r', '--repeat', dest='repeat', action='store', type=int, help='number of repeations', default=1)
   parser.add_argument('-c', '--algorithm-choice', dest='algorithm', action='store',
                       choices=['DFS', 'DFS-LS', 'DFS-SV-ASV-EADD-MMW', 'DFS-SV-ASV-MMW', 'DFS-SV-ASV-MMWLIMIT',
-                               'DFS-SV','PBLib_DP', 'DP-LS', 'DFS-SV-MMW', 'DFS-SV-MMWLIMIT'],
+                               'DFS-SV','DP', 'DP-LS', 'DFS-SV-MMW', 'DFS-SV-MMWLIMIT'],
                       type=str, help='', default='DP')
   parser.add_argument('--runid', dest='runid', action='store', type=int, help='id of the current repeation', default=1)
   parser.add_argument('-t', '--tmp', dest='tmp', action='store', type=str, help='unused', default=None)  

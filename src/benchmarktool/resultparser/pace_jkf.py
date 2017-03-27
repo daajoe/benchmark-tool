@@ -41,8 +41,8 @@ def pace_jkf(root, runspec, instance):
     try:
         stats = json.loads(content)
     except ValueError, e:
-        sys.stderr.write(str(e))
-        sys.stderr.write(': instance = %s\n' % instance.instance)
+        #codecs.open(os.path
+        sys.stderr.write('Error: %s (%s); %s\n' % (instance.instance, root, str(e)))
         error = 1
         e_str = str(e)
         with open(os.path.join(root, '%s.err' % instance.instance)) as fstderr:
@@ -69,7 +69,6 @@ def pace_jkf(root, runspec, instance):
     if not error:
         try:
             accu['run'] = ('int', stats['run'])
-            accu['full_call'] = ('string', b64encode(stats['call']))
             accu['width'] = ('int', stats['width'])
             accu['solved'] = ('int', int(stats['solved']))
             accu['wall'] = ('float', stats['wall'])
@@ -78,8 +77,13 @@ def pace_jkf(root, runspec, instance):
             index = stats['instance'].find(cut)
             if index != -1:
                 accu['instance_path'] = ('string', stats['instance'][index + len(cut) + 1:])
+        except KeyError, e:
+            sys.stderr.write('Missing attribute "%s" for instance "%s".\n' %(str(e),root))
+        try:
+            accu['full_call'] = ('string', b64encode(stats['call']))
         except KeyError:
-            sys.stderr.write("instance " + root + " did not finish properly\n")
+            #sys.stderr.write('Could not find "call" in json values (instance = %s).\n' %root)
+            pass
 
     # {{{1 parse solver stdout
     content = open(os.path.join(root, "condor.log")).read()

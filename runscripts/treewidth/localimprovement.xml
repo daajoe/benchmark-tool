@@ -4,12 +4,22 @@
 
 	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
 	<!--TODO: measures-->
-	<system name="tw-limprovement" version="1.0" measures="clasp" config="condor-generic">
- 		<setting name="default" tag="sat" cmdline="" ppn="4" procs="1"/>
+	<system name="tw-limprovement" version="1.0" measures="pace_jkf" config="condor-generic">
+ 		<setting name="default" tag="sat" cmdline="-w 900 -b -1" ppn="4" procs="1"/>
+ 		<setting name="roofy5" tag="sat" cmdline="-w 900 -b -1 -r 5" ppn="4" procs="1"/>
+ 		<setting name="roofy10" tag="sat" cmdline="-w 900 -b -1 -r 10" ppn="4" procs="1"/>
+ 		<setting name="roofy20" tag="sat" cmdline="-w 900 -b -1 -r 20" ppn="4" procs="1"/>
+ 		<!--<setting name="boozy10" tag="sat" cmdline="-w 900 -b 10 -r 10" ppn="4" procs="1"/>
+ 		<setting name="boozy20" tag="sat" cmdline="-w 900 -b 20 -r 10" ppn="4" procs="1"/>
+ 		<setting name="boozy30" tag="sat" cmdline="-w 900 -b 30 -r 10" ppn="4" procs="1"/>
+ 		<setting name="boozy40" tag="sat" cmdline="-w 900 -b 40 -r 5" ppn="4" procs="1"/>
+ 		<setting name="boozy50" tag="sat" cmdline="-w 900 -b 50 -r 5" ppn="4" procs="1"/>
+ 		<setting name="boozy70" tag="sat" cmdline="-w 900 -b 70 -r 5" ppn="4" procs="1"/>
+ 		<setting name="boozy100" tag="sat" cmdline="-w 900 -b 100 -5" ppn="4" procs="1"/>-->
  	</system>
 
 	<!-- todo condor job priority -->
-	<condorjob name="condor-generic" memout="2048" timeout="3600" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>
+	<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>
 	<!--<condorjob name="condor-generic" memout="2048" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/Users/fichte/decodyn/src/benchmark-tool
 "/>-->
 
@@ -29,7 +39,7 @@
 	  <folder path="benchmarks/graphs/selection/atmost-numV-200-renamed-tw/"/>
 	</benchmark>
 	
-	<project name="heuristic-treewidth" job="condor-generic">
+	<project name="local-improvement" job="condor-generic">
 	  <runtag machine="cobra" benchmark="pace2016-all" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="pace2016-selection" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
