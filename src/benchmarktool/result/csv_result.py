@@ -79,6 +79,8 @@ class CSV:
         self.instSheets.printSheet(prefix=output_dir, project_name=self.project_name, suffix='.csv',
                                    results=self.results, keys=self.keys)
 
+        self.instSheets.print_error_sheets(prefix=output_dir, project_name=self.project_name, suffix='.csv',
+                                           results=self.results, keys=self.keys)
         return
 
     # def addRunspec(self, runspec):
@@ -133,8 +135,9 @@ class Table:
         keys = results[0].keys()
         # TODO(1): move sort order to xml-file: use parameter keys
         # TODO(3): sort order depending on by-instance, by-whatever
-        basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'solved', 'time',
-                            'wall', 'solver', 'solver_config']
+        basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'ubound',
+                            'abs_improvement', 'rel_improvement', 'solved', 'time',
+                            'wall', 'solver', 'solver_config', 'error_code']
         sum_order = ['avg', 'min', 'max', 'stdev']
         sort_order = []
         for i in basic_sort_order:
@@ -198,6 +201,8 @@ class InstanceTable(ResultTable):
         ret.update(additional_stats)
         output[instance_str].append(ret)
 
+    # TODO: signature
+    # TODO: move to SQLlite
     def printSheet(self, prefix, project_name, suffix, results, keys):
         # inplace because output might be really large
         # TODO: if really no need, then remove it here and put it in different functions
@@ -218,6 +223,13 @@ class InstanceTable(ResultTable):
 
                         run_line.update(benchmark_info)
                         run_line.update({'instance': instance, 'class': clazz})
+                        if res['width'] != -1 and res['ubound'] != -1:
+                            abs_improvement = res['ubound'] - res['width']
+                            rel_improvement = round(abs_improvement / float(res['width']), 4)
+
+                        else:
+                            rel_improvement = abs_improvement = 0
+                        run_line.update({'rel_improvement': rel_improvement, 'abs_improvement': abs_improvement})
                         output['by-run'].append(run_line)
                         for k, v in run_line.iteritems():
                             instance_lines[k].append(v)
@@ -236,54 +248,107 @@ class InstanceTable(ResultTable):
                     output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
                 ResultTable.printSheet(self, out=outfile, results=output[k])
 
+        # compute virtual-best configuration
+        self.compute_vbest(output['by-instance'])
 
-class Summary:
-    def __init__(self):
-        self.sum = 0
-        self.dev = 0
-        self.sqsum = 0
-        self.avg = 0
-        self.dst = 0
-        self.best = 0
-        self.better = 0
-        self.worse = 0
-        self.worst = 0
-        self.count = 0
+        # TODO: cactus plot
 
-    def calc(self, n, colA, minmum, median, maximum):
-        self.avg = self.sum / self.count
-        self.dev = math.sqrt(self.sqsum / self.count - self.avg * self.avg)
-        colA.extend([None for _ in range(0, - len(colA))])
-        # geometric distance, best
-        if minmum is not None:
-            minmum.extend([None for _ in range(0, self.count - len(minmum))])
-            sdsum = 0
-            for a, b in zip(colA, minmum):
-                if a is not None:
-                    if a <= b:
-                        self.best += 1
-                    sdsum += (a - b) * (a - b)
-            self.dst = math.sqrt(sdsum)
-        # better, worse
-        if median is not None:
-            median.extend([None for _ in range(0, self.count - len(median))])
-            for a, b in zip(colA, median):
-                if a != None:
-                    if a < b:
-                        self.better += 1
-                    elif a > b:
-                        self.worse += 1
-        # worst
-        if maximum is not None:
-            maximum.extend([None for _ in range(0, self.count - len(maximum))])
-            for a, b in zip(colA, maximum):
-                if a is not None and a >= b:
-                    self.worst += 1
+    def compute_vbest_runtime(self, instance_results):
+        #instances
+        pass
 
-    def add(self, val):
-        self.sum += val
-        self.sqsum += val * val
-        self.count += 1
+    def compute_vbest_solution_quality(self, instance_results):
+        pass
+
+    # TODO: move to different sheet
+    def print_error_sheets(self, prefix, project_name, suffix, results, keys):
+        error_codes = {0: 'ok', 1: 'timeout', 2: 'memout', 4: 'dnf', 8: 'invalid_decomposition', 16: 'invalid_input',
+                       32: 'solver_runtime_error', 64: 'unknown_error'}
+        errors = {i: [] for i in error_codes.iterkeys()}
+        num_instances = 0
+        output = []
+        for key, values in results.iteritems():
+            benchmark_info = dict(izip(keys, key))
+            for clazz, clazz_val in values.iteritems():
+                for instance, runs in clazz_val.iteritems():
+                    for run_id, res in runs.iteritems():
+                        run_line = {}
+                        run_line.update(benchmark_info)
+                        run_line.update(
+                            {'instance': instance, 'class': clazz, 'error': res['error'], 'solved': res['solved'],
+                             'full_path': res['full_path']})
+                        for err_key in errors.iterkeys():
+                            if err_key == 0:
+                                if res['error'] == 0:
+                                    errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
+                                continue
+                            val = res['error'] // err_key
+                            if val == 1:
+                                errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
+                        num_instances += 1
+                        output.append(run_line)
+
+        # print single instance outputs
+        for k, v in error_codes.iteritems():
+            with open(os.path.join(prefix, '%s-error-%s%s' % (project_name, v, suffix)), 'w') as outfile:
+                errors[k].sort(key=itemgetter('instance'))
+                ResultTable.printSheet(self, out=outfile, results=errors[k])
+
+        # print summary outputs
+        summary = []
+        for k, v in error_codes.iteritems():
+            summary.append(
+                {'error/ok': v, 'error_code': k, 'abs_num': len(errors[k]), 'rel_num': len(errors[k]) / num_instances})
+        with open(os.path.join(prefix, '%s-%s%s' % (project_name, 'error-0summary', suffix)), 'w') as outfile:
+            ResultTable.printSheet(self, out=outfile, results=summary)
+
+
+
+class Summary(ResultTable):
+    pass
+    # TODO: signature
+    # def printSheet(self, prefix, project_name, suffix, results, keys):
+    #     # inplace because output might be really large
+    #     output = defaultdict(list)
+    #     for key, values in results.iteritems():
+    #         benchmark_info = dict(izip(keys, key))
+    #         benchmark_lines = defaultdict(list)
+    #         for clazz, clazz_val in values.iteritems():
+    #             clazz_lines = defaultdict(list)
+    #             for instance, runs in clazz_val.iteritems():
+    #                 instance_lines = defaultdict(list)
+    #                 for run_id, res in runs.iteritems():
+    #                     run_line = {}
+    #
+    #
+    #                     for k, measure in res.iteritems():
+    #                         if type(measure) == float:
+    #                             measure = round(measure, 4)
+    #                         run_line[k] = measure
+    #
+    #                     run_line.update(benchmark_info)
+    #                     run_line.update({'instance': instance, 'class': clazz, 'width': res['width'], 'ubound': res['ubound'], 'improvement': })
+    #
+    #                     output['by-run'].append(run_line)
+    #                     for k, v in run_line.iteritems():
+    #                         instance_lines[k].append(v)
+    #
+    #                 self.store_and_merge(clazz_lines, instance_lines, 'by-instance', output)
+    #             self.store_and_merge(benchmark_lines, clazz_lines, 'by-class', output)
+    #         self.store_and_merge(None, benchmark_lines, 'by-benchmark', output)
+    #
+    #     for k in output.iterkeys():
+    #         with open(os.path.join(prefix, '%s-solution_quality-%s%s' % (project_name, k, suffix)), 'w') as outfile:
+    #             if k in ('by-instance', 'by-run'):
+    #                 output[k].sort(key=itemgetter('instance', 'time'))
+    #             if k == 'by-class':
+    #                 output[k].sort(key=itemgetter('class', 'time'))
+    #             if k == 'by-benchmark':
+    #                 output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
+    #             ResultTable.printSheet(self, out=outfile, results=output[k])
+    #
+    #     #TODO: compute cactus plots
+    #     pass
 
 
 class ValueColumn:

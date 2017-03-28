@@ -19,9 +19,9 @@
  	</system>
 
 	<!-- todo condor job priority -->
-	<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>
-	<!--<condorjob name="condor-generic" memout="2048" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/Users/fichte/decodyn/src/benchmark-tool
-"/>-->
+	<!--<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>-->
+	<condorjob name="condor-generic" memout="2048" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/Users/fichte/decodyn/src/benchmark-tool
+"/>
 
 	<benchmark name="pace2016-selection">
 	  <!--<folder path="benchmarks/test"/>-->
