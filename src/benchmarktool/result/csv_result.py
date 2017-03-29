@@ -239,22 +239,24 @@ class InstanceTable(ResultTable):
         return header
 
     def output_cactus_plot(self, plots, filename, benchmark, limit=5):
-        NUM_COLORS = len(plots) + 1
+        configs = plots['solver_config'].unique()
+        NUM_COLORS = len(configs) + 1
         cm = plt.get_cmap('gist_rainbow')
         fig = plt.figure()
-        # fig = plt.figure(figsize=(4, 5), dpi=100)
         ax = fig.add_subplot(111)
         ax.set_color_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
         marker = cycle(('.', 'p', '^', '*', 'd', 's', 'o'))  # (',', '+', '.', 'o', '*'))
 
-        # TODO: fix tomorrow
-        patches = []
-        for v in plots:
-            LIMIT = min(limit, len(v[0]))
-            v = (v[0][:LIMIT], v[1])
-            patches.append(mpatches.Patch(label=v[1]))
-            plt.plot(range(len(v[0])), v[0], linestyle='', markeredgecolor='none', marker=marker.next(), label=v[1])
-            # break
+        # TODO: fix only best 'limit' configurations
+        # patches = []
+        for key in configs:
+            plot = plots[(plots['solver_config'] == key)]
+            # sort by runtime etc.
+            plot.sort_values(by=['wall'],inplace=True)
+            plot.reset_index(inplace=True)
+            ts = pd.Series(plot['wall'])
+            #linestyle='', marker=marker.next()
+            ax = ts.plot(markeredgecolor='none', label=key)
 
         fig.subplots_adjust(bottom=0.3, left=0.2)
         box = ax.get_position()
@@ -262,19 +264,19 @@ class InstanceTable(ResultTable):
                          box.width, box.height * 0.9])
 
         # Put a legend below current axis
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), prop={'size': 8})  # ,
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 0.8), prop={'size': 8})  # ,
+
+        plt.title('%s' % benchmark)
+        plt.savefig(filename)
         # fancybox=True, shadow=True, ncol=5)
         # ax.set_yscale("log", nonposx='clip')
         # plt.legend(handles=patches,loc=4)
         # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-        plt.title('%s' % benchmark)
-        plt.savefig(filename)
-        exit(1)
 
     # TODO: signature
     def printSheet(self, prefix, project_name, suffix, results, keys):
-        def output_path(oparm):
-            return os.path.join(prefix, '%s-%s%s' % (project_name, oparm, suffix))
+        def output_path(oparm, osuffix=suffix):
+            return os.path.join(prefix, '%s-%s%s' % (project_name, oparm, osuffix))
 
         rows = []
         output = defaultdict(list)
@@ -355,7 +357,21 @@ class InstanceTable(ResultTable):
         vbest[['instance', 'solver_config', 'abs_improvement']].to_csv(output_path('vbest_short'))
         vbest_improved[['instance', 'solver_config', 'abs_improvement']].to_csv(output_path('vbest-improved_short'))
 
-        
+        short_df = self.compute_short_df(df, vbest)
+        self.output_cactus_plot(short_df, output_path('cactus_plot', '.pdf'), project_name)
+
+    def compute_short_df(self, df, vbest):
+        # take short vbest
+        vbest_short = vbest[['instance', 'solver_config', 'abs_improvement', 'wall']]
+        # ignore warning deliberately
+        pd.options.mode.chained_assignment = None
+        vbest_short['solver_config'] = 'vbest'
+        pd.options.mode.chained_assignment = 'warn'
+        short_df = df[['instance', 'solver_config', 'abs_improvement', 'wall']]
+        short_df = short_df.append(vbest_short)
+        short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'wall'], axis=1)
+        return short_df
+
     def compute_vbest_solution_quality(self, df):
         max_improvements = df.reset_index()
         max_improvements.sort_values(by=['benchmark_name', 'class', 'instance', 'abs_improvement'],
@@ -366,6 +382,19 @@ class InstanceTable(ResultTable):
         vbest = vbest.reindex_axis(col_ord, axis=1)
         vbest_improved = vbest[(vbest['abs_improvement'] > 0)]
         return vbest, vbest_improved
+
+    # TODO:
+    # def compute_vbest_solution_quality_runtime(self, df):
+    #     max_improvements = df.reset_index()
+    #     max_improvements.sort_values(by=['benchmark_name', 'class', 'instance', 'abs_improvement'],
+    #                                  ascending=[True, True, True, False], inplace=True)
+    #     vbest = max_improvements.groupby(['benchmark_name', 'class', 'instance']).head(1)
+    #     # order header
+    #     col_ord = self.sort_order(list(vbest.columns))
+    #     vbest = vbest.reindex_axis(col_ord, axis=1)
+    #     vbest_improved = vbest[(vbest['abs_improvement'] > 0)]
+    #     return vbest, vbest_improved
+
 
     # TODO: move to different sheet
     # TODO: move to pandas
