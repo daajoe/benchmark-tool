@@ -9,11 +9,13 @@ import os
 import zipfile
 from collections import OrderedDict
 from collections import defaultdict
-from itertools import izip, count, imap
+from itertools import izip, count, imap, cycle
 from operator import attrgetter, itemgetter
 import time
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 try:
     from cStringIO import StringIO
@@ -216,19 +218,6 @@ class InstanceTable(ResultTable):
                         return measures
         return measures
 
-    # def get_sql_datatype(self, data_type):
-    #     if data_type == int:
-    #         return 'INTEGER'
-    #     elif data_type == float:
-    #         return 'FLOAT'
-    #     elif data_type in (unicode,str) :
-    #         return 'CHAR(40)'
-    #     else:
-    #         raise NotImplementedError('Not implemented yet for datatype = %s' % data_type)
-
-    # def tuple_string(self,x):
-    #     return '%s %s' %(x[0], self.get_sql_datatype(x[1]))
-
     def sort_order(self, columns):
         if len(columns) == 0:
             return
@@ -236,7 +225,7 @@ class InstanceTable(ResultTable):
         basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'ubound',
                             'abs_improvement', 'rel_improvement', 'solved', 'time',
                             'wall', 'solver', 'solver_config', 'error_code']
-        sum_order = ['', 'mean', 'count', 'amin', 'amax', 'std']
+        sum_order = ['', 'mean', 'count', 'count_nonzero', 'amin', 'amax', 'std']
         sort_order = []
         for i in basic_sort_order:
             sort_order.append(i)
@@ -249,17 +238,45 @@ class InstanceTable(ResultTable):
         header = sorted(columns, key=lambda val: sort_order[val])
         return header
 
+    def output_cactus_plot(self, plots, filename, benchmark, limit=5):
+        NUM_COLORS = len(plots) + 1
+        cm = plt.get_cmap('gist_rainbow')
+        fig = plt.figure()
+        # fig = plt.figure(figsize=(4, 5), dpi=100)
+        ax = fig.add_subplot(111)
+        ax.set_color_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+        marker = cycle(('.', 'p', '^', '*', 'd', 's', 'o'))  # (',', '+', '.', 'o', '*'))
+
+        # TODO: fix tomorrow
+        patches = []
+        for v in plots:
+            LIMIT = min(limit, len(v[0]))
+            v = (v[0][:LIMIT], v[1])
+            patches.append(mpatches.Patch(label=v[1]))
+            plt.plot(range(len(v[0])), v[0], linestyle='', markeredgecolor='none', marker=marker.next(), label=v[1])
+            # break
+
+        fig.subplots_adjust(bottom=0.3, left=0.2)
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+
+        # Put a legend below current axis
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), prop={'size': 8})  # ,
+        # fancybox=True, shadow=True, ncol=5)
+        # ax.set_yscale("log", nonposx='clip')
+        # plt.legend(handles=patches,loc=4)
+        # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        plt.title('%s' % benchmark)
+        plt.savefig(filename)
+        exit(1)
+
     # TODO: signature
-    # noinspection SqlNoDataSourceInspection,SqlResolve
     def printSheet(self, prefix, project_name, suffix, results, keys):
-        # get measures
-        measures = self.get_measures_from_first_item(results, keys)
-        # attributes = ','.join(map(self.tuple_string,measures))
+        def output_path(oparm):
+            return os.path.join(prefix, '%s-%s%s' % (project_name, oparm, suffix))
 
         rows = []
-        # inplace because output might be really large
-        # TODO: if really no need, then remove it here and put it in different functions
-        print time.time()
         output = defaultdict(list)
         for key, values in results.iteritems():
             benchmark_info = dict(izip(keys, key))
@@ -286,22 +303,23 @@ class InstanceTable(ResultTable):
         # TODO: generalize to xml file
         df = pd.DataFrame(rows)
         output['by-run'] = df
-        output['by-instance'] = df.groupby(['instance', 'benchmark_name', 'class', 'error', 'solver_config', 'solver',
+        output['by-instance'] = df.groupby(['instance', 'benchmark_name', 'class', 'solver_config', 'solver',
                                             'solver_args']).agg(
             {'run': 'count', 'width': [np.mean, np.max, np.min, np.std],
-             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max],
-             'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]})
+             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero],
+             'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std],
+             'error': [np.max]})
 
         output['by-instance'].reset_index(inplace=True)
         output['by-class'] = df.groupby(
-            ['benchmark_name', 'class', 'error', 'solver_config', 'solver', 'solver_args']).agg(
+            ['benchmark_name', 'class', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
-             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max],
+             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero],
              'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-benchmark'] = df.groupby(['benchmark_name', 'solver_config']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
-             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max],
+             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero],
              'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         for k in output.iterkeys():
@@ -315,59 +333,39 @@ class InstanceTable(ResultTable):
                         filter = 'abs_improvement'
                         output[k].sort_values(by=['instance', 'abs_improvement', 'time'], inplace=True)
                     elif k == 'by-instance':
-                        filter = ('abs_improvement','amax')
-                        output[k].sort_values(by=[('instance', ''), ('abs_improvement', 'amax'), ('time', 'mean')], inplace=True)
+                        filter = ('abs_improvement', 'amax')
+                        output[k].sort_values(by=[('instance', ''), ('abs_improvement', 'amax'), ('time', 'mean')],
+                                              inplace=True)
                     elif k == 'by-class':
-                        filter = ('abs_improvement','amax')
+                        filter = ('abs_improvement', 'amax')
                         output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('time', 'mean')], inplace=True)
                     elif k == 'by-benchmark':
-                        filter = ('abs_improvement','amax')
+                        filter = ('abs_improvement', 'amax')
                         output[k].sort_values(
                             by=['benchmark_name', ('abs_improvement', 'amax'), ('instance', 'count'), ('time', 'mean')],
                             inplace=True)
-                    #output csv
+                    # output csv
+                    # noinspection PyUnboundLocalVariable
                     output[k][(output[k][filter] > 0)].to_csv(outfile_filter)
                     output[k].to_csv(outfile)
-        exit(1)
 
-        #         ResultTable.printSheet(self, out=outfile, results=output[k])
+        vbest, vbest_improved = self.compute_vbest_solution_quality(df)
+        vbest.to_csv(output_path('vbest'))
+        vbest_improved.to_csv(output_path('vbest-improved'))
+        vbest[['instance', 'solver_config', 'abs_improvement']].to_csv(output_path('vbest_short'))
+        vbest_improved[['instance', 'solver_config', 'abs_improvement']].to_csv(output_path('vbest-improved_short'))
 
-
-
-        # by-configuration
-        # output['by-configuration'] \
-        improvements = df.groupby(['solver_config', 'instance']).agg(
-            {'instance': 'count', 'width': np.mean, 'ubound': np.mean,
-             'abs_improvement': [np.max]})
-
-        vbest = df.groupby(['benchmark_name', 'class', 'instance'], as_index=False).agg(
-            {'abs_improvement': np.max, 'solver_config': lambda x: x.iloc[0],
-             'error': lambda x: x.iloc[0]})
-        # .filter(lambda x: x['abs_improvment'] > 0)
-        # filter there is some improvement
-        print vbest
-        exit(1)
-
-        # print improvements['default-n1']
-        print dir(improvements)
-        print improvements['default-n1']
-        # print improvements.columns
-        # print improvements
-        # print output['by-configuration']
-        exit(1)
-
-        #
-        #         # compute virtual-best configuration
-        #         # self.compute_vbest(output['by-instance'])
-        #
-        #         # TODO: cactus plot
-
-    def compute_vbest_runtime(self, instance_results):
-        # instances
-        pass
-
-    def compute_vbest_solution_quality(self, instance_results):
-        pass
+        
+    def compute_vbest_solution_quality(self, df):
+        max_improvements = df.reset_index()
+        max_improvements.sort_values(by=['benchmark_name', 'class', 'instance', 'abs_improvement'],
+                                     ascending=[True, True, True, False], inplace=True)
+        vbest = max_improvements.groupby(['benchmark_name', 'class', 'instance']).head(1)
+        # order header
+        col_ord = self.sort_order(list(vbest.columns))
+        vbest = vbest.reindex_axis(col_ord, axis=1)
+        vbest_improved = vbest[(vbest['abs_improvement'] > 0)]
+        return vbest, vbest_improved
 
     # TODO: move to different sheet
     # TODO: move to pandas
