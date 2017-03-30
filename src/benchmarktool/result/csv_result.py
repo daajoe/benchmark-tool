@@ -14,6 +14,9 @@ from operator import attrgetter, itemgetter
 import time
 import numpy as np
 import pandas as pd
+#without X
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
