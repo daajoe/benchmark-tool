@@ -295,8 +295,10 @@ class InstanceTable(ResultTable):
                         run_line.update({'instance': instance, 'class': clazz})
                         if res['width'] != -1 and res['ubound'] != -1:
                             abs_improvement = res['ubound'] - res['width']
-                            rel_improvement = round(abs_improvement / float(res['width']), 4)
-
+                            try:
+                                rel_improvement = round(abs_improvement / float(res['width']), 4)
+                            except ZeroDivisionError:
+                                rel_improvement = 0
                         else:
                             rel_improvement = abs_improvement = 0
                         run_line.update({'rel_improvement': rel_improvement, 'abs_improvement': abs_improvement})
