@@ -228,7 +228,7 @@ class InstanceTable(ResultTable):
         basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'ubound',
                             'abs_improvement', 'rel_improvement', 'solved', 'time',
                             'wall', 'solver', 'solver_config', 'error_code']
-        sum_order = ['', 'mean', 'count', 'count_nonzero', 'amin', 'amax', 'std']
+        sum_order = ['', 'mean', 'count', 'count_nonzero', 'sum', 'amin', 'amax', 'std']
         sort_order = []
         for i in basic_sort_order:
             sort_order.append(i)
@@ -313,7 +313,7 @@ class InstanceTable(ResultTable):
         output['by-instance'] = df.groupby(['instance', 'benchmark_name', 'class', 'solver_config', 'solver',
                                             'solver_args']).agg(
             {'run': 'count', 'width': [np.mean, np.max, np.min, np.std],
-             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero],
+             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
              'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std],
              'error': [np.max]})
 
@@ -321,12 +321,12 @@ class InstanceTable(ResultTable):
         output['by-class'] = df.groupby(
             ['benchmark_name', 'class', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
-             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero],
+             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
              'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-benchmark'] = df.groupby(['benchmark_name', 'solver_config']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
-             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero],
+             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
              'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         for k in output.iterkeys():
