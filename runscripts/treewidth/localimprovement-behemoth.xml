@@ -10,13 +10,13 @@
  		<!--<setting name="roofy5" tag="sat" cmdline="-w 900 -b -1 -r 5" ppn="4" procs="1"/>
  		<setting name="roofy10" tag="sat" cmdline="-w 900 -b -1 -r 10" ppn="4" procs="1"/>
  		<setting name="roofy20" tag="sat" cmdline="-w 900 -b -1 -r 20" ppn="4" procs="1"/>
- 		--><!--<setting name="boozy10" tag="sat" cmdline="-w 900 -b 10 -r 10" ppn="4" procs="1"/>
- 		<setting name="boozy20" tag="sat" cmdline="-w 900 -b 20 -r 10" ppn="4" procs="1"/>
- 		<setting name="boozy30" tag="sat" cmdline="-w 900 -b 30 -r 10" ppn="4" procs="1"/>
- 		<setting name="boozy40" tag="sat" cmdline="-w 900 -b 40 -r 5" ppn="4" procs="1"/>
- 		<setting name="boozy50" tag="sat" cmdline="-w 900 -b 50 -r 5" ppn="4" procs="1"/>
- 		<setting name="boozy70" tag="sat" cmdline="-w 900 -b 70 -r 5" ppn="4" procs="1"/>
- 		<setting name="boozy100" tag="sat" cmdline="-w 900 -b 100 -5" ppn="4" procs="1"/>-->
+ 		-->
+		<setting name="boozy75" tag="sat" cmdline="-w 900 -b 75 -r 10" ppn="4" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy100" tag="sat" cmdline="-w 900 -b 100 -r 10" ppn="4" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy125" tag="sat" cmdline="-w 900 -b 125 -r 10" ppn="4" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy150" tag="sat" cmdline="-w 900 -b 150 -r 10" ppn="4" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy175" tag="sat" cmdline="-w 900 -b 175 -r 10" ppn="4" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy200" tag="sat" cmdline="-w 900 -b 200 -r 10" ppn="4" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
  	</system>
 
 	<!-- todo condor job priority -->
@@ -40,11 +40,27 @@
 	<benchmark name="selection-at-most200">
 	  <folder path="benchmarks/graphs/selection/atmost-numV-200-renamed-tw/"/>
 	</benchmark>
-	
+
+	<benchmark name="transit">
+	  <folder path="benchmarks/graphs/benchmarks/transit-tw/"/>
+	</benchmark>
+
+	<benchmark name="twlib">
+	  <folder path="benchmarks/graphs/benchmarks/twlib-graphs"/>
+	</benchmark>
+
+	<benchmark name="pace2016">
+	  <folder path="benchmarks/graphs/benchmarks/pace2016"/>
+	</benchmark>
+
 	<project name="local-improvement-new" job="pbs-generic">
 	  <!--<runtag machine="cobra" benchmark="pace2016-all" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="pace2016-selection" tag="*all*"/>
-	  --><runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
+	  -->
+		<runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
+		<runtag machine="cobra" benchmark="twlib" tag="*all*"/>
+		<runtag machine="cobra" benchmark="pace2016" tag="*all*"/>
+		<runtag machine="cobra" benchmark="transit" tag="*all*"/>
 	  <!--<runtag machine="cobra" benchmark="selection-at-most200" tag="*all*"/>-->
 	</project>
 </runscript>
