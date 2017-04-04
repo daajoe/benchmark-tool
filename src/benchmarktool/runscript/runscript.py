@@ -301,6 +301,10 @@ class SeqRun(Run):
         self.args = self.runspec.setting.cmdline
         self.solver = self.runspec.system.name + "-" + self.runspec.system.version
         self.timeout = self.job.timeout
+        self.memlimit = self.job.memout
+        self.instancebase = os.path.basename(instance.path())
+        self.finished = os.path.join(path, ".finished")
+
 
 
 class ScriptGen:
@@ -785,7 +789,7 @@ class PbsJob(Job):
     Describes a pbs job.
     """
 
-    def __init__(self, name, timeout, runs, script_mode, walltime, attr):
+    def __init__(self, name, memout, timeout, runs, script_mode, walltime, attr):
         """
         Initializes a parallel job description.  
         
@@ -800,6 +804,7 @@ class PbsJob(Job):
         Job.__init__(self, name, timeout, runs, attr)
         self.script_mode = script_mode
         self.walltime = walltime
+        self.memout = memout
 
     def toXml(self, out, indent):
         """

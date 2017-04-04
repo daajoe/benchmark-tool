@@ -123,6 +123,7 @@ class Parser:
                 <xs:restriction base="xs:string">
                     <xs:enumeration value="single"/>
                     <xs:enumeration value="timeout"/>
+                    <xs:enumeration value="memout"/>
                 </xs:restriction>
              </xs:simpleType>
         </xs:attribute>
@@ -297,8 +298,8 @@ class Parser:
         run  = Runscript(root.get("output"))
 
         for node in root.xpath("./pbsjob"):
-            attr = self._filterAttr(node, ["name", "timeout", "runs", "ppn", "procs", "script_mode", "walltime"])
-            job = PbsJob(node.get("name"), tools.xmlTime(node.get("timeout")), int(node.get("runs")), node.get("script_mode"), tools.xmlTime(node.get("walltime")), attr)
+            attr = self._filterAttr(node, ["name", "memout", "timeout", "runs", "ppn", "procs", "script_mode", "walltime"])
+            job = PbsJob(node.get("name"), node.get("memout"), tools.xmlTime(node.get("timeout")), int(node.get("runs")), node.get("script_mode"), tools.xmlTime(node.get("walltime")), attr)
             run.addJob(job)
 
         for node in root.xpath("./condorjob"):
