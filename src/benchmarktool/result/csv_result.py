@@ -241,40 +241,56 @@ class InstanceTable(ResultTable):
         header = sorted(columns, key=lambda val: sort_order[val])
         return header
 
-    def output_cactus_plot(self, plots, filename, benchmark, limit=5):
-        configs = plots['solver_config'].unique()
-        NUM_COLORS = len(configs) + 1
-        cm = plt.get_cmap('gist_rainbow')
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_color_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
-        marker = cycle(('.', 'p', '^', '*', 'd', 's', 'o'))  # (',', '+', '.', 'o', '*'))
 
-        # TODO: fix only best 'limit' configurations
-        # patches = []
-        for key in configs:
-            plot = plots[(plots['solver_config'] == key)]
-            # sort by runtime etc.
-            plot.sort_values(by=['wall'],inplace=True)
-            plot.reset_index(inplace=True)
-            ts = pd.Series(plot['wall'])
-            #linestyle='', marker=marker.next()
-            ax = ts.plot(markeredgecolor='none', label=key)
+    def output_cactus_plot(self, plots, filename, benchmark, indices=['abs_improvement', 'wall'], ignore_vbest=False, limit=5):
+        for index in indices:
+            configs = plots['solver_config'].unique()
+            NUM_COLORS = len(configs) + 1
+            cm = plt.get_cmap('gist_rainbow')
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.set_color_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            #TODO:
+            # ax.set_prop_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            marker = cycle(('.', 'p', '^', '*', 'd', 's', 'o'))  # (',', '+', '.', 'o', '*'))
 
-        fig.subplots_adjust(bottom=0.3, left=0.2)
-        box = ax.get_position()
-        ax.set_position([box.x0, box.y0 + box.height * 0.1,
-                         box.width, box.height * 0.9])
+            # TODO: fix only best 'limit' configurations
+            # patches = []
+            for key in configs:
+                if key =='vbest':
+                    continue
+                plot = plots[(plots['solver_config'] == key)]
+                # ignore warning deliberately
+                pd.options.mode.chained_assignment = None
+                # sort by runtime/etc.
+                plot.sort_values(by=[index],inplace=True)
+                pd.options.mode.chained_assignment = 'warn'
+                plot.reset_index(inplace=True)
+                # ts = pd.Series(plot['wall'])
+                ts = pd.Series(plot[index])
+                #linestyle='', marker=marker.next()
+                ax = ts.plot(markeredgecolor='none', label=key)
 
-        # Put a legend below current axis
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, 0.8), prop={'size': 8})  # ,
+            fig.subplots_adjust(bottom=0.3, left=0.2)
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                             box.width, box.height * 0.9])
 
-        plt.title('%s' % benchmark)
-        plt.savefig(filename)
+            # Put a legend below current axis
+            ax.legend(loc='upper center', bbox_to_anchor=(0.5, 0.8), prop={'size': 8})  # ,
+
+            plt.title('%s' % benchmark)
+            plt.savefig('%s-%s.pdf' %(filename, index))
+
         # fancybox=True, shadow=True, ncol=5)
         # ax.set_yscale("log", nonposx='clip')
         # plt.legend(handles=patches,loc=4)
         # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+    def ext(self, filename, extend_by):
+        name,file_ext=os.path.splitext(filename)
+        res_filename = '%s_%s' %(name,extend_by)
+        return res_filename + ''.join(file_ext)
 
     # TODO: signature
     def printSheet(self, prefix, project_name, suffix, results, keys):
@@ -309,6 +325,8 @@ class InstanceTable(ResultTable):
 
         # TODO: generalize to xml file
         df = pd.DataFrame(rows)
+        df.replace(to_replace = '-1', value=np.nan, inplace = True)
+
         output['by-run'] = df
         output['by-instance'] = df.groupby(['instance', 'benchmark_name', 'class', 'solver_config', 'solver',
                                             'solver_args']).agg(
@@ -345,16 +363,30 @@ class InstanceTable(ResultTable):
                                               inplace=True)
                     elif k == 'by-class':
                         filter = ('abs_improvement', 'amax')
-                        output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('time', 'mean')], inplace=True)
+                        # output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('time', 'mean')], inplace=True)
+                        output[k].sort_values(by=['benchmark_name','class', ('abs_improvement', 'sum'), ('time', 'mean')],
+                                              ascending=[True, True, False, True], inplace=True)
+                        output[k].reset_index()
+
                     elif k == 'by-benchmark':
                         filter = ('abs_improvement', 'amax')
+                        #('abs_improvement', 'amax')
                         output[k].sort_values(
-                            by=['benchmark_name', ('abs_improvement', 'amax'), ('instance', 'count'), ('time', 'mean')],
-                            inplace=True)
+                            by=['benchmark_name', ('abs_improvement', 'sum'), ('instance', 'count'), ('time', 'mean')],
+                            ascending=[True, False, False, True], inplace=True)
                     # output csv
                     # noinspection PyUnboundLocalVariable
-                    output[k][(output[k][filter] > 0)].to_csv(outfile_filter)
-                    output[k].to_csv(outfile)
+                    output[k][(output[k][filter] > 0)].to_csv(outfile_filter, index=False)
+                    output[k].to_csv(outfile, index=False)
+
+                    #output a minimal attribute file
+                    max_cols = ['instance', 'benchmark_name', 'class', 'abs_improvement', 'solver_config']
+                    av_cols = map(lambda x: x[0] if isinstance(x,tuple) else x, list(output[k].columns.values))
+                    sel_cols = [item for item in max_cols if item in av_cols]
+
+                    output[k][sel_cols][(output[k][sel_cols][filter] > 0)].to_csv(self.ext(outfile_filter.name, 'short'), index=False)
+                    output[k][sel_cols].to_csv(self.ext(outfile.name, 'short'), index=False)
+
 
         vbest, vbest_improved = self.compute_vbest_solution_quality(df)
         vbest.to_csv(output_path('vbest'))
@@ -363,7 +395,7 @@ class InstanceTable(ResultTable):
         vbest_improved[['instance', 'solver_config', 'abs_improvement']].to_csv(output_path('vbest-improved_short'))
 
         short_df = self.compute_short_df(df, vbest)
-        self.output_cactus_plot(short_df, output_path('cactus_plot', '.pdf'), project_name)
+        self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name)
 
     def compute_short_df(self, df, vbest):
         # take short vbest

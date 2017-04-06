@@ -26,15 +26,24 @@ def pace_jkf(root, runspec, instance):
     stderr = ''
     timeout = runspec.project.job.timeout
     res = {"time": ("float", timeout)}
+
+    pbs_job = 'PbsJob' in repr(runspec.project.job)
+
     # {{{1 parse runsolver data
-    for f in ['%s.watcher' % instance.instance]:
+    # pbs runs use currently different filename
+    if pbs_job:
+        instance_str = 'runsolver'
+    else:
+        instance_str = instance.instance
+
+    for f in ['%s.watcher' % instance_str]:
         for line in codecs.open(os.path.join(root, f), errors='ignore', encoding='utf-8'):
             for val, reg in pace_jkf_re.items():
                 m = reg[1].match(line)
                 if m: res[val] = (reg[0], float(m.group("val")) if reg[0] == "float" else m.group("val"))
 
     # {{{1 parse solver stdout
-    content = codecs.open(os.path.join(root, '%s.txt' % instance.instance), errors='ignore',
+    content = codecs.open(os.path.join(root, '%s.%s' %(instance_str, 'solver' if pbs_job else 'txt')), errors='ignore',
                           encoding='utf-8').read()
     content = content.replace(",\n]", "\n]", 1)
 
@@ -49,13 +58,21 @@ def pace_jkf(root, runspec, instance):
 
     timed_out = res["time"][1] >= timeout
 
-    log_content = open(os.path.join(root, "condor.log")).read()
-    # ret = 9: runsolver error (heavy process)
-    finished = log_content.find('Normal termination') >= 0 or log_content.find('Abnormal termination (signal 9)') >= 0
-    if not finished:
-        sys.stderr.write('instance %s did not finish properly\n' % root)
+    if pbs_job:
+        log_content = open(os.path.join(root,'runsolver.watcher')).read()
+        finished = log_content.find('Child status: 0') >= 0
+        if not finished:
+            sys.stderr.write('instance %s did not finish properly\n' % root)
+            sys.stderr.write(log_content[log_content.find('Child status:'):log_content.find('Child status:')+20])
+            sys.stderr.write('\n')
+    else:
+        log_content = open(os.path.join(root, "condor.log")).read()
+        # ret = 9: runsolver error (heavy process)
+        finished = log_content.find('Normal termination') >= 0 or log_content.find('Abnormal termination (signal 9)') >= 0
+        if not finished:
+            sys.stderr.write('instance %s did not finish properly\n' % root)
 
-    err_content = codecs.open(os.path.join(root, '%s.err' % instance.instance), errors='ignore',
+    err_content = codecs.open(os.path.join(root, '%s.err' % instance_str), errors='ignore',
                               encoding='utf-8').read()
     err_content = err_content.replace(",\n]", "\n]", 1)
 
