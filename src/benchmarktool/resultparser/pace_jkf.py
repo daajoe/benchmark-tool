@@ -98,7 +98,7 @@ def pace_jkf(root, runspec, instance):
             sys.stderr.write('Error: %s (%s); %s\n' % (instance.instance, root, str(e)))
             error = 64
             e_str = str(e)
-            with open(os.path.join(root, '%s.err' % instance.instance)) as fstderr:
+            with open(os.path.join(root, '%s.err' % instance_str)) as fstderr:
                 stderr = fstderr.read().replace('\n', ' ').replace('  ', '')
             exit(1)
     accu = {

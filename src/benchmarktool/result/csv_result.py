@@ -242,7 +242,7 @@ class InstanceTable(ResultTable):
         return header
 
 
-    def output_cactus_plot(self, plots, filename, benchmark, indices=['abs_improvement', 'wall'], ignore_vbest=False, limit=5):
+    def output_cactus_plot(self, plots, filename, benchmark, indices=('abs_improvement', 'wall'), ignore_vbest=False, limit=5):
         for index in indices:
             configs = plots['solver_config'].unique()
             NUM_COLORS = len(configs) + 1
