@@ -11,13 +11,35 @@
  		<setting name="roofy10" tag="sat" cmdline="-w 900 -b -1 -r 10" ppn="4" procs="1"/>
  		<setting name="roofy20" tag="sat" cmdline="-w 900 -b -1 -r 20" ppn="4" procs="1"/>
  		-->
-		<setting name="boozy75" tag="sat" cmdline="-w 900 -b 75 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		<!--<setting name="boozy75" tag="sat" cmdline="-w 900 -b 75 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
  		<setting name="boozy100" tag="sat" cmdline="-w 900 -b 100 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
  		<setting name="boozy125" tag="sat" cmdline="-w 900 -b 125 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
  		<setting name="boozy150" tag="sat" cmdline="-w 900 -b 150 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
  		<setting name="boozy175" tag="sat" cmdline="-w 900 -b 175 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
  		<setting name="boozy200" tag="sat" cmdline="-w 900 -b 200 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
- 	</system>
+ 		-->
+		<!--<setting name="jdrasil-boozy75" tag="sat" cmdline="-w 900 -b 75 -r 10 -s jdrasil -a '"-e PBLib_incremental"'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy100" tag="sat" cmdline="-w 900 -b 100 -r 10 -s jdrasil -a '"-e PBLib_incremental"'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s jdrasil -a '"-e PBLib_incremental"'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy150" tag="sat" cmdline="-w 900 -b 150 -r 10 -s jdrasil -a '"-e PBLib_incremental"'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy175" tag="sat" cmdline="-w 900 -b 175 -r 10 -s jdrasil -a '"-e PBLib_incremental"'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy200" tag="sat" cmdline="-w 900 -b 200 -r 10 -s jdrasil -a '"-e PBLib_incremental"'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+	       -->
+		<!--<setting name="htd-boozy75" tag="sat" cmdline="-w 900 -b 75 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy100" tag="sat" cmdline="-w 900 -b 100 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy150" tag="sat" cmdline="-w 900 -b 150 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy175" tag="sat" cmdline="-w 900 -b 175 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy200" tag="sat" cmdline="-w 900 -b 200 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		-->
+		<setting name="jdrasil-boozy75" tag="sat" cmdline="-w 1800 -b 75 -r 10 -s jdrasil -a '&quot; -t 900 &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy100" tag="sat" cmdline="-w 900 -b 100 -r 10 -s jdrasil -a '&quot; -t 900 &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy125" tag="sat" cmdline="-w 1800 -b 125 -r 10 -s jdrasil -a '&quot; -t 900 &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy150" tag="sat" cmdline="-w 1800 -b 150 -r 10 -s jdrasil -a '&quot; -t 900 &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy175" tag="sat" cmdline="-w 1800 -b 175 -r 10 -s jdrasil -a '&quot; -t 900 &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="jdrasil-boozy200" tag="sat" cmdline="-w 1800 -b 200 -r 10 -s jdrasil -a '&quot; -t 900 &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		
+	</system>
 
 	<!-- todo condor job priority -->
 	<!--<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>-->
@@ -53,6 +75,10 @@
 	  <folder path="benchmarks/graphs/benchmarks/pace2016"/>
 	</benchmark>
 
+	<benchmark name="networks">
+          <folder path="benchmarks/graphs/benchmarks/networks"/>
+        </benchmark>
+
 	<project name="local-improvement-new" job="pbs-generic">
 	  <!--<runtag machine="cobra" benchmark="pace2016-all" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="pace2016-selection" tag="*all*"/>
@@ -61,6 +87,9 @@
 		<runtag machine="cobra" benchmark="twlib" tag="*all*"/>
 		<runtag machine="cobra" benchmark="pace2016" tag="*all*"/>
 		<runtag machine="cobra" benchmark="transit" tag="*all*"/>
-	  <!--<runtag machine="cobra" benchmark="selection-at-most200" tag="*all*"/>-->
+
+		<runtag machine="cobra" benchmark="networks" tag="*all*"/>
+		  
+	<!--<runtag machine="cobra" benchmark="selection-at-most200" tag="*all*"/>-->
 	</project>
 </runscript>
