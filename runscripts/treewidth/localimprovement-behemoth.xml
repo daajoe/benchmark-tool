@@ -79,10 +79,8 @@
 	</benchmark>
 
 	<benchmark name="networks">
-        <folder path="benchmarks/graphs/benchmarks/networks">
-            <ignore prefix="readme.txt"/>
-        </folder>
-    </benchmark>
+  	    <folder path="benchmarks/graphs/benchmarks/networks"/>
+        </benchmark>
 
 	<project name="local-improvement-new" job="pbs-generic">
 	  <!--<runtag machine="cobra" benchmark="pace2016-all" tag="*all*"/>
