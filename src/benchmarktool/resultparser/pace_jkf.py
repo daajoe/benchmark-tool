@@ -10,6 +10,7 @@ import sys
 import codecs
 import json
 from base64 import b64encode
+from benchmarktool.tools import escape
 
 pace_jkf_re = {
     "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$")),
@@ -36,14 +37,45 @@ def pace_jkf(root, runspec, instance):
     else:
         instance_str = instance.instance
 
-    for f in ['%s.watcher' % instance_str]:
-        for line in codecs.open(os.path.join(root, f), errors='ignore', encoding='utf-8'):
-            for val, reg in pace_jkf_re.items():
-                m = reg[1].match(line)
-                if m: res[val] = (reg[0], float(m.group("val")) if reg[0] == "float" else m.group("val"))
+    accu = {
+        'instance': ('string', instance.instance),
+        'setting': ('string', runspec.setting.name),
+        'timelimit': ('int', runspec.project.job.timeout),
+        'memlimit': ('int', runspec.project.job.memout),
+        'solver': ('string', runspec.system.name),
+        'solver_version': ('string', runspec.system.version),
+        'solver_args': ('string', escape(runspec.setting.cmdline)),
+        'full_call': ('string', None),
+        'full_path': ('string', root),
+        'hash': ('string', None),
+        'solved': ('int', -1),
+        'wall': ('float', 0),
+        'run': ('int', 0),
+        'width': ('int', -1),
+        'error': ('int', error),
+        'error_str': ('string', e_str),
+        'stderr': ('string', stderr),
+        'ubound': ('int', -1),
+        'last_improved_in_round': ('int', 0),
+        'rounds': ('int', 0),
+        'rounds_improved': ('int', 0),
+    }
+
+    try:
+        for f in ['%s.watcher' % instance_str]:
+            for line in codecs.open(os.path.join(root, f), errors='ignore', encoding='utf-8'):
+                for val, reg in pace_jkf_re.items():
+                    m = reg[1].match(line)
+                    if m: res[val] = (reg[0], float(m.group("val")) if reg[0] == "float" else m.group("val"))
+
+
+    except IOError, e:
+        accu['error'] = ('int', 4)
+        accu['error_str'] = ('string', 'Did not finish.')
+        return [(key, val[0], val[1]) for key, val in accu.items()]
 
     # {{{1 parse solver stdout
-    content = codecs.open(os.path.join(root, '%s.%s' %(instance_str, 'solver' if pbs_job else 'txt')), errors='ignore',
+    content = codecs.open(os.path.join(root, '%s.%s' % (instance_str, 'solver' if pbs_job else 'txt')), errors='ignore',
                           encoding='utf-8').read()
     content = content.replace(",\n]", "\n]", 1)
 
@@ -59,16 +91,17 @@ def pace_jkf(root, runspec, instance):
     timed_out = res["time"][1] >= timeout
 
     if pbs_job:
-        log_content = open(os.path.join(root,'runsolver.watcher')).read()
+        log_content = open(os.path.join(root, 'runsolver.watcher')).read()
         finished = log_content.find('Child status: 0') >= 0
         if not finished:
             sys.stderr.write('instance %s did not finish properly\n' % root)
-            sys.stderr.write(log_content[log_content.find('Child status:'):log_content.find('Child status:')+20])
+            sys.stderr.write(log_content[log_content.find('Child status:'):log_content.find('Child status:') + 20])
             sys.stderr.write('\n')
     else:
         log_content = open(os.path.join(root, "condor.log")).read()
         # ret = 9: runsolver error (heavy process)
-        finished = log_content.find('Normal termination') >= 0 or log_content.find('Abnormal termination (signal 9)') >= 0
+        finished = log_content.find('Normal termination') >= 0 or log_content.find(
+            'Abnormal termination (signal 9)') >= 0
         if not finished:
             sys.stderr.write('instance %s did not finish properly\n' % root)
 
@@ -94,33 +127,13 @@ def pace_jkf(root, runspec, instance):
     except ValueError, e:
         stats = {}
         if error == 0:
-            print content
             sys.stderr.write('Error: %s (%s); %s\n' % (instance.instance, root, str(e)))
             error = 64
             e_str = str(e)
             with open(os.path.join(root, '%s.err' % instance_str)) as fstderr:
                 stderr = fstderr.read().replace('\n', ' ').replace('  ', '')
             exit(1)
-    accu = {
-        'instance': ('string', instance.instance),
-        'setting': ('string', runspec.setting.name),
-        'timelimit': ('int', runspec.project.job.timeout),
-        'memlimit': ('int', runspec.project.job.memout),
-        'solver': ('string', runspec.system.name),
-        'solver_version': ('string', runspec.system.version),
-        'solver_args': ('string', runspec.setting.cmdline),
-        'full_call': ('string', None),
-        'full_path': ('string', root),
-        'hash': ('string', None),
-        'solved': ('int', -1),
-        'wall': ('float', 0),
-        'run': ('int', 0),
-        'width': ('int', -1),
-        'error': ('int', error),
-        'error_str': ('string', e_str),
-        'stderr': ('string', stderr),
-        'ubound': ('int', -1),
-    }
+
     # TODO: additional parameters
     if not error:
         try:
@@ -130,6 +143,10 @@ def pace_jkf(root, runspec, instance):
             accu['wall'] = ('float', stats['wall'])
             accu['hash'] = ('string', stats['hash'][0:16] + '*')
             accu['ubound'] = ('int', stats['ubound'])
+            accu['last_improved_in_round'] = ('int', stats['last_improved_in_round'])
+            accu['rounds'] = ('int', stats['rounds'])
+            accu['rounds_improved'] = ('int', stats['rounds_improved'])
+
             cut = os.path.join(*instance.location.split('/')[1:])
             index = stats['instance'].find(cut)
             if index != -1:

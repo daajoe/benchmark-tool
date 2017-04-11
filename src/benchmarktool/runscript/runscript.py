@@ -8,7 +8,7 @@ __author__ = "Roland Kaminski"
 
 import benchmarktool.tools as tools
 import os
-from benchmarktool.tools import Sortable, cmp
+from benchmarktool.tools import Sortable, cmp, escape
 from jinja2 import Template
 
 # needed to embed measurements functions via exec 
@@ -154,7 +154,7 @@ class Setting(Sortable):
         attr        - A dictionary of additional optional attributes.  
         """
         self.name = name
-        self.cmdline = cmdline
+        self.cmdline = escape(cmdline)
         self.tag = tag
         self.order = order
         self.procs = procs

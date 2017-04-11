@@ -17,6 +17,14 @@ def mkdir_p(path):
     """
     if not os.path.exists(path): os.makedirs(path)
 
+def escape( str ):
+    str = str.replace("&", "&amp;")
+    str = str.replace("<", "&lt;")
+    str = str.replace(">", "&gt;")
+    str = str.replace("\"", "&quot;")
+    return str
+
+
 def xmlTime(strRep):
     """
     Converts [[h:]m:]s time format to integer value in seconds. 
