@@ -55,55 +55,55 @@
 "/>-->
 	<pbsjob name="pbs-generic" timeout="7200" memout="8192" runs="1" script_mode="timeout" walltime="2:30:00"/>
 
-	<benchmark name="pace2016-selection">
-	  <!--<folder path="benchmarks/test"/>-->
-	  <folder path="benchmarks/graphs/pace2016/selection"/>
-	</benchmark>
-	<benchmark name="pace2016-all">
-	  <folder path="benchmarks/graphs/pace2016/all/100"/>
-	  <folder path="benchmarks/graphs/pace2016/all/1000"/>
-	  <folder path="benchmarks/graphs/pace2016/all/3600"/>
-	</benchmark>
-	<benchmark name="famous-tw">
-	  <folder path="benchmarks/graphs/famous-tw">
-          <ignore prefix="readme.txt"/>
-      </folder>
-	</benchmark>
-	<benchmark name="selection-at-most200">
-	  <folder path="benchmarks/graphs/selection/atmost-numV-200-renamed-tw/">
-          <ignore prefix="readme.txt"/>
-      </folder>
-	</benchmark>
+    <benchmark name="compiler">
+  	    <folder path="benchmarks/treewidth/compiler">
+          <ignore prefix="."/>
+        </folder>
+    </benchmark>
 
-	<benchmark name="transit">
-	  <folder path="benchmarks/graphs/benchmarks/transit-tw/">
-          <ignore prefix="readme.txt"/>
-      </folder>
-	</benchmark>
-
-	<benchmark name="twlib">
-	  <folder path="benchmarks/graphs/benchmarks/twlib-graphs">
-          <ignore prefix="readme.txt"/>
+    <benchmark name="famous">
+	  <folder path="benchmarks/treewidth/famous">
+          <ignore prefix="."/>
       </folder>
 	</benchmark>
 
 	<benchmark name="pace2016">
-	  <folder path="benchmarks/graphs/benchmarks/pace2016">
-          <ignore prefix="readme.txt"/>
+	  <folder path="benchmarks/treewidth/pace2016/all">
+          <ignore prefix="."/>
       </folder>
 	</benchmark>
 
-	<benchmark name="networks">
-  	    <folder path="benchmarks/graphs/benchmarks/networks"/>
-        </benchmark>
+    <benchmark name="protein_heu">
+	  <folder path="benchmarks/treewidth/protein_heu">
+          <ignore prefix="."/>
+      </folder>
+	</benchmark>
+
+    <benchmark name="protein">
+	  <folder path="benchmarks/treewidth/protein">
+          <ignore prefix="."/>
+      </folder>
+	</benchmark>
+
+	<benchmark name="transit">
+	  <folder path="benchmarks/treewidth/transit-tw/">
+          <ignore prefix="."/>
+      </folder>
+	</benchmark>
+
+	<benchmark name="twlib">
+	  <folder path="benchmarks/treewidth/twlib-graphs">
+          <ignore prefix="."/>
+      </folder>
+	</benchmark>
 
 	<project name="local-improvement-new" job="pbs-generic">
-		<runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
-		<runtag machine="cobra" benchmark="twlib" tag="*all*"/>
+		<runtag machine="cobra" benchmark="compiler" tag="*all*"/>
+		<runtag machine="cobra" benchmark="famous" tag="*all*"/>
 		<runtag machine="cobra" benchmark="pace2016" tag="*all*"/>
+		<runtag machine="cobra" benchmark="protein_heu" tag="*all*"/>
+		<runtag machine="cobra" benchmark="protein" tag="*all*"/>
 		<runtag machine="cobra" benchmark="transit" tag="*all*"/>
-
-		<runtag machine="cobra" benchmark="networks" tag="*all*"/>
-
+		<runtag machine="cobra" benchmark="twlib" tag="*all*"/>
 	</project>
 </runscript>
