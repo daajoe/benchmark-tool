@@ -67,35 +67,52 @@
 	<benchmark name="famous-tw">
 	  <folder path="benchmarks/graphs/famous-tw">
           <ignore prefix="readme.txt"/>
+          <ignore prefix="."/>
       </folder>
 	</benchmark>
 	<benchmark name="selection-at-most200">
 	  <folder path="benchmarks/graphs/selection/atmost-numV-200-renamed-tw/">
           <ignore prefix="readme.txt"/>
+          <ignore prefix="."/>
       </folder>
 	</benchmark>
 
 	<benchmark name="transit">
 	  <folder path="benchmarks/graphs/benchmarks/transit-tw/">
-          <ignore prefix="readme.txt"/>
+          <ignore prefix="."/>
+          <ignore prefix="lessthan20"/>
+          <ignore prefix="atmost50"/>
+          <ignore prefix="atmost100"/>
       </folder>
 	</benchmark>
 
 	<benchmark name="twlib">
 	  <folder path="benchmarks/graphs/benchmarks/twlib-graphs">
-          <ignore prefix="readme.txt"/>
+          <ignore prefix="."/>
+          <ignore prefix="lessthan20"/>
+          <ignore prefix="atmost50"/>
+          <ignore prefix="atmost100"/>
+          <!--<ignore prefix="atmost200"/>-->
       </folder>
 	</benchmark>
 
 	<benchmark name="pace2016">
 	  <folder path="benchmarks/graphs/benchmarks/pace2016">
-          <ignore prefix="readme.txt"/>
+          <ignore prefix="."/>
+          <ignore prefix="lessthan20"/>
+          <ignore prefix="atmost50"/>
+          <ignore prefix="atmost100"/>
       </folder>
 	</benchmark>
 
 	<benchmark name="networks">
-  	    <folder path="benchmarks/graphs/benchmarks/networks"/>
-        </benchmark>
+  	    <folder path="benchmarks/graphs/benchmarks/networks">
+          <ignore prefix="."/>
+          <ignore prefix="lessthan20"/>
+          <ignore prefix="atmost50"/>
+          <ignore prefix="atmost100"/>
+        </folder>
+    </benchmark>
 
 	<project name="local-improvement-new" job="pbs-generic">
 		<runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
