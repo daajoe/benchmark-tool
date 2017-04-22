@@ -342,10 +342,26 @@ class InstanceTable(ResultTable):
              'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
              'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
+        #TODO: move ranges to xml file parameter
+        #Group by treewidth/ubound ranges
+        df_width = df.copy()
+        df_width['tw_range']=df['width']
+        # pd.cut(df["B"], np.arange(0,1.0+0.155,0.155))
+        df_width['tw_range']=pd.cut(df_width['width'], np.arange(0,500,25))
+
+        output['by-width'] = df_width.groupby(
+            ['benchmark_name', 'tw_range', 'solver_config', 'solver', 'solver_args']).agg(
+            {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
+             'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
+             'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std, np.sum],
+             'solved': np.sum}).reset_index()
+
         output['by-benchmark'] = df.groupby(['benchmark_name', 'solver_config']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
              'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
              'time': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
+
+
 
         for k in output.iterkeys():
             with open(os.path.join(prefix, '%s-%s%s' % (project_name, k, suffix)), 'w') as outfile:
@@ -367,6 +383,12 @@ class InstanceTable(ResultTable):
                         output[k].sort_values(by=['benchmark_name','class', ('abs_improvement', 'sum'), ('time', 'mean')],
                                               ascending=[True, True, False, True], inplace=True)
                         output[k].reset_index()
+                    elif k == 'by-width':
+                        filter = ('abs_improvement', 'amax')
+                        # output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('time', 'mean')], inplace=True)
+                        output[k].sort_values(by=['benchmark_name','tw_range', ('abs_improvement', 'sum'), ('time', 'mean')],
+                                              ascending=[True, True, False, True], inplace=True)
+                        output[k].reset_index()
 
                     elif k == 'by-benchmark':
                         filter = ('abs_improvement', 'amax')
@@ -380,7 +402,7 @@ class InstanceTable(ResultTable):
                     output[k].to_csv(outfile, index=False)
 
                     #output a minimal attribute file
-                    max_cols = ['instance', 'benchmark_name', 'class', 'abs_improvement', 'solver_config']
+                    max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'wall', 'solved', 'solver_config']
                     av_cols = map(lambda x: x[0] if isinstance(x,tuple) else x, list(output[k].columns.values))
                     sel_cols = [item for item in max_cols if item in av_cols]
 
@@ -395,7 +417,31 @@ class InstanceTable(ResultTable):
         vbest_improved[['instance', 'solver_config', 'abs_improvement']].to_csv(output_path('vbest-improved_short'))
 
         short_df = self.compute_short_df(df, vbest)
+        short_df_non_zero = short_df[(short_df['abs_improvement'] > 0)]
+        short_df2 = self.compute_cum_non_zero(df, vbest)
+
         self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name)
+        self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name)
+        self.output_cactus_plot(short_df2, output_path('cactus_plot_improved_cum', ''), project_name, indices=('cum_sum_abs_improvement', 'wall'))
+
+    def compute_cum_non_zero(self, df, vbest):
+        # take short vbest
+        vbest_short = vbest[['instance', 'solver_config', 'abs_improvement', 'wall']]
+        # ignore warning deliberately
+        pd.options.mode.chained_assignment = None
+        vbest_short['solver_config'] = 'vbest'
+        pd.options.mode.chained_assignment = 'warn'
+        short_df = df[['instance', 'solver_config', 'abs_improvement', 'wall']]
+        short_df = short_df.append(vbest_short)
+        short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'wall'], axis=1)
+
+        short_df=short_df[(short_df['abs_improvement'] > 0)]
+        short_df.sort_values(by=['abs_improvement'], ascending=[True], inplace=True)
+        short_df['cum_sum_abs_improvement'] = short_df['abs_improvement'].cumsum()
+        # short_df.insert(1,'cum_abs_improvement', )
+
+        return short_df
+
 
     def compute_short_df(self, df, vbest):
         # take short vbest
