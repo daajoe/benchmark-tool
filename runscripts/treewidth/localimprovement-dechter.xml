@@ -80,9 +80,9 @@
           <ignore prefix="atmost100"/>
         </folder>
     </benchmark>
-	
+
 	<benchmark name="dechter">
-  	    <folder path="benchmarks/graphs/treewidth_benchmarks/protein_heu/paper/">
+  	    <folder path="benchmarks/treewidth/protein_heu/paper/">
         </folder>
     </benchmark>
 
