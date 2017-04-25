@@ -80,16 +80,7 @@
           <ignore prefix="atmost100"/>
         </folder>
     </benchmark>
-
-	<benchmark name="networks">
-  	    <folder path="benchmarks/graphs/benchmarks/networks">
-          <ignore prefix="."/>
-          <ignore prefix="lessthan20"/>
-          <ignore prefix="atmost50"/>
-          <ignore prefix="atmost100"/>
-        </folder>
-    </benchmark>
-
+	
 	<benchmark name="dechter">
   	    <folder path="benchmarks/graphs/treewidth_benchmarks/protein_heu/paper/">
         </folder>
