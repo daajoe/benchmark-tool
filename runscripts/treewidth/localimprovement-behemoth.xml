@@ -33,9 +33,14 @@
 
 
  		<setting name="tcs-b125" tag="sat" cmdline="-w 900 -b 125 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
-        <setting name="htd-b125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+        <setting name="htd-b75" tag="sat" cmdline="-w 1800 -b 75 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+        <setting name="htd-b100" tag="sat" cmdline="-w 1800 -b 100 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+        <setting name="htd-b125" tag="sat" cmdline="-w 1800 -b 125 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+        <setting name="htd-b150" tag="sat" cmdline="-w 1800 -b 150 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
 		<setting name="jdrasil-b75" tag="sat" cmdline="-w 1800 -b 75 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
 		<setting name="jdrasil-b100" tag="sat" cmdline="-w 1800 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		<setting name="jdrasil-b125" tag="sat" cmdline="-w 1800 -b 125 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		<setting name="jdrasil-b150" tag="sat" cmdline="-w 1800 -b 150 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
         <setting name="jdrasil-b75t1800" tag="sat" cmdline="-w 3600 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 1800 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
         <setting name="jdrasil-b75t90r40" tag="sat" cmdline="-w 180 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 90 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
         <!--<setting name="fc-b125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s flow_cutter" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
