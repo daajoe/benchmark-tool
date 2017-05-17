@@ -68,9 +68,8 @@ def pace_jkf(root, runspec, instance):
                     m = reg[1].match(line)
                     if m: res[val] = (reg[0], float(m.group("val")) if reg[0] == "float" else m.group("val"))
 
-
     except IOError, e:
-        accu['error'] = ('int', 4)
+        finished = False
         accu['error_str'] = ('string', 'Did not finish.')
         return [(key, val[0], val[1]) for key, val in accu.items()]
 
@@ -80,6 +79,7 @@ def pace_jkf(root, runspec, instance):
     content = content.replace(",\n]", "\n]", 1)
 
     # TD specific validations
+
     valid_td = int('invalid' not in content)
     valid_input = int('vertices missing:' not in content and 'edges missing:' not in content)
 
@@ -90,13 +90,26 @@ def pace_jkf(root, runspec, instance):
 
     timed_out = res["time"][1] >= timeout
 
+    err_content = codecs.open(os.path.join(root, '%s.err' % instance_str), errors='ignore',
+                              encoding='utf-8').read()
+    err_content = err_content.replace(",\n]", "\n]", 1)
+
+    presolver_timed_out = False
+    if 'htd returned "124"' in err_content:
+        presolver_timed_out = True
+
+    if 'UnboundLocalError: local variable \'fstream\' referenced before assignment' in err_content:
+        valid_input = False
+
     if pbs_job:
         log_content = open(os.path.join(root, 'runsolver.watcher')).read()
         finished = log_content.find('Child status: 0') >= 0
-        if not finished:
+        # to = log_content.find('Child ended because it received signal 15 (SIGTERM)') >=0
+        if not finished and instance.instance not in ['move.sh', 'results.txt'] and not presolver_timed_out and \
+                not timed_out and valid_input and valid_td:
             sys.stderr.write('instance %s did not finish properly\n' % root)
-            sys.stderr.write(log_content[log_content.find('Child status:'):log_content.find('Child status:') + 20])
-            sys.stderr.write('\n')
+            # sys.stderr.write(log_content[log_content.find('Child status:'):log_content.find('Child status:') + 20])
+            # sys.stderr.write('\n')
     else:
         log_content = open(os.path.join(root, "condor.log")).read()
         # ret = 9: runsolver error (heavy process)
@@ -105,22 +118,20 @@ def pace_jkf(root, runspec, instance):
         if not finished:
             sys.stderr.write('instance %s did not finish properly\n' % root)
 
-    err_content = codecs.open(os.path.join(root, '%s.err' % instance_str), errors='ignore',
-                              encoding='utf-8').read()
-    err_content = err_content.replace(",\n]", "\n]", 1)
-
     valid_solver_run = 'Traceback (most recent call last):' not in err_content
 
-    # error codes: 0 = ok, 1 = timeout, 2 = memout, 4 = dnf, 8 = invalid decomposition, 16 = invalid input,
-    #             32 = solver runtime error, 64 = unknown error
+    # error codes: 0 = ok, 1 = timeout, 2 = memout, 4 = presolver timeout,
+    #             8 = dnf, 16 = invalid decomposition, 32 = invalid input,
+    #             64 = solver runtime error, 128 = unknown error
     error = 0
     error += int(timed_out)
     error += int(memed_out) * 2
     error += int(not finished) * 4
-    error += int(not valid_td) * 8
-    error += int(not valid_input) * 16
+    error += int(presolver_timed_out) * 8
+    error += int(not valid_td) * 16
+    error += int(not valid_input) * 32
     # only if instance did not timed out or memed out
-    error += int(not valid_solver_run and not 1 < error < 4) * 32
+    error += int(not valid_solver_run and not 1 < error < 4) * 64
 
     try:
         stats = json.loads(content)
@@ -132,15 +143,18 @@ def pace_jkf(root, runspec, instance):
             e_str = str(e)
             with open(os.path.join(root, '%s.err' % instance_str)) as fstderr:
                 stderr = fstderr.read().replace('\n', ' ').replace('  ', '')
-            exit(1)
 
     # TODO: additional parameters
+    try:
+        accu['wall'] = ('float', stats['wall'])
+        accu['solved'] = ('int', int(stats['solved']))
+    except KeyError, e:
+        pass
+
     if not error:
         try:
             accu['run'] = ('int', stats['run'])
             accu['width'] = ('int', stats['width'])
-            accu['solved'] = ('int', int(stats['solved']))
-            accu['wall'] = ('float', stats['wall'])
             accu['hash'] = ('string', stats['hash'][0:16] + '*')
             accu['ubound'] = ('int', stats['ubound'])
             accu['last_improved_in_round'] = ('int', stats['last_improved_in_round'])
@@ -157,13 +171,20 @@ def pace_jkf(root, runspec, instance):
             accu['full_call'] = ('string', b64encode(stats['call']))
         except KeyError:
             accu['full_call'] = ('string', 'NA')
-            sys.stderr.write('Could not find "call" in json values (instance = %s).\n' % root)
+            # sys.stderr.write('Could not find "call" in json values (instance = %s).\n' % root)
+
+    for key, val in accu.items():
+        res[key] = val  # ("float", val)
 
     res['timeout'] = ("int", int(timed_out))
     res["memout"] = ("float", int(memed_out))
-    res["error"] = ("float", int(error))
+    res["error"] = ("int", error)
     res['td_validator'] = ('int', valid_td)
     res['valid_input'] = ('int', valid_input)
-    for key, val in accu.items():
-        res[key] = val  # ("float", val)
+
+    # if instance.instance == 'timt4stic_20110831_0329.gml.lp.gr':
+    #     sys.stderr.write('error = %s\n' % error)
+    #     sys.stderr.write('error = %s\n' %res["error"][1])
+    #     exit(1)
+
     return [(key, val[0], val[1]) for key, val in res.items()]

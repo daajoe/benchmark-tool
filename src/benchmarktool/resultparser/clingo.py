@@ -19,7 +19,6 @@ def clingo(root, runspec, instance):
     """
     Extracts some clingo statistics.
     """
-
     timeout = runspec.project.job.timeout
     res     = { "time": ("float", timeout) }
     # {{{1 parse runsolver data

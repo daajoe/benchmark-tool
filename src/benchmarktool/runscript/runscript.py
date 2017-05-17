@@ -619,6 +619,9 @@ class PbsScriptGen(ScriptGen):
         queue = []
         pbsScripts = {}
         for (runspec, instpath, instname) in self.startfiles:
+            #TODO: move to xml file
+            if instname.startswith('move.sh') or instname.startswith('results.txt'):
+                continue
             relpath = os.path.relpath(instpath, path)
             jobScript = os.path.join(relpath, instname)
             pbsKey = (

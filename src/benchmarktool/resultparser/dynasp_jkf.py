@@ -57,6 +57,8 @@ def dynasp_jkf(root, runspec, instance):
         'solver_version': ('string', runspec.system.version),
         'solver_args': ('string', runspec.setting.cmdline),
         'full_call': ('string', None),
+        'num_edges': ('int', None),
+        'num_verts': ('int', None),
         'hash': ('string', None),
         'solved': ('int',-1),
         'wall': ('float', 0),
@@ -75,6 +77,8 @@ def dynasp_jkf(root, runspec, instance):
             accu['solved'] = ('int', int(stats['solved']))
             accu['wall'] = ('float', stats['wall'])
             accu['hash'] = ('string', stats['hash'][0:16] + '*')
+            accu['num_verts'] = ('int', stats['inputgraph_max_verts'])
+            accu['num_egdes'] = ('int', stats['inputgraph_max_edges'])
             cut = os.path.join(*instance.location.split('/')[1:])
             index = stats['instance'].find(cut)
             if index != -1:

@@ -28,7 +28,7 @@ def parse_args():
     if args.csv:
         #TODO: summary
         #memout:t,timeout:t
-        args.measures = 'wall:t,time:t,width:t,error:t,error_str:t,run:t,solved:t,stderr:t,full_path:t,ubound:t'
+        args.measures = 'wall:t,time:t,width:t,error:t,error_str:t,run:t,solved:t,stderr:t,full_path:t,num_verts:t,num_edges:t,ubound:t'
     return args
 
 
