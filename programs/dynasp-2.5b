@@ -88,7 +88,7 @@ def main():
     sha = output.split()[0]
 
     # determine upper bound for treewidth heuristically
-    call = 'bzcat -f %s | %s -c %s -d' % (args.instance, args.solver, args.strategy)
+    call = '%s %s | %s -c %s -d' % (os.path.expanduser('~/src/benchmark-tool/programs/gcat.sh'),args.instance, args.solver, args.strategy)
     sys.stderr.write(''.join(call))
     sys.stderr.write('\n')
 

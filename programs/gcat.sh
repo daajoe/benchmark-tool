@@ -8,7 +8,7 @@ function bat()
         "application/x-bzip2"|"application/x-bzip2; charset=binary")
             bzcat "${x}"
             ;;
-        "application/x-gzip"|"application/x-gzip; charset=binary")
+        "application/x-gzip"|"application/x-gzip"|"application/gzip; charset=binary")
             zcat "${x}"
             ;;
         *)

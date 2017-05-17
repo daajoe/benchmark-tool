@@ -19,7 +19,7 @@
     <!--<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>-->
     <!--<condorjob name="condor-generic" memout="2048" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/Users/fichte/decodyn/src/benchmark-tool
 "/>-->
-    <pbsjob name="pbs-generic" timeout="7200" memout="8192" runs="1" script_mode="timeout" walltime="2:30:00"/>
+    <condorjob name="condor-generic" timeout="7200" memout="8192" runs="1" script_mode="timeout" walltime="2:30:00" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>
 
     <benchmark name="transit_graphs">
         <folder path="benchmarks/dynasp/2Col"/>
@@ -49,31 +49,31 @@
     </benchmark>
 
     <benchmark name="ASPComp07">
-        <folder name="asp/ASPComp07/SCoreDLP-Mutex/"/>
-        <folder name="asp/ASPComp07/SCoreDLP-RandomQBF/"/>
-        <folder name="asp/ASPComp07/SCoreDLP-StrategicCompanies/gringo.gnd/"/>
+        <folder path="asp/ASPComp07/SCoreDLP-Mutex/"/>
+        <folder path="asp/ASPComp07/SCoreDLP-RandomQBF/"/>
+        <folder path="asp/ASPComp07/SCoreDLP-StrategicCompanies/gringo.gnd/"/>
     </benchmark>
 
     <benchmark name="ASPComp13">
-        <folder name="asp/ASPComp13/b09/transall"/>
-        <folder name="asp/ASPComp13/b11/transall"/>
+        <folder path="asp/ASPComp13/b09/transall"/>
+        <folder path="asp/ASPComp13/b11/transall"/>
         <!-- TODO: MISSING GROUNDING -->
-        <!--<folder name="asp/ASPComp13/b16/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b18/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b20/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b21/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b22/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b24/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b25/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b26/transall"/>-->
-        <!--<folder name="asp/ASPComp13/b26/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b16/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b18/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b20/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b21/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b22/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b24/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b25/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b26/transall"/>-->
+        <!--<folder path="asp/ASPComp13/b26/transall"/>-->
     </benchmark>
 
     <benchmark name="ASPComp14">
         <!-- TODO: MISSING GROUNDING -->
     </benchmark>
 
-    <project name="local-improvement-new" job="condor-generic">
+    <project name="disj-tw-ubounds" job="condor-generic">
         <runtag machine="cobra" benchmark="transit_graphs" tag="*all*"/>
         <runtag machine="cobra" benchmark="PotsdamCollection" tag="*all*"/>
         <runtag machine="cobra" benchmark="ASPComp07" tag="*all*"/>
