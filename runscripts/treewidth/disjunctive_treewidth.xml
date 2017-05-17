@@ -1,0 +1,85 @@
+<runscript output="output">
+
+    <machine name="cobra" cpu="24x8xE5520@2.27GHz" memory="8GB"/>
+
+    <!--<config name="pbs-generic" template="templates/seq-tw-LI.sh"/>-->
+    <config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+    <!--TODO: measures-->
+    <system name="dynasp" version="2.5b" measures="pace_jkf" config="condor-generic">
+        <setting name="prim" tag="sat" cmdline="-c 2" ppn="4" procs="1"/>
+        <setting name="sinc" tag="sat" cmdline="-c 4" ppn="4" procs="1"/>
+        <setting name="inc" tag="sat" cmdline="-c 6" ppn="4" procs="1"/>
+        <setting name="dprim" tag="sat" cmdline="-c 12" ppn="4" procs="1"/>
+        <setting name="dsinc" tag="sat" cmdline="-c 14" ppn="4" procs="1"/>
+        <setting name="dinc" tag="sat" cmdline="-c 16" ppn="4" procs="1"/>
+    </system>
+
+    <!-- todo condor job priority -->
+    <!--<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>-->
+    <!--<condorjob name="condor-generic" memout="2048" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/Users/fichte/decodyn/src/benchmark-tool
+"/>-->
+    <pbsjob name="pbs-generic" timeout="7200" memout="8192" runs="1" script_mode="timeout" walltime="2:30:00"/>
+
+    <benchmark name="transit_graphs">
+        <folder path="benchmarks/dynasp/2Col"/>
+        <folder path="benchmarks/dynasp/3Col"/>
+        <folder path="benchmarks/dynasp/cVc"/>
+        <folder path="benchmarks/dynasp/sVc"/>
+        <folder path="benchmarks/dynasp/Ds"/>
+        <folder path="benchmarks/dynasp/St"/>
+        <folder path="benchmarks/dynasp/St+"/>
+    </benchmark>
+
+
+    <benchmark name="PotsdamCollection">
+        <folder path="asp/PotsdamCollection/MinimalDiagnosis/Ground/"/>
+        <folder path="asp/PotsdamCollection/ConformantPlanning/Ground"/>
+        <folder path="asp/PotsdamCollection/MaximalSatisfiableSet/Ground"/>
+        <folder path="asp/PotsdamCollection/Potsdam-ConformantPlanning/Ground"/>
+        <folder path="asp/PotsdamCollection/Repair_KR10/Ground"/>
+        <folder path="asp/PotsdamCollection/Repair_KR10/Reified"/>
+        <folder path="asp/PotsdamCollection/Repair_KR10/Reified-Backdoors"/>
+    </benchmark>
+
+    <benchmark name="ASPComp11">
+        <folder path="asp/ASPComp11/03-StrategicCompanies/ground-lparse/"/>
+        <folder path="asp/ASPComp11/13-DisjunctiveScheduling/ground-lparse/"/>
+        <folder path="asp/ASPComp11/18-MinimalDiagnosis/ground-lparse/"/>
+    </benchmark>
+
+    <benchmark name="ASPComp07">
+        <folder name="asp/ASPComp07/SCoreDLP-Mutex/"/>
+        <folder name="asp/ASPComp07/SCoreDLP-RandomQBF/"/>
+        <folder name="asp/ASPComp07/SCoreDLP-StrategicCompanies/gringo.gnd/"/>
+    </benchmark>
+
+    <benchmark name="ASPComp13">
+        <folder name="asp/ASPComp13/b09/transall"/>
+        <folder name="asp/ASPComp13/b11/transall"/>
+        <!-- TODO: MISSING GROUNDING -->
+        <!--<folder name="asp/ASPComp13/b16/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b18/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b20/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b21/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b22/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b24/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b25/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b26/transall"/>-->
+        <!--<folder name="asp/ASPComp13/b26/transall"/>-->
+    </benchmark>
+
+    <benchmark name="ASPComp14">
+        <!-- TODO: MISSING GROUNDING -->
+    </benchmark>
+
+    <project name="local-improvement-new" job="condor-generic">
+        <runtag machine="cobra" benchmark="transit_graphs" tag="*all*"/>
+        <runtag machine="cobra" benchmark="PotsdamCollection" tag="*all*"/>
+        <runtag machine="cobra" benchmark="ASPComp07" tag="*all*"/>
+        <runtag machine="cobra" benchmark="ASPComp11" tag="*all*"/>
+
+        <!--<runtag machine="cobra" benchmark="ASPComp13" tag="*all*"/>-->
+        <!--<runtag machine="cobra" benchmark="ASPComp14" tag="*all*"/>-->
+    </project>
+</runscript>
