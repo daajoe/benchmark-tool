@@ -3,6 +3,8 @@
 It can be used to create scripts to start a benchmark 
 specified by the run script. 
 """
+from itertools import count
+from itertools import izip
 
 __author__ = "Roland Kaminski"
 
@@ -15,6 +17,12 @@ from jinja2 import Template
 # pylint: disable-msg=W0611
 import benchmarktool.config  # @UnusedImport
 
+
+# Taken from SO:312443
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 # pylint: enable-msg=W0611
 
@@ -738,13 +746,14 @@ class CondorScriptGen(ScriptGen):
             outprefix = os.path.join(self.job.basedir.strip(), instpath)
             instances.append((instance, outprefix))
 
-        startpath = os.path.join(self.job.basedir.strip(), path, "condor.submit")
-        with open(startpath, "w") as condorsubmitfile:
-            with open(self.job.condortemplate) as template:
-                t = Template(template.read())
-                condorsubmitfile.write(
-                    t.render(instances=instances, timeout=self.job.timeout,
-                             memout=self.job.memout, initialdir=initialdir))
+        for i, chunk in izip(count, chunks(instances, 5000)):
+            startpath = os.path.join(self.job.basedir.strip(), path, "condor_%s.submit" %i)
+            with open(startpath, "w") as condorsubmitfile:
+                with open(self.job.condortemplate) as template:
+                    t = Template(template.read())
+                    condorsubmitfile.write(
+                        t.render(instances=chunk, timeout=self.job.timeout,
+                                 memout=self.job.memout, initialdir=initialdir))
 
         tools.setExecutable(os.path.join(path, "condor.submit"))
 
