@@ -746,7 +746,7 @@ class CondorScriptGen(ScriptGen):
             outprefix = os.path.join(self.job.basedir.strip(), instpath)
             instances.append((instance, outprefix))
 
-        for i, chunk in izip(count, chunks(instances, 5000)):
+        for i, chunk in enumerate(chunks(instances, 5000)):
             startpath = os.path.join(self.job.basedir.strip(), path, "condor_%s.submit" %i)
             with open(startpath, "w") as condorsubmitfile:
                 with open(self.job.condortemplate) as template:
@@ -755,7 +755,7 @@ class CondorScriptGen(ScriptGen):
                         t.render(instances=chunk, timeout=self.job.timeout,
                                  memout=self.job.memout, initialdir=initialdir))
 
-        tools.setExecutable(os.path.join(path, "condor.submit"))
+        tools.setExecutable(os.path.join(path, "condor_1.submit"))
 
 
 class SeqJob(Job):
