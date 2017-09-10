@@ -91,7 +91,6 @@ def zchaff(root, runspec, instance):
         content = codecs.open(os.path.join(root, '%s.txt' % instance_str), encoding='utf-8')
 
         for line in content:
-            print line
             line = line.replace('\n', '')
             for val, reg in sat_re.items():
                 m = reg[1].match(line)
