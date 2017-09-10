@@ -9,9 +9,11 @@
  	  <setting name="glucose" tag="sat" cmdline="" ppn="4" procs="1"/>		
 	  <setting name="glucose-syrup" tag="sat" cmdline="" ppn="4" procs="1"/>
  	</system>
-	<system name="minisat" version="2.2.0" measures="sat" config="condor-generic">
+ 	-->
+	<system name="minisat" version="2.2.0" measures="minisat" config="condor-generic">
  	  <setting name="minisat" tag="sat" cmdline="" ppn="4" procs="1"/>		
 	</system>
+	<!--
 	<system name="cryptominisat" version="5.0.1" measures="sat" config="condor-generic">
  	  <setting name="cryptominisat" tag="sat" cmdline="" ppn="4" procs="1"/>		
 	</system>
@@ -42,7 +44,7 @@
   	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1"/>
  	</system>
 	-->
-	<system name="zchaff64" version="2008.10.12" measures="sat" config="condor-generic">
+	<system name="zchaff64" version="2008.10.12" measures="zchaff" config="condor-generic">
   	  <setting name="zchaff64" tag="sat" cmdline="" ppn="4" procs="1"/>
  	</system>
 
