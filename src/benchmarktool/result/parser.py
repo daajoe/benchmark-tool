@@ -116,7 +116,7 @@ class Parser:
             self.run = Run(self.instresult, int(attrib["number"]))
             self.instresult.runs.append(self.run)
         elif tag == "measure":
-            self.run.measures[attrib["name"]] = (attrib["type"], attrib["val"]) 
+            self.run.measures[attrib["name"]] = (attrib["type"], attrib["val"])
 
     def close(self):
         """
