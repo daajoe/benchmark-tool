@@ -45,7 +45,7 @@ class dotdict(dict):
   __delattr__ = dict.__delitem__
 
 args=dotdict()
-args.runsolver = '{run.root}/programs/runsolver-3.3.5'
+args.runsolver = '{run.root}/programs/runsolver-3.3.6'
 args.memlimit = '{run.memlimit}'
 args.timelimit = '{run.timeout}'
 args.solver = '{run.root}/programs/{run.solver}'
@@ -86,7 +86,8 @@ def main(args):
 
   #USE CONDOR SPECIFIC VARIABLES
   if condor:
-    tmp=os.environ['_CONDOR_SCRATCH_DIR']
+    #tmp=os.environ['_CONDOR_SCRATCH_DIR']
+    tmp='{run.root}/{run.path}'
   else:
     tmp=tempfile.gettempdir()
   
