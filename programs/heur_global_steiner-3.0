@@ -16,7 +16,7 @@ echo "DYNASPing..."
 #TODO: add parameters via command line argument
 #-bb: variable ordering instead of -b: tree decomposition
 #cat g.inp.$pid | dynasp2 -d  $3             -bb -s $RANDOM -c 2         -s $pid #-bb
-cat $t/g.gr.out.$pid.gr | /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/dynasp -d -i 1              -bb -c 6         -s $2 -s $pid #-bb
+cat $t/g.gr.out.$pid.gr | /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/dynasp -d -i 1 -q $t             -bb -c 6         -s $2 -s $pid #-bb
 echo "DYNASP done"
 echo "REVERSE_GRINGOing..."
 #sz=$(wc -c < "g.inp.dynasp.$pid")
