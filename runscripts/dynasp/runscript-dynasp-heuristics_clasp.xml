@@ -4,14 +4,14 @@
 
 	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
 	
-	<system name="clasp" version="3.3.2" measures="asp" config="condor-generic">
- 	  <setting name="auto1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp --stats=2 -q --opt-strategy=usc,pmres,disjoint,stratify --opt-usc-trim=min --configuration=auto" ppn="4" procs="1"/>		
- 	  <setting name="frumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  --stats=2 -q --opt-strategy=usc,pmres,disjoint,stratify --opt-usc-trim=min --configuration=frumpy" ppn="4" procs="1"/>		
- 	  <setting name="jumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp   --stats=2 -q --opt-strategy=usc,pmres,disjoint,stratify --opt-usc-trim=min --configuration=jumpy" ppn="4" procs="1"/>		
- 	  <setting name="tweety1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  --stats=2 -q --opt-strategy=usc,pmres,disjoint,stratify --opt-usc-trim=min --configuration=tweety" ppn="4" procs="1"/>		
-	  <setting name="crafty1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  --stats=2 -q --opt-strategy=usc,pmres,disjoint,stratify --opt-usc-trim=min --configuration=crafty" ppn="4" procs="1"/>		
- 	  <setting name="handy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  --stats=2 -q --opt-strategy=usc,pmres,disjoint,stratify --opt-usc-trim=min --configuration=handy" ppn="4" procs="1"/>		
- 	  <setting name="trendy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  --stats=2 -q --opt-strategy=usc,pmres,disjoint,stratify --opt-usc-trim=min --configuration=trendy" ppn="4" procs="1"/>		
+	<system name="heur_steiner_clasp" version="3.0" measures="asp" config="condor-generic">
+ 	  <setting name="auto1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 1 auto" ppn="4" procs="1"/>		
+ 	  <setting name="frumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 1 frumpy" ppn="4" procs="1"/>		
+ 	  <setting name="jumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp   1 jumpy" ppn="4" procs="1"/>		
+ 	  <setting name="tweety1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  1 tweety" ppn="4" procs="1"/>		
+	  <setting name="crafty1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  1 crafty" ppn="4" procs="1"/>		
+ 	  <setting name="handy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp  1 handy" ppn="4" procs="1"/>		
+ 	  <setting name="trendy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 1 trendy" ppn="4" procs="1"/>		
 
 	</system>
 	<!--
