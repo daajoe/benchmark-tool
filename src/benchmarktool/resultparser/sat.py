@@ -10,25 +10,31 @@ import sys
 import codecs
 from benchmarktool.tools import escape
 
-watcher_re = {
-    "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x,4)),
+runsolver_re = {
+    "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x, 4)),
     "time_cpu": ("float", re.compile(r"^CPU time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "cpuusage": ("float", re.compile(r"^CPU usage \(%\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: float(x)),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
-    "memusage": ("float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x/1024, 2)),
-    "memusage_vmem": ("float", re.compile(r"^Max\. virtual memory \(cumulated for all children\) \(KiB\):\s*(?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x/1024,2)),
+    "memusage": (
+        "float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x / 1024, 2)),
+    "memusage_vmem": (
+        "float",
+        re.compile(r"^Max\. virtual memory \(cumulated for all children\) \(KiB\):\s*(?P<val>[0-9]+(\.[0-9]+)?)$"),
+        lambda x: round(x / 1024, 2)),
     "status_retcode": ("float", re.compile(r"^Child status: (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: int(x)),
-    "context_switches_involuntary":  ("int", re.compile(r"^involuntary context switches=\s*(?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: int(x)),
-    "context_switches_voluntary":  ("int", re.compile(r"^voluntary context switches=\s*(?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: int(x)),                                      
+    "context_switches_involuntary": (
+        "int", re.compile(r"^involuntary context switches=\s*(?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: int(x)),
+    "context_switches_voluntary": (
+        "int", re.compile(r"^voluntary context switches=\s*(?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: int(x)),
 }
 
 solver_re = {
     "status": ("string", re.compile(r"^s\s*(?P<val>SATISFIABLE|UNSATISFIABLE|UNKNOWN)\s*$"), lambda x: x)
 }
 
-
-#see: http://www.satcompetition.org/2004/format-solvers2004.html
+# see: http://www.satcompetition.org/2004/format-solvers2004.html
 sat_return_codes = (10, 20)
+
 
 def sat(root, runspec, instance):
     """
@@ -51,7 +57,7 @@ def sat(root, runspec, instance):
         'cpuusage': ('float', 0),
         'memusage': ('float', 0),
         'memusage_vmem': ('float', 0),
-        'context_switches_involuntary': ('int', 0), 
+        'context_switches_involuntary': ('int', 0),
         'context_switches_voluntary': ('int', 0),
         'run': ('int', 0),
         'error': ('int', 0),
@@ -68,49 +74,19 @@ def sat(root, runspec, instance):
     # error codes: 0 = ok, 1 = timeout, 2 = memout, 4 = presolver timeout,
     #             8 = dnf, 16 = invalid decomposition, 32 = invalid input,
     #             64 = solver runtime error, 128 = unknown error
+    finished = watcher_matching(finished, instance_str, res, root)
 
-    try:
-        for f in ['%s.watcher' % instance_str]:
-            for line in codecs.open(os.path.join(root, f), encoding='utf-8'):
-                for val, reg in runsolver_re.items():
-                    m = reg[1].match(line)
-                    #always take the max instead of the last value
-                    if m:
-                        m_value = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
-                        if val in res:
-                            res[val] = (m_value[0], max(res[val][1], m_value[1]))
-                        else:
-                            res[val] = m_value
-
-        if "memerror" in res:
-            res["error_str"] = ("string", "std::bad_alloc")
-            res["error"] = ("int", res["error"] + 2)
-            del res["memerror"]
-
-    except IOError, e:
-        finished = False
-        res['error_str'] = ('string', 'Did not finish.')
-
-    if finished:        
+    if finished:
         content = codecs.open(os.path.join(root, '%s.txt' % instance_str), errors='ignore', encoding='utf-8').read()
         content = content.replace(",\n]", "\n]", 1)
 
-        for line in content.split('\n'):
-            for val, reg in solver_re.items():
-                m = reg[1].match(line)
-                #always take the max instead of the last value
-                if m:
-                    m_value = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
-                    if val in res:
-                        res[val] = (m_value[0], max(res[val][1], m_value[1]))
-                    else:
-                        res[val] = m_value
+        solver_matching(content, res)
 
         res["solved"] = ("int", int(res["status_retcode"][1] in sat_return_codes))
         error_status = not "status" in res or res["status"][1] == -1
         memout = "error" in res and res["error"][1] == "std::bad_alloc"
-        timedout = memout or error_status or not res["solved"] or  res["time"][1] >= timeout
-        
+        timedout = memout or error_status or not res["solved"] or res["time"][1] >= timeout
+
         if timedout: res["istimeout"] = ("float", timeout)
         if error_status:
             sys.stderr.write("*** ERROR: Run {0} failed with unrecognized status or error!\n".format(root))
@@ -121,3 +97,37 @@ def sat(root, runspec, instance):
         if "interrupted" in res: del res["interrupted"]
 
     return [(key, val[0], val[1]) for key, val in res.items()]
+
+
+def matching(expressions, line, res):
+    for val, reg in expressions.items():
+        m = reg[1].match(line)
+        # always take the max instead of the last value
+        if m:
+            m_value = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
+            if val in res:
+                res[val] = (m_value[0], max(res[val][1], m_value[1]))
+            else:
+                res[val] = m_value
+
+
+def solver_matching(content, res):
+    for line in content.split('\n'):
+        matching(solver_re, line, res)
+
+
+def watcher_matching(finished, instance_str, res, root):
+    try:
+        for f in ['%s.watcher' % instance_str]:
+            for line in codecs.open(os.path.join(root, f), encoding='utf-8'):
+                matching(runsolver_re, line, res)
+
+        if "memerror" in res:
+            res["error_str"] = ("string", "std::bad_alloc")
+            res["error"] = ("int", res["error"] + 2)
+            del res["memerror"]
+
+    except IOError, e:
+        finished = False
+        res['error_str'] = ('string', 'Did not finish.')
+    return finished
