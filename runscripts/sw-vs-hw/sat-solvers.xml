@@ -35,9 +35,11 @@
  	  <setting name="glucose" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="glucose"/>
 	  <setting name="glucose-syrup" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="-" plot_name="glucose-syrup"/>
  	</system>
+
 	<system name="minisat" version="2.2.0" measures="minisat" config="condor-generic">
  	  <setting name="minisat" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="b" plot_type=":" plot_name="minisat"/>
 	</system>
+
 	<!--
 	<system name="cryptominisat" version="5.0.1" measures="sat" config="condor-generic">
  	  <setting name="cryptominisat" tag="sat" cmdline="" ppn="4" procs="1"/>		
@@ -58,6 +60,8 @@
   	  <setting name="berkmin" tag="sat" cmdline="" ppn="4" procs="1"/>	
  	  </system>
 	-->
+
+
 	<system name="zchaff32" version="2001.2.17" measures="zchaff" config="condor-generic">
   	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1" plot_color="k" plot_type="*" plot_name="zchaff32.01"/>
  	  </system>
