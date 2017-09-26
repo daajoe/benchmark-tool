@@ -330,7 +330,8 @@ class InstanceTable(ResultTable):
         output = defaultdict(list)
         for key, values in results.iteritems():
             benchmark_info = dict(izip(keys, key))
-            benchmark_info['solver_config'] = '%s-%s' %(benchmark_info['solver_config'], benchmark_info['solver_version'])
+            benchmark_info['solver_config'] = '%s-%s' % (
+            benchmark_info['solver_config'], benchmark_info['solver_version'])
             # gather additional plot infos
             pname = benchmark_info['plot_name'] if benchmark_info['plot_name'] else benchmark_info['solver_config']
             pcolor = benchmark_info['plot_color'] if benchmark_info['plot_color'] else 'm'
@@ -360,6 +361,15 @@ class InstanceTable(ResultTable):
 
         df = df[(df['error'] < 64)]
 
+        # list of non-memedout instances
+        nonmemout = df[(df['error'] < 2)][['full_path', 'instance']]
+        def myfunc(x):
+            ret = x.replace('./','').split('/')
+            ret = '%s/%s' %(ret[4], '/'.join(ret[6:-2]))
+            return ret
+        nonmemout['full_path'] = df['full_path'].apply(myfunc)
+        nonmemout.sort_values(by=['full_path', 'instance'], inplace=True)
+        nonmemout.drop_duplicates().reset_index(drop=True).to_csv(output_path('nomemout'), index=False)
 
         # TODO: generalize to xml file
         df_mem_range = df.copy()
@@ -458,25 +468,20 @@ class InstanceTable(ResultTable):
         self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
         self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
 
-        # NOT relevant
-        # short_df2 = self.compute_cum_non_zero(df, vbest)
-        # self.output_cactus_plot(short_df2, output_path('cactus_plot_improved_cum', ''), project_name,
-        #                         indices=('cum_sum_abs_improvement', 'time'))
-        # print short_df2
 
     def compute_vbest_solution_quality_all(self, df):
         self.compute_vbest_solution_quality_all(df, 'abs_improvement')
 
-    def compute_vbest_solution_quality(self, df, key):
-        max_improvements = df.reset_index()
-        max_improvements.sort_values(by=['benchmark_name', 'class', 'instance', key],
-                                     ascending=[True, True, True, False], inplace=True)
-        vbest = max_improvements.groupby(['instance']).head(1)
-        # order header
-        col_ord = self.sort_order(list(vbest.columns))
-        vbest = vbest.reindex_axis(col_ord, axis=1)
-        vbest_improved = vbest[(vbest[key] > 0)]
-        return vbest, vbest_improved
+    # def compute_vbest_solution_quality(self, df, key):
+    #     max_improvements = df.reset_index()
+    #     max_improvements.sort_values(by=['benchmark_name', 'class', 'instance', key],
+    #                                  ascending=[True, True, True, False], inplace=True)
+    #     vbest = max_improvements.groupby(['instance']).head(1)
+    #     # order header
+    #     col_ord = self.sort_order(list(vbest.columns))
+    #     vbest = vbest.reindex_axis(col_ord, axis=1)
+    #     vbest_improved = vbest[(vbest[key] > 0)]
+    #     return vbest, vbest_improved
 
     def compute_short_df(self, df, vbest):
         # take short vbest
@@ -491,7 +496,7 @@ class InstanceTable(ResultTable):
         return short_df
 
     def compute_vbest_solution_quality(self, df):
-        return compute_vbest(df, 'abs_improvement')
+        return self.compute_vbest(df, 'abs_improvement')
 
     def compute_vbest(self, df, key):
         max_improvements = df.reset_index()
