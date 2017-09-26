@@ -1033,7 +1033,7 @@ class Benchmark(Sortable):
             root - The root path
             path - Some path relative to the root path
             """
-            if path == ".svn":
+            if path in (".svn", ".git") or path.startswith("._") or path.startswith("0arch"):
                 return True
             path = os.path.normpath(os.path.join(root, path))
             return path in self.prefixes
