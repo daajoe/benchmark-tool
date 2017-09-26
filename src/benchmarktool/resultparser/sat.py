@@ -36,11 +36,9 @@ solver_re = {
 sat_return_codes = (10, 20)
 
 
-def sat(root, runspec, instance):
-    """
-    Extracts some sat statistics.
-    """
+#TODO: put into class
 
+def parse_solver_output(root, runspec, instance, solver_expressions):
     res = {
         'instance': ('string', instance.instance),
         'setting': ('string', runspec.setting.name),
@@ -80,7 +78,7 @@ def sat(root, runspec, instance):
         content = codecs.open(os.path.join(root, '%s.txt' % instance_str), errors='ignore', encoding='utf-8').read()
         content = content.replace(",\n]", "\n]", 1)
 
-        solver_matching(content, res)
+        solver_matching(solver_expressions, content, res)
 
         res["solved"] = ("int", int(res["status_retcode"][1] in sat_return_codes))
         error_status = not "status" in res or res["status"][1] == -1
@@ -98,6 +96,12 @@ def sat(root, runspec, instance):
 
     return [(key, val[0], val[1]) for key, val in res.items()]
 
+def sat(root, runspec, instance):
+    """
+    Extracts some sat statistics.
+    """
+    return parse_solver_output(root, runspec, instance, solver_re)
+    
 
 def matching(expressions, line, res):
     for val, reg in expressions.items():
@@ -111,23 +115,25 @@ def matching(expressions, line, res):
                 res[val] = m_value
 
 
-def solver_matching(content, res):
+def solver_matching(expressions, content, res):
     for line in content.split('\n'):
-        matching(solver_re, line, res)
+        matching(expressions, line, res)
 
 
 def watcher_matching(finished, instance_str, res, root):
-    try:
-        for f in ['%s.watcher' % instance_str]:
-            for line in codecs.open(os.path.join(root, f), encoding='utf-8'):
+    for f in ['%s.watcher' % instance_str]:
+        try:
+            filename = os.path.join(root, f)
+            for line in codecs.open(filename, encoding='utf-8'):
                 matching(runsolver_re, line, res)
+        except IOError, e:
+            finished = False
+            res['error_str'] = ('string', 'Did not finish.')
+            res['error'] = ('int', res['error'][1] + 64)
 
-        if "memerror" in res:
-            res["error_str"] = ("string", "std::bad_alloc")
-            res["error"] = ("int", res["error"] + 2)
-            del res["memerror"]
+    if "memerror" in res:
+        res["error_str"] = ("string", "std::bad_alloc")
+        res["error"] = ("int", res["error"][1] + 2)
+        del res["memerror"]
 
-    except IOError, e:
-        finished = False
-        res['error_str'] = ('string', 'Did not finish.')
     return finished
