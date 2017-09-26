@@ -12,14 +12,14 @@ from benchmarktool.tools import escape
 from benchmarktool.resultparser.sat import parse_solver_output
 
 solver_re = {
-    "status": ("string", re.compile(r"^s\s*(?P<val>SATISFIABLE|UNSATISFIABLE|UNKNOWN)\s*$"), lambda x: x),
-    "restarts": ("int", re.compile(r"^restarts\s*:\s(?P<val>[0-9]+)\s*$")),
-    "conflicts": ("int", re.compile(r"^conflicts\s*:\s(?P<val>[0-9]+)\s*$")),
-    "decisions": ("int", re.compile(r"^decisions\s*:\s(?P<val>[0-9]+)\s*$")),
-    "propagations": ("int", re.compile(r"^propagations\s*:\s(?P<val>[0-9]+)\s*$")),
-    "conflict literals": ("int", re.compile(r"^conflict literals\s*:\s(?P<val>[0-9]+)\s*$")),
-    "#vars": ("int", re.compile(r"^\|\s*Number of variables\s*:\s*(?P<val>[0-9]+)\s*\|$")),
-    "#cls": ("int", re.compile(r"^\|\s*Number of clauses\s*:\s*(?P<val>[0-9]+)\s*\|$"))
+    "status": ("string", re.compile(r"^\s*(?P<val>SATISFIABLE|UNSATISFIABLE|UNKNOWN)\s*$"), lambda x: x),
+    "restarts": ("int", re.compile(r"^restarts\s*:\s(?P<val>[0-9]+)\s*$"), lambda x: x),
+    "conflicts": ("int", re.compile(r"^conflicts\s*:\s(?P<val>[0-9]+)\s*$"), lambda x: x),
+    "decisions": ("int", re.compile(r"^decisions\s*:\s(?P<val>[0-9]+)\s*$"), lambda x: x),
+    "propagations": ("int", re.compile(r"^propagations\s*:\s(?P<val>[0-9]+)\s*$"), lambda x: x),
+    "conflict literals": ("int", re.compile(r"^conflict literals\s*:\s(?P<val>[0-9]+)\s*$"), lambda x: x),
+    "#vars": ("int", re.compile(r"^\|\s*Number of variables\s*:\s*(?P<val>[0-9]+)\s*\|$"), lambda x: x),
+    "#cls": ("int", re.compile(r"^\|\s*Number of clauses\s*:\s*(?P<val>[0-9]+)\s*\|$"), lambda x: x)
 }
 
 

@@ -11,16 +11,16 @@ import codecs
 from benchmarktool.tools import escape
 
 runsolver_re = {
-    "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x, 4)),
-    "time_cpu": ("float", re.compile(r"^CPU time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
+    "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(float(x), 4)),
+    "time_cpu": ("float", re.compile(r"^CPU time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: float(x)),
     "cpuusage": ("float", re.compile(r"^CPU usage \(%\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: float(x)),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
     "memusage": (
-        "float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x / 1024, 2)),
+        "float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(float(x) / 1024, 2)),
     "memusage_vmem": (
         "float",
         re.compile(r"^Max\. virtual memory \(cumulated for all children\) \(KiB\):\s*(?P<val>[0-9]+(\.[0-9]+)?)$"),
-        lambda x: round(x / 1024, 2)),
+        lambda x: round(float(x) / 1024, 2)),
     "status_retcode": ("float", re.compile(r"^Child status: (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: int(x)),
     "context_switches_involuntary": (
         "int", re.compile(r"^involuntary context switches=\s*(?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: int(x)),
@@ -33,7 +33,8 @@ solver_re = {
 }
 
 # see: http://www.satcompetition.org/2004/format-solvers2004.html
-sat_return_codes = (10, 20)
+# returncode 0 required due to zchaff
+sat_return_codes = (0, 10, 20)
 
 
 #TODO: put into class
@@ -108,7 +109,7 @@ def matching(expressions, line, res):
         m = reg[1].match(line)
         # always take the max instead of the last value
         if m:
-            m_value = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
+            m_value = (reg[0], reg[2](m.group("val")))
             if val in res:
                 res[val] = (m_value[0], max(res[val][1], m_value[1]))
             else:
