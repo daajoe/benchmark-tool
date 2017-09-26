@@ -68,7 +68,13 @@ class Parser:
             tag     = attrib.pop("tag", None)
             name    = attrib.pop("name")
             cmdline = attrib.pop("cmdline")
-            setting = Setting(self.system, name, cmdline, tag, self.settingOrder, attrib)
+            plot_type = attrib.pop("plot_type", None)
+            plot_color = attrib.pop("plot_color", None)
+            plot_name = attrib.pop("plot_name", None)
+            plot_show = attrib.pop("plot_show", None)
+
+            setting = Setting(self.system, name, cmdline, tag, self.settingOrder, attrib, plot_type, plot_color,
+                              plot_name, plot_show)
             self.system.settings[name] = setting
             self.settingOrder += 1
         elif tag == "seqjob":
