@@ -754,7 +754,7 @@ class CondorScriptGen(ScriptGen):
                     condorsubmitfile.write(
                         t.render(instances=chunk, timeout=self.job.timeout,
                                  memout=self.job.memout, initialdir=initialdir))
-        tools.setExecutable(os.path.join(path, "condor_0.submit"))
+        #tools.setExecutable(os.path.join(path, "condor_0.submit"))
 
 
 class SeqJob(Job):
