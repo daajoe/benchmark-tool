@@ -2,7 +2,7 @@
 
 	<machine name="cobra" cpu="24x8xE5520@2.27GHz" memory="128GB"/>
 
-	<config name="condor-generic" template="templates/seq-tw-LI.sh"/>
+	<config name="condor-generic" template="templates/seq-tw-LI-output.sh"/>
 	<!--templates/runsolver_template.py-->
 	<!--TODO: measures-->
 	<system name="trellis" version="1.0" measures="pace_jkf" config="condor-generic">
