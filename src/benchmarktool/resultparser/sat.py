@@ -125,12 +125,19 @@ def watcher_matching(finished, instance_str, res, root):
     for f in ['%s.watcher' % instance_str]:
         try:
             filename = os.path.join(root, f)
-            for line in codecs.open(filename, encoding='utf-8'):
+            for line in codecs.open(filename, encoding='utf-8', errors='ignore'):
                 matching(runsolver_re, line, res)
         except IOError, e:
             finished = False
             res['error_str'] = ('string', 'Did not finish.')
             res['error'] = ('int', res['error'][1] + 64)
+        except UnicodeDecodeError, e:
+            import traceback
+            traceback.print_exc()
+            sys.stderr.write('FILENAME: %s' %filename)
+            sys.stderr.write(str(e))
+            sys.stderr.write('\n\n\n')
+            exit(1)
 
     if "memerror" in res:
         res["error_str"] = ("string", "std::bad_alloc")
