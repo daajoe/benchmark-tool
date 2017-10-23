@@ -5,7 +5,7 @@
 	<config name="condor-generic" template="templates/seq-tw-LI-output.sh"/>
 	<!--templates/runsolver_template.py-->
 	<!--TODO: measures-->
-	<system name="trellis" version="1.0" measures="pace_jkf" config="condor-generic">
+	<system name="trellis" version="1.0" measures="trellis" config="condor-generic">
  		<!--<setting name="default" tag="sat" cmdline="-w 900 -b -1" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
  		<!--<setting name="roofy5" tag="sat" cmdline="-w 900 -b -1 -r 5" ppn="4" procs="1"/>
  		<setting name="roofy10" tag="sat" cmdline="-w 900 -b -1 -r 10" ppn="4" procs="1"/>
@@ -51,7 +51,7 @@
 	</system>
 
 	<!-- todo condor job priority -->
-	<condorjob name="condor-generic" memout="8192" timeout="3600" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/jfichte/src/benchmark-tool
+	<condorjob name="condor-generic" memout="16384" timeout="3600" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/jfichte/src/benchmark-tool
 "/>
 
 	<!--<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>-->

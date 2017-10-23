@@ -16,7 +16,7 @@ if [ ! -v TMPDIR ] ; then
 fi
 
 [[ -e .finished ]] ||  "{run.root}/programs/runsolver-3.3.5" \
-	-M 8196 \
+	-M 16384 \
 	-w runsolver.watcher \
 	-W {run.timeout} \
 	"{run.root}/programs/{run.solver}" {run.args} -t $TMPDIR -f "{run.file}" -o "{run.file}".td > runsolver.solver 2>>runsolver.err
