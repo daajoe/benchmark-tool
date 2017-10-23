@@ -155,10 +155,12 @@
 	</benchmark>
 
 	<project name="trellis-2017-oct-ac_collection" job="condor-generic">
-	  <runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
+	  <!--<runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="twlib" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="pace2016" tag="*all*"/>
+	  -->
 	  <runtag machine="cobra" benchmark="transit" tag="*all*"/>
+	  <!--
 	  <runtag machine="cobra" benchmark="networks" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="pace2017" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="uai2014" tag="*all*"/>
@@ -167,5 +169,6 @@
 	  <runtag machine="cobra" benchmark="transit" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="pace2017-bonus" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="cfgs" tag="*all*"/>
+	  -->
 	</project>
 </runscript>
