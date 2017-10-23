@@ -34,9 +34,6 @@
 	<system name="glucose" version="4.1" measures="sat" config="condor-generic">
  	  <setting name="glucose" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="glucose"/>
 	  <setting name="glucose-syrup" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="-" plot_name="glucose-syrup"/>
- 	</system>
-
-	<system name="minisat" version="2.2.0" measures="minisat" config="condor-generic">
  	  <setting name="minisat" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="b" plot_type=":" plot_name="minisat"/>
 	</system>
 
