@@ -30,7 +30,7 @@ from benchmarktool.resultparser.minisat import minisat
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.zchaff import zchaff
 # noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.trellis import trellis
+#from benchmarktool.resultparser.trellis import trellis
 
 
 

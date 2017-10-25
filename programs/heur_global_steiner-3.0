@@ -10,7 +10,7 @@ echo $t
 echo "USING: $pid"
 cat $9 > $t/inst.$pid
 echo "GRINGOing..."
-/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/gringo $1 $t/inst.$pid > $t/g.gr.out.$pid.gr
+cat $1 $t/inst.$pid  /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/gringo > $t/g.gr.out.$pid.gr
 echo "GRINGO done"
 echo "DYNASPing..."
 #TODO: add parameters via command line argument

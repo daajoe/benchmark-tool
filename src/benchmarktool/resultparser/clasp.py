@@ -29,23 +29,30 @@ def clasp(root, runspec, instance):
 
     timeout = runspec.project.job.timeout
     res     = { "time": ("float", timeout) }
-    for f in ["runsolver.solver", "runsolver.watcher"]:
+    for f in [instance.instance + ".txt", instance.instance + ".watcher"]:
+    #for f in [instance.instance"runsolver.solver", "runsolver.watcher"]:
         for line in codecs.open(os.path.join(root, f), errors='ignore', encoding='utf-8'):
             for val, reg in clasp_re.items():
                 m = reg[1].match(line)
                 if m: res[val] = (reg[0], float(m.group("val")) if reg[0] == "float" else m.group("val"))
 
+    #print res["time"][1]
     if "memerror" in res:
         res["error"]  = ("string", "std::bad_alloc")
         res["status"] = ("string", "UNKNOWN")
         del res["memerror"]
+    if res["time"][1] >= timeout and not "status" in res:
+        #res["error"] = ("string", "timeout")
+        res["status"] = ("string", "UNKNOWN")
     result   = []
     error    = not "status" in res or ("error" in res and res["error"][1] != "std::bad_alloc")
     memout   = "error" in res and res["error"][1] == "std::bad_alloc"
     status   = res["status"][1] if "status" in res else None
     timedout = memout or error or status == "UNKNOWN" or (status == "SATISFIABLE" and "optimum" in res) or res["time"][1] >= timeout or "interrupted" in res;
     if timedout: res["time"] = ("float", timeout)
-    if error: sys.stderr.write("*** ERROR: Run {0} failed with unrecognized status or error!\n".format(root))
+    if error: 
+        sys.stderr.write("*** ERROR: Run {0} failed with unrecognized status or error!\n".format(root))
+        exit(1)
     result.append(("error", "float", int(error)))
     result.append(("timeout", "float", int(timedout)))
     result.append(("memout", "float", int(memout)))

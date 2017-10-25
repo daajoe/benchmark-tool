@@ -45,7 +45,7 @@ class dotdict(dict):
   __delattr__ = dict.__delitem__
 
 args=dotdict()
-args.runsolver = '{run.root}/programs/runsolver-3.3.6'
+args.runsolver = '{run.root}/programs/runsolver-3.3.5'
 args.memlimit = '{run.memlimit}'
 args.timelimit = '{run.timelimit}'
 args.solver = '{run.root}/programs/{run.solver}'

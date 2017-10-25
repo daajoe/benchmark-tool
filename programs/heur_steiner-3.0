@@ -23,7 +23,7 @@ then
 fi
 echo "DFLAT2ASP done..."
 echo "CLASPing..."
-/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/gringo $t/inst.$pid $1 $t/g.out.$pid > $t/g.gr.out.$pid.gr
+cat $t/inst.$pid $1 $t/g.out.$pid | /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/gringo  > $t/g.gr.out.$pid.gr
 /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/heuristics/callpot.sh $t/inst.$pid $1 $pid "--configuration=$3" > $t/g.g.out.$pid.out 2> $t/g.g.out.$pid
 echo "CLASP done"
 #cat g.g.out.$pid >&2

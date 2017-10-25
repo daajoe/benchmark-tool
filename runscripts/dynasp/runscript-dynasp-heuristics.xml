@@ -4,7 +4,7 @@
 
 	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
 	
-	<system name="heur_steiner" version="3.0" measures="asp" config="condor-generic">
+	<system name="heur_steiner" version="3.0" measures="clasp" config="condor-generic">
  	  <setting name="auto1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 23112 auto" ppn="4" procs="1"/>		
  	  <setting name="frumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 23112 frumpy" ppn="4" procs="1"/>		
  	  <setting name="jumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 23112 jumpy" ppn="4" procs="1"/>		
