@@ -1,0 +1,27 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="12GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim.sh"/>
+	<config name="seq-gpusat-inci" template="templates/seq-gpusat-inci.sh"/>
+	
+	<system name="gpusat2p" measures="gpusat" version="0" config="seq-gpusat-prim">
+		<setting name="primal_double_w-14_m-24"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 24"/>
+	</system>
+	
+	<system name="gpusat2i" measures="gpusat" version="0" config="seq-gpusat-inci">
+		<setting name="incidence_double_w-14_m-24"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 24"/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="gpusat">
+		<folder path="benchmarks/gpusat"/>
+	</benchmark>
+
+	<project name="gpusat_single_delede_splits" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="gpusat" tag="*all*"/>
+	</project>
+
+</runscript>
+

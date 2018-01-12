@@ -1,0 +1,29 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="12GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim.sh"/>
+	<config name="seq-gpusat-inci" template="templates/seq-gpusat-inci.sh"/>
+	
+	<system name="gpusat_p" measures="gpusat" version="0" config="seq-gpusat-prim">
+		<setting name="prim_unweighted_conan"  cmdline="-c /home1/e01125404/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+		<setting name="prim_unweighted_conan_improved"  cmdline="-c /home1/e01125404/benchmark-tool/programs/kernel/ -w 14 -m 28"/>
+	</system>
+	
+	<system name="gpusat_i" measures="gpusat" version="0" config="seq-gpusat-inci">
+		<setting name="inci_unweighted_conan"  cmdline="-c /home1/e01125404/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+		<setting name="inci_unweighted_conan_improved"  cmdline="-c /home1/e01125404/benchmark-tool/programs/kernel/ -w 14 -m 28"/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="unweighted">
+		<folder path="/home1/e01125404/benchmark-tool/benchmarks/unweighted_new"/>
+	</benchmark>
+
+	<project name="gpusat_conan_unweighted_new" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="unweighted" tag="*all*"/>
+	</project>
+
+</runscript>
+

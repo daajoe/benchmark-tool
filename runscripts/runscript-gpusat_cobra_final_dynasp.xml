@@ -1,0 +1,26 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template_dynasp.py"/>
+
+	<system name="dynaspnw" measures="dynasp" version="1" config="condor-generic">
+		<setting name="dynasp_incidence"  cmdline="-bb -S -s 1234 -c 6 -n "/>
+		<setting name="dynasp_primal"  cmdline="-bb -S -s 1234 -c 2 -n "/>
+	</system>
+
+	<system name="clasp" measures="claspmcasp" version="3.3.2" config="condor-generic">
+		<setting name="count_asp"  cmdline="-q -n 0 "/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="gpusat">
+		<folder path="benchmarks/asp_ground_final"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_final_dynasp" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="gpusat" tag="*all*"/>
+	</project>
+
+</runscript>

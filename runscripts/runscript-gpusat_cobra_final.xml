@@ -1,0 +1,55 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+	<system name="clasp" measures="sat_gpusat" version="3.3.2" config="condor-generic">
+		<setting name="clasp_final"  cmdline=""/>
+		<setting name="count_sat_final"  cmdline="-q -n 0 "/>
+	</system>
+	<system name="lingeling" measures="sat_gpusat" version="bbc" config="condor-generic">
+		<setting name="lingeling_final"  cmdline=""/>
+	</system>
+	<system name="minisat" measures="minisat_gpusat" version="2.2.0" config="condor-generic">
+		<setting name="minisat_final"  cmdline=""/>
+	</system>
+	<system name="picosat" measures="sat_gpusat" version="965" config="condor-generic">
+		<setting name="picosat_final"  cmdline=""/>
+	</system>
+	<system name="sharpSAT" measures="sharpsat" version="13.02" config="condor-generic">
+		<setting name="sharpSAT_final"  cmdline=""/>
+	</system>
+	<system name="cachet" measures="cachet" version="1.21" config="condor-generic">
+		<setting name="cachet_final"  cmdline=""/>
+	</system>
+	<system name="dsharp" measures="dsharp" version="1" config="condor-generic">
+		<setting name="dsharp_final"  cmdline=""/>
+	</system>
+	<system name="cryptominisat" measures="sat_gpusat" version="5.0.1" config="condor-generic">
+		<setting name="cryptominisat_final"  cmdline=""/>
+	</system>
+	<system name="approxmc" measures="approxmc" version="2" config="condor-generic">
+		<setting name="approxmc_final"  cmdline=""/>
+	</system>
+	<system name="c2d" measures="c2d" version="1" config="condor-generic">
+		<setting name="c2d_final"  cmdline=" -count -smooth_all -in_memory -in  "/>
+	</system>
+	<system name="d4" measures="d4" version="1" config="condor-generic">
+		<setting name="d4_final"  cmdline=""/>
+	</system>
+	<system name="sharpCDCL" measures="sharpCDCL" version="1" config="condor-generic">
+		<setting name="sharpCDCL_final"  cmdline=" -no-pre -countMode=1 "/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="gpusat">
+		<folder path="benchmarks/formulas_final"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_final" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="gpusat" tag="*all*"/>
+	</project>
+
+</runscript>

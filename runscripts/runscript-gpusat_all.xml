@@ -1,0 +1,48 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="10GB"/>
+
+	<config name="seq-gpusat" template="templates/seq-gpusat-prim.sh"/>
+	<config name="seq-sat" template="templates/seq-sat.sh"/>
+	<config name="seq-ssat" template="templates/seq-ssat.sh"/>
+	
+	<system name="gpusat" measures="gpusat" version="0" config="seq-gpusat">
+		<setting name="double"  cmdline=""/>
+	</system>
+	<system name="gpusat" measures="gpusat" version="1" config="seq-gpusat">
+		<setting name="d4"  cmdline=""/>
+	</system>
+	<system name="clasp" measures="clasp" version="3.3.2" config="seq-sat">
+		<setting name="default"  cmdline=""/>
+	</system>
+	<system name="lingeling" measures="lingeling" version="bbc" config="seq-sat">
+		<setting name="default"  cmdline=""/>
+	</system>
+	<system name="minisat" measures="minisat" version="2.2.0" config="seq-sat">
+		<setting name="default"  cmdline=""/>
+	</system>
+	<system name="picosat" measures="sat" version="965" config="seq-sat">
+		<setting name="default"  cmdline=""/>
+	</system>
+	<system name="sharpSAT" measures="sharpsat" version="13.02" config="seq-ssat">
+		<setting name="default"  cmdline=""/>
+	</system>
+	<system name="cachet" measures="cachet" version="1.21" config="seq-ssat">
+		<setting name="default"  cmdline=""/>
+	</system>
+	<system name="dsharp" measures="dsharp" version="1" config="seq-ssat">
+		<setting name="default"  cmdline=""/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="300" runs="1" parallel="1"/>
+
+	<benchmark name="gpusat_all">
+		<folder path="benchmarks/sharpSAT"/>
+	</benchmark>
+
+	<project name="gpusat" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="gpusat_all" tag="*all*"/>
+	</project>
+
+</runscript>
+

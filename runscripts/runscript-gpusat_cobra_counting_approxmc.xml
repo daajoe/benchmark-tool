@@ -1,0 +1,21 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+	<system name="approxmc" measures="approxmc" version="2" config="condor-generic">
+		<setting name="approxmc_counting"  cmdline=""/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="counting">
+		<folder path="benchmarks/counting"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_counting_approxmc" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="counting" tag="*all*"/>
+	</project>
+
+</runscript>

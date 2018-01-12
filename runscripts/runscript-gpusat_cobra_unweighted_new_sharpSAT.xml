@@ -1,0 +1,21 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+	<system name="sharpSAT" measures="cachet" version="13.02" config="condor-generic">
+		<setting name="sharpSAT_unweighted"  cmdline=""/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="unweighted">
+		<folder path="benchmarks/unweighted_new"/>
+	</benchmark>
+
+	<project name="gpusat_unweighted_new_sharpSAT" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="unweighted" tag="*all*"/>
+	</project>
+
+</runscript>

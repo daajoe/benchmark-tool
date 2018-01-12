@@ -1,0 +1,31 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="12GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim.sh"/>
+	<config name="seq-gpusat-inci" template="templates/seq-gpusat-inci.sh"/>
+	
+	<system name="gpusat_intrp" measures="gpusat" version="0" config="seq-gpusat-prim">
+		<setting name="prim_d_intr_w14_m26"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+		<setting name="prim_d_intr_w18_m26"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 18 -m 26"/>
+		<setting name="prim_d_intr_w10_m26"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 10 -m 26"/>
+	</system>
+	
+	<system name="gpusat_intri" measures="gpusat" version="0" config="seq-gpusat-inci">
+		<setting name="inci_d_intr_w14_m26"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+		<setting name="inci_d_intr_w18_m26"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 18 -m 26"/>
+		<setting name="inci_d_intr_w10_m26"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 10 -m 26"/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="gpusat">
+		<folder path="benchmarks/gpusat"/>
+	</benchmark>
+
+	<project name="gpusat_hermann_introduce" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="gpusat" tag="*all*"/>
+	</project>
+
+</runscript>
+

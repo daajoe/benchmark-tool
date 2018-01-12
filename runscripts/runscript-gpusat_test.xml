@@ -1,0 +1,27 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="12GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim.sh"/>
+	<config name="seq-gpusat-inci" template="templates/seq-gpusat-inci.sh"/>
+	
+	<system name="gpusatp" measures="gpusat" version="2.0" config="seq-gpusat-prim">
+		<setting name="primal_double_w-12"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 12"/>
+	</system>
+	
+	<!--<system name="gpusati" measures="gpusat" version="2.0" config="seq-gpusat-inci">
+		<setting name="incidence_double_w-12"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 12"/>
+	</system>-->
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="dynasp_all">
+		<folder path="benchmarks/gpusat_all"/>
+	</benchmark>
+
+	<project name="gpusat_test" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="dynasp_all" tag="*all*"/>
+	</project>
+
+</runscript>
+

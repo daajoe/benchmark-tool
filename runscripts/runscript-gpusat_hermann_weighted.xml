@@ -1,0 +1,27 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="12GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim.sh"/>
+	<config name="seq-gpusat-inci" template="templates/seq-gpusat-inci.sh"/>
+	
+	<system name="gpusat_p" measures="gpusat" version="0" config="seq-gpusat-prim">
+		<setting name="prim_weighted"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26 --weighted "/>
+	</system>
+	
+	<system name="gpusat_i" measures="gpusat" version="0" config="seq-gpusat-inci">
+		<setting name="inci_weighted"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26 --weighted "/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="weighted">
+		<folder path="benchmarks/weighted"/>
+	</benchmark>
+
+	<project name="gpusat_hermann_weighted" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="weighted" tag="*all*"/>
+	</project>
+
+</runscript>
+

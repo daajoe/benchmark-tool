@@ -1,0 +1,27 @@
+<runscript output="output">
+
+	<machine name="conan" cpu="8xE5520@2.27GHz" memory="16GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim_new.sh"/>
+	<config name="seq-gpusat-inci" template="templates/seq-gpusat-inci_new.sh"/>
+	
+	<system name="gpusat_intrp" measures="gpusat" version="0" config="seq-gpusat-prim">
+		<setting name="gpusat_primal_d_conan"  cmdline="-c /home1/e01125404/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+	</system>
+	
+	<system name="gpusat_intri" measures="gpusat" version="0" config="seq-gpusat-inci">
+		<setting name="gpusat_incidence_d_conan"  cmdline="-c /home1/e01125404/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="gpusat">
+		<folder path="benchmarks/benchmarks_new/ready"/>
+	</benchmark>
+
+	<project name="gpusat_conan" job="seq-gpusat">
+		<runtag machine="conan" benchmark="gpusat" tag="*all*"/>
+	</project>
+
+</runscript>
+

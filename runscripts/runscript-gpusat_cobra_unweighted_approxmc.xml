@@ -1,0 +1,23 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+	<system name="approxmc" measures="approxmc" version="2" config="condor-generic">
+		<setting name="approxmc_unweighted"  cmdline=""/>
+		<setting name="approxmc_unweighted_usage"  cmdline=" --epsilon=0.8 --delta=0.2 --gaussuntil=400 "/>
+		<setting name="approxmc_unweighted_version1"  cmdline=" --searchMode=0 "/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="unweighted">
+		<folder path="benchmarks/unweighted"/>
+	</benchmark>
+
+	<project name="gpusat_unweighted_approxmc" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="unweighted" tag="*all*"/>
+	</project>
+
+</runscript>

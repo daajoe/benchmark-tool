@@ -1,0 +1,39 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+	<system name="cachet" measures="cachet" version="1.21" config="condor-generic">
+		<setting name="cachet_unweighted"  cmdline=""/>
+	</system>
+	<system name="approxmc" measures="weightmc" version="1" config="condor-generic">
+		<setting name="approxmc_unweighted"  cmdline=""/>
+	</system>
+	<system name="sharpSAT" measures="sharpsat" version="13.02" config="condor-generic">
+		<setting name="sharpSAT_unweighted"  cmdline=""/>
+	</system>
+	<system name="dsharp" measures="dsharp" version="1" config="condor-generic">
+		<setting name="dsharp_unweighted"  cmdline=""/>
+	</system>
+	<system name="c2d" measures="c2d" version="1" config="condor-generic">
+		<setting name="c2d_unweighted"  cmdline=" -count -smooth_all -in_memory -in  "/>
+	</system>
+	<system name="d4" measures="d4" version="1" config="condor-generic">
+		<setting name="d4_unweighted"  cmdline=""/>
+	</system>
+	<system name="sharpCDCL" measures="sharpCDCL" version="1" config="condor-generic">
+		<setting name="sharpCDCL_unweighted"  cmdline=" -no-pre -countMode=1 "/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="unweighted">
+		<folder path="benchmarks/unweighted"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_unweighted" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="unweighted" tag="*all*"/>
+	</project>
+
+</runscript>

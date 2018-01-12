@@ -1,0 +1,27 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="12GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim.sh"/>
+	<config name="seq-gpusat-inci" template="templates/seq-gpusat-inci.sh"/>
+	
+	<system name="gpusat_p" measures="gpusat" version="0" config="seq-gpusat-prim">
+		<setting name="prim_count"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+	</system>
+	
+	<system name="gpusat_i" measures="gpusat" version="0" config="seq-gpusat-inci">
+		<setting name="inci_count"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="counting">
+		<folder path="/files/mzisser/Benchmarks/C2D/"/>
+	</benchmark>
+
+	<project name="gpusat_hermann_c2d" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="counting" tag="*all*"/>
+	</project>
+
+</runscript>
+

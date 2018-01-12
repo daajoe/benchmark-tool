@@ -1,0 +1,21 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template_dynasp.py"/>
+
+	<system name="dynqbf" measures="dynqbf" version="0" config="condor-generic">
+		<setting name="dynqbf_existential"  cmdline="--seed 1234 --model-count --unsat-check 0 "/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="gpusat">
+		<folder path="benchmarks/unweighted_qbfe"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_unweighted_dynqbfe" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="gpusat" tag="*all*"/>
+	</project>
+
+</runscript>
