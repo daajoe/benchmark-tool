@@ -29,6 +29,46 @@ from benchmarktool.resultparser.sat import sat
 from benchmarktool.resultparser.minisat import minisat
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.zchaff import zchaff
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.cachet import cachet
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.dsharp import dsharp
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.sharpsat import sharpsat
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.gpusat import gpusat
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.lingeling import lingeling
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.minisat_gpusat import minisat_gpusat
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.picosat import picosat
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.approxmc import approxmc
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.sat_gpusat import sat_gpusat
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.clasp_gpusat import clasp_gpusat
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.dynasp import dynasp
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.claspmcasp import claspmcasp
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.claspmcsat import claspmcsat
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.dynqbf import dynqbf
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.sharpCDCL import sharpCDCL
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.gpusat_htd import gpusat_htd
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.weightmc import weightmc
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.d4 import d4
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.c2d import c2d
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.cachet_wmc import cachet_wmc
 
 
 claspre_features 	= re.compile(r"^Features[ ]*:[ ]*(([0-9]+\.?[0-9]*)([,](.+\.?.*))*)\+?[ ]*$")

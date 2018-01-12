@@ -309,7 +309,7 @@ class SeqRun(Run):
         self.args = self.runspec.setting.cmdline
         self.solver = self.runspec.system.name + "-" + self.runspec.system.version
         self.timeout = self.job.timeout
-        self.memlimit = self.job.memout
+        #self.memlimit = self.job.memout
         self.instancebase = os.path.basename(instance.path())
         self.finished = os.path.join(path, ".finished")
 
@@ -344,7 +344,7 @@ class ScriptGen:
         instance - The benchmark instance for the start script
         run      - The number of the run for the start script
         """
-        return os.path.join(runspec.path(), instance.classname.name, instance.instance, "run%d" % run)
+        return os.path.join(runspec.path(), instance.instance, "run%d" % run)
 
     def addToScript(self, runspec, instance):
         """
@@ -998,7 +998,7 @@ class Benchmark(Sortable):
             Returns the location of the instance by concatenating 
             location, class name and instance name.
             """
-            return os.path.join(self.location, self.classname.name, self.instance)
+            return os.path.join(self.location, self.instance)
 
     class Folder:
         """

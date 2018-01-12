@@ -1,6 +1,6 @@
 universe = vanilla 
 requirements = machine != "cobra-submit.kr.tuwien.ac.at"
-request_memory = +512
+request_memory = +8442
 
 #TODO: check cluster timeout and memlimit
 #periodic_remove = (CurrentTime - JobCurrentStartDate) >= {{timeout}}
@@ -13,6 +13,7 @@ kill_sig = 15
 nice_user = True
 priority = -20
 job_max_vacate_time = 60
+request_cpus = 2
 
 #=========================================================================
 # PATHS
@@ -25,7 +26,7 @@ initialdir = {{initialdir}}
 # ENVIRONMENT
 #=========================================================================
 getenv=True
-environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/:/home/jfichte/src/benchmark-tool/programs/treewidth/:/home/jfichte/bin/jdk1.8.0_121/bin LD_LIBRARY_PATH=:/home/jfichte/.local/lib"
+environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/home/mzisser/benchmark-tool/programs/"
 
 #=========================================================================
 # NOTIFICATION

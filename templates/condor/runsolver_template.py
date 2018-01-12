@@ -96,7 +96,7 @@ def main(args):
   sys.stderr.write(args.solver_args)
   sys.stderr.write('\n')
 
-  cmd = '%s -M %s -W %s -w %s %s %s -t %s --runid %s -f %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, ''.join(args.solver_args), tmp, args.run, ' '.join(args.filename), args.stdout, args.stderr)
+  cmd = '%s -M %s -W %s -w %s %s %s %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, ''.join(args.solver_args), ' '.join(args.filename), args.stdout, args.stderr)
   sys.stderr.write('COMMAND=%s\n' %cmd)
 
   p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
