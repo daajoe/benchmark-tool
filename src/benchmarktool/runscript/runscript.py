@@ -762,7 +762,7 @@ class SeqJob(Job):
     Describes a sequential job.
     """
 
-    def __init__(self, name, timeout, runs, parallel, attr):
+    def __init__(self, name, memout, timeout, runs, parallel, attr):
         """
         Initializes a sequential job description.  
         
@@ -774,6 +774,7 @@ class SeqJob(Job):
         attr     - A dictionary of arbitrary attributes
         """
         Job.__init__(self, name, timeout, runs, attr)
+        self.memout = memout
         self.parallel = parallel
 
     def scriptGen(self):
