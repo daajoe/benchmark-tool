@@ -1,0 +1,53 @@
+<runscript output="output">
+
+    <machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+    <config name="seq-generic" template="templates/seq-generic.sh"/>
+    <config name="seq-file" template="templates/seq-generic-file.sh"/>
+    <config name="seq-pipe" template="templates/seq-generic-pipe.sh"/>
+    <!--<config name="condor-generic" template="templates/condor/runsolver_template.py"/>-->
+    <!--<config name="condor-generic" template="templates/condor/condor-generic-generic.sh"/>-->
+    <!--<config name="condor-file" template="templates/condor/condor-generic-file.sh"/>-->
+    <!--<config name="condor-pipe" template="templates/condor/condor-generic-pipe.sh"/>-->
+
+    <system name="miniC2D" measures="miniC2D" version="1.0.0" config="seq-file">
+        <setting name="miniC2D_sharp" cmdline="-C -i -c"/>
+    </system>
+
+    <system name="cnf2eadt" measures="cnf2eadt" version="1.0" config="seq-generic">
+        <setting name="cnf2eadt" cmdline="/dev/stdin"/>
+    </system>
+
+    <!--CNF2OBDD-->
+    <system name="bdd_minisat_all" measures="bdd_minisat_all" version="1.0.1" config="seq-file">
+        <setting name="bdd_minisat_all" cmdline=""/>
+    </system>
+
+    <system name="sdd" measures="sdd" version="1.0.0" config="seq-file">
+        <setting name="sdd" cmdline="-c"/>
+        <!-- verbose output -p -->
+    </system>
+
+    <system name="samplecount" measures="samplecount" version="1.0.0" config="seq-pipe">
+        <setting name="samplecount" cmdline=""/>
+    </system>
+
+    <system name="sts" measures="sts" version="1.0.0" config="seq-generic">
+        <setting name="sts" cmdline="/dev/stdin"/>
+    </system>
+
+
+    <seqjob name="seq-generic" memout="8192" timeout="120" runs="1" parallel="1"/>
+
+    <!--<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>-->
+
+    <benchmark name="test">
+        <folder path="benchmarks/test/sharp"/>
+        <!--<folder path="benchmarks/test/wmc"/>-->
+    </benchmark>
+
+    <project name="gpusat_test_sharp_parsers" job="seq-generic">
+        <runtag machine="cobra" benchmark="test" tag="*all*"/>
+    </project>
+
+</runscript>

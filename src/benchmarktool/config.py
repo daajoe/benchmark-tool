@@ -69,6 +69,18 @@ from benchmarktool.resultparser.d4 import d4
 from benchmarktool.resultparser.c2d import c2d
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.cachet_wmc import cachet_wmc
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.samplecount import samplecount
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.sts import sts
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.sdd import sdd
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.miniC2D import miniC2D
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.cnf2eadt import cnf2eadt
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.bdd_minisat_all import bdd_minisat_all
 
 
 claspre_features 	= re.compile(r"^Features[ ]*:[ ]*(([0-9]+\.?[0-9]*)([,](.+\.?.*))*)\+?[ ]*$")
