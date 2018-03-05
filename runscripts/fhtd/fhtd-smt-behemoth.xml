@@ -1,0 +1,27 @@
+<runscript output="output">
+
+	<machine name="behemoth" cpu="24x8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="pbs-generic" template="templates/seq-tw-LI.sh"/>
+	<!--templates/runsolver_template.py-->
+	<!--TODO: measures-->
+	<system name="fhtd" version="0.7" measures="fhtd" config="pbs-generic">
+ 		<setting name="default" tag="sat" cmdline="" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+	</system>
+
+	<!-- todo condor job priority -->
+	<!--<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>-->
+	<!--<condorjob name="condor-generic" memout="2048" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/Users/fichte/decodyn/src/benchmark-tool
+"/>-->
+	<pbsjob name="pbs-generic" timeout="7200" memout="8192" runs="1" script_mode="timeout" walltime="2:30:00"/>
+
+	<benchmark name="twlib">
+	  <folder path="benchmarks/treewidth/twlib-graphs">
+          <ignore prefix="."/>
+      </folder>
+	</benchmark>
+
+	<project name="local-improvement-graphs" job="pbs-generic">
+		<runtag machine="cobra" benchmark="compiler" tag="*all*"/>
+	</project>
+</runscript>
