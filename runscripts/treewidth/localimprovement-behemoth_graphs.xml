@@ -97,7 +97,7 @@
       </folder>
 	</benchmark>
 
-	<project name="local-improvement-new" job="pbs-generic">
+	<project name="local-improvement-graphs" job="pbs-generic">
 		<runtag machine="cobra" benchmark="compiler" tag="*all*"/>
 		<runtag machine="cobra" benchmark="famous" tag="*all*"/>
 		<runtag machine="cobra" benchmark="pace2016" tag="*all*"/>

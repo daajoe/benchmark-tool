@@ -13,7 +13,10 @@
 		<setting name="jdrasil-b150" tag="sat" cmdline="-w 1800 -b 150 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
 		<setting name="jdrasil-b150t1800" tag="sat" cmdline="-w 3600 -b 150 -r 10 -s jdrasil -a '&quot; -log -t 1800 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
         <setting name="jdrasil-b75t1800" tag="sat" cmdline="-w 3600 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 1800 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
-        <setting name="jdrasil-b75t90r40" tag="sat" cmdline="-w 180 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 90 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+        <setting name="jdrasil-b175t1800r10" tag="sat" cmdline="-w 3600 -b 175 -r 10 -s jdrasil -a '&quot; -log -t 1800 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+	<setting name="jdrasil-b175t3600r10" tag="sat" cmdline="-w 7200 -b 175 -r 10 -s jdrasil -a '&quot; -log -t 3600 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+	<setting name="jdrasil-b200t1800r10" tag="sat" cmdline="-w 3600 -b 200 -r 10 -s jdrasil -a '&quot; -log -t 1800 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>	
+	<setting name="jdrasil-b200t3600r10" tag="sat" cmdline="-w 7200 -b 200 -r 10 -s jdrasil -a '&quot; -log -t 3600 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
 	</system>
 
 	<!-- todo condor job priority -->

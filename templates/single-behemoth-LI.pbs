@@ -11,8 +11,9 @@
 
 source ~/.bashrc
 
-#cd $PBS_O_WORKDIR
+#cd $PBS_O_WORKDIRw
 cd /home1/johannes.fichte/src/benchmark-tool/output/local-improvement-new/cobra
+#cd /home1/johannes.fichte/src/benchmark-tool/output/local-improvement-graph/cobra
 
 echo running jobs@$(hostname)...
 {jobs}
