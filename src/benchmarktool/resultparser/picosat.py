@@ -7,6 +7,7 @@ from benchmarktool.tools import escape
 runsolver_re = {
     "wall": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
+    "segfault": ("string", re.compile(r"^\s*Child\s*ended\s*because\s*it\s*received\s*signal\s*11\s*\((?P<val>SIGSEGV)\)\s*"), lambda x: x),
     "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memusage": ("float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x / 1024, 2))
 }
@@ -48,6 +49,7 @@ def picosat(root, runspec, instance):
     #             8 = dnf, 16 = invalid decomposition, 32 = invalid input,
     #             64 = solver runtime error, 128 = unknown error
 
+    f=""
     try:
         f = open(os.path.join(root, '%s.watcher' % instance_str)).read()
         for line in f.splitlines():
@@ -67,6 +69,8 @@ def picosat(root, runspec, instance):
         # errors='ignore',
         content = codecs.open(os.path.join(root, '%s.txt' % instance_str), encoding='utf-8')
 
+        errorFile = open(os.path.join(root, instance.instance + ".err"),"r").read()
+
         for line in content:
             line = line.replace('\n', '')
             if "UNSATISFIABLE" in line:
@@ -74,12 +78,18 @@ def picosat(root, runspec, instance):
             elif "SATISFIABLE" in line:
                 res["status"] = ("string", "SAT")
 
-        if res['memerror'][1] != 'NA':
+        if res['memerror'][1] != 'NA' or "Maximum VSize exceeded: sending SIGTERM then SIGKILL" in f:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 4)
+        elif "segfault" in res:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 6)
         elif "std::bad_alloc" in content:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 4)
+        elif "inf" in content:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 3)
         elif not 'status' in res:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout)
@@ -93,6 +103,6 @@ def picosat(root, runspec, instance):
 
     if not 'time' in res:
         res["timeout"] = ("float", 1)
-        res["time"] = ('float', runspec.project.job.timeout + 2)
+        res["time"] = ('float', runspec.project.job.timeout + 5)
 
     return [(key, val[0], val[1]) for key, val in res.items()]

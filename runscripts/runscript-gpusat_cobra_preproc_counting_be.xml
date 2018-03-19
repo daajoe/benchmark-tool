@@ -1,0 +1,21 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic_be" template="templates/condor/runsolver_template_counting_pmc_be.py"/>
+
+	<system name="BE_linux" measures="cachet" version="1" config="condor-generic_be">
+		<setting name="cachet_counting"  cmdline=""/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="counting">
+		<folder path="benchmarks/counting_pmc"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_preprocessing_counting_pmc" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="counting" tag="*all*"/>
+	</project>
+
+</runscript>

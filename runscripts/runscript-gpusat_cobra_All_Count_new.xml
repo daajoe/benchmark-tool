@@ -1,0 +1,65 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+    <config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+    <system name="cnf2eadt" measures="cnf2eadt" version="1.0" config="condor-generic">
+        <setting name="cnf2eadt" cmdline="-verb=0"/>
+    </system>
+
+    <system name="bdd_minisat_all" measures="bdd_minisat_all" version="1.0.1" config="condor-generic">
+        <setting name="bdd_minisat_all" cmdline=""/>
+    </system>
+
+    <system name="sdd" measures="sdd" version="1.0.0" config="condor-generic">
+        <setting name="sdd" cmdline="-c"/>
+    </system>
+
+    <system name="sts" measures="sts" version="1.0.0" config="condor-generic">
+        <setting name="sts" cmdline="-verb=0"/>
+    </system>
+
+    <system name="miniC2D" measures="miniC2D" version="1.0.0" config="condor-generic">
+        <setting name="miniC2D_sharp" cmdline="-C -i -c"/>
+    </system>
+
+    <system name="cachet" measures="cachet" version="1.21" config="condor-generic">
+        <setting name="cachet_counting"  cmdline=""/>
+    </system>
+
+    <system name="approxmc" measures="approxmc" version="2" config="condor-generic">
+        <setting name="approxmc_counting"  cmdline=""/>
+    </system>
+
+    <system name="sharpSAT" measures="sharpsat" version="13.02" config="condor-generic">
+        <setting name="sharpSAT_counting"  cmdline=""/>
+    </system>
+
+    <system name="dsharp" measures="dsharp" version="1" config="condor-generic">
+        <setting name="dsharp_counting"  cmdline=""/>
+    </system>
+
+    <system name="c2d" measures="c2d" version="1" config="condor-generic">
+        <setting name="c2d_counting"  cmdline=" -count -in_memory -smooth_all -in  "/>
+    </system>
+    
+    <system name="d4" measures="d4" version="1" config="condor-generic">
+        <setting name="d4_counting"  cmdline=""/>
+    </system>
+
+    <system name="sharpCDCL" measures="sharpCDCL" version="1" config="condor-generic">
+        <setting name="sharpCDCL_counting"  cmdline=" -no-pre -countMode=1 "/>
+    </system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="counting">
+		<folder path="benchmarks/all_Count_clean"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_all_Count_new" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="counting" tag="*all*"/>
+	</project>
+
+</runscript>

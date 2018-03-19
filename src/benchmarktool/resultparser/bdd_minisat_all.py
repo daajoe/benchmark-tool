@@ -8,6 +8,7 @@ from benchmarktool.tools import escape
 runsolver_re = {
     "wall": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
+    "segfault": ("string", re.compile(r"^\s*Child\s*ended\s*because\s*it\s*received\s*signal\s*11\s*\((?P<val>SIGSEGV)\)\s*"), lambda x: x),
     "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memusage": (
         "float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x / 1024, 2))
@@ -15,7 +16,7 @@ runsolver_re = {
 
 bdd_minisat_all_re = {
     "compile_time": ("float", re.compile(r"^#Compilation\stime:\s(?P<val>([0-9]*\.[0-9]+|[0-9]+))$")),
-    "#models": ("float", re.compile(r"^SAT\s\(full\)\s+:\s+(?P<val>([0-9]*\.[0-9]+|[0-9]+))$"))
+    "#models": ("float", re.compile(r"^SAT\s\(full\)\s+:\s+(?P<val>([0-9]*\.[0-9]+|[0-9]+))\+?\s*$"))
 }
 
 
@@ -55,14 +56,15 @@ def bdd_minisat_all(root, runspec, instance):
     #             8 = dnf, 16 = invalid decomposition, 32 = invalid input,
     #             64 = solver runtime error, 128 = unknown error
 
-    for f in [instance.instance + ".txt", instance.instance + ".watcher", "runsolver.watcher"]:
+    watchfile=""
+    for f in [instance.instance + ".watcher", "runsolver.watcher"]:
         if not os.path.exists(os.path.join(root, f)):
             continue
+        watchfile=open(os.path.join(root, f),"r").read()
         for line in codecs.open(os.path.join(root, f), errors='ignore', encoding='utf-8'):
-            for line in f.splitlines():
-                for val, reg in runsolver_re.items():
-                    m = reg[1].match(line)
-                    if m: res[val] = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
+            for val, reg in runsolver_re.items():
+                m = reg[1].match(line)
+                if m: res[val] = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
         finished = True
         break
 
@@ -77,6 +79,7 @@ def bdd_minisat_all(root, runspec, instance):
             if not os.path.exists(os.path.join(root, f)):
                 continue
             solver_out = True
+            content=open(os.path.join(root, f),"r").read()
             for line in codecs.open(os.path.join(root, f), errors='ignore', encoding='utf-8'):
                 if "std::bad_alloc" in line:
                     res["timeout"] = ("float", 1)
@@ -89,12 +92,20 @@ def bdd_minisat_all(root, runspec, instance):
             sys.stderr.write("*** ERROR: Missing solver output file.\n")
             exit(1)
 
+        errorFile = open(os.path.join(root, instance.instance + ".err"),"r").read()
+
         if res['wall'][1] >= timeout:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout)
-        elif res['memerror'][1] != 'NA':
+        elif "segfault" in res:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 6)
+        elif res['memerror'][1] != 'NA' or "memory allocation failed" in errorFile or "Maximum VSize exceeded: sending SIGTERM then SIGKILL" in watchfile:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 4)
+        elif "inf" in content:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 3)
         elif not '#models' in res:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 1)
@@ -108,6 +119,6 @@ def bdd_minisat_all(root, runspec, instance):
 
     if not 'time' in res:
         res["timeout"] = ("float", 1)
-        res["time"] = ('float', runspec.project.job.timeout + 2)
+        res["time"] = ('float', runspec.project.job.timeout + 5)
 
     return [(key, val[0], val[1]) for key, val in res.items()]

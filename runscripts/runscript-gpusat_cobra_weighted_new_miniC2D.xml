@@ -1,0 +1,21 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+    <system name="miniC2D" measures="miniC2D_WMC" version="1.0.0" config="condor-generic">
+        <setting name="miniC2D_weighted" cmdline="-W -i -c"/>
+    </system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="weighted">
+		<folder path="benchmarks/weighted_new_miniC2D"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_weighted_new_miniC2D" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="weighted" tag="*all*"/>
+	</project>
+
+</runscript>

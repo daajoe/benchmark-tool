@@ -8,6 +8,7 @@ from benchmarktool.tools import escape
 runsolver_re = {
     "wall": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
+    "segfault": ("string", re.compile(r"^\s*Child\s*ended\s*because\s*it\s*received\s*signal\s*11\s*\((?P<val>SIGSEGV)\)\s*"), lambda x: x),
     "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memusage": ("float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x / 1024, 2))
 }
@@ -51,6 +52,7 @@ def gpusat_htd(root, runspec, instance):
     instance_str = instance.instance
     timeout = runspec.project.job.timeout
 
+    f=""
     try:
         f = open(os.path.join(root, '%s.watcher' % instance_str)).read()
         for line in f.splitlines():
@@ -72,6 +74,8 @@ def gpusat_htd(root, runspec, instance):
         # errors='ignore',
         content = codecs.open(os.path.join(root, '%s.txt' % instance_str), encoding='utf-8')
 
+        errorFile = open(os.path.join(root, instance.instance + ".err"),"r").read()
+
         for line in content:
             for val, reg in gpusat_htd_re.items():
                 m = reg[1].match(line)
@@ -80,6 +84,9 @@ def gpusat_htd(root, runspec, instance):
         if res['wall'][1] >= timeout:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout)
+        elif "segfault" in res:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 6)
         elif not 'width' in res:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 1)
@@ -93,7 +100,7 @@ def gpusat_htd(root, runspec, instance):
 
     if not 'time' in res:
         res["timeout"] = ("float", 1)
-        res["time"] = ('float', runspec.project.job.timeout + 2)
+        res["time"] = ('float', runspec.project.job.timeout + 5)
 
     if 'width' in res:
         res["width"] = ("int", res["width"][1])

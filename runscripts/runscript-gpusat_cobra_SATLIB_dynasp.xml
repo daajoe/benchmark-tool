@@ -16,7 +16,7 @@
 	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
 
 	<benchmark name="gpusat">
-		<folder path="benchmarks/asp_ground_SATLIB"/>
+		<folder path="benchmarks/SATLIB_asp_ground"/>
 	</benchmark>
 
 	<project name="gpusat_cobra_SATLIB_dynasp" job="condor-generic">

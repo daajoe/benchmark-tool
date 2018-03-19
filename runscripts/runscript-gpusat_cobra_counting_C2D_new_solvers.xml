@@ -1,0 +1,37 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="8GB"/>
+
+    <config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+
+    <system name="miniC2D" measures="miniC2D" version="1.0.0" config="condor-generic">
+        <setting name="miniC2D_sharp" cmdline="-C -i -c"/>
+    </system>
+
+    <system name="cnf2eadt" measures="cnf2eadt" version="1.0" config="condor-generic">
+        <setting name="cnf2eadt" cmdline="-verb=0"/>
+    </system>
+
+    <!--<system name="bdd_minisat_all" measures="bdd_minisat_all" version="1.0.1" config="condor-generic">
+        <setting name="bdd_minisat_all" cmdline=""/>
+    </system>-->
+
+    <system name="sdd" measures="sdd" version="1.0.0" config="condor-generic">
+        <setting name="sdd" cmdline="-c"/>
+    </system>
+
+    <system name="sts" measures="sts" version="1.0.0" config="condor-generic">
+        <setting name="sts" cmdline="-verb=0"/>
+    </system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="counting">
+		<folder path="benchmarks/counting_C2D"/>
+	</benchmark>
+
+	<project name="gpusat_cobra_counting_C2D_new_solvers" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="counting" tag="*all*"/>
+	</project>
+
+</runscript>

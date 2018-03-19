@@ -1,0 +1,26 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="10GB"/>
+
+	<config name="htd_incidence" template="templates/condor/runsolver_template_htd_inci.py"/>
+	<config name="htd_primal" template="templates/condor/runsolver_template_htd_prim.py"/>
+
+	<system name="htd_main_i" measures="gpusat_htd" version="1.2.0" config="htd_incidence">
+		<setting name="htd_incidence"  cmdline=" -s 1234 --opt width "/>
+	</system>
+
+	<system name="htd_main_p" measures="gpusat_htd" version="1.2.0" config="htd_primal">
+		<setting name="htd_primal"  cmdline=" -s 1234 --opt width "/>
+	</system>
+
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/mzisser/benchmark-tool"/>
+
+	<benchmark name="gpusat">
+		<folder path="benchmarks/counting_be_pmc"/>
+	</benchmark>
+
+	<project name="gpusat_decomp_counting_be_pmc" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="gpusat" tag="*all*"/>
+	</project>
+
+</runscript>

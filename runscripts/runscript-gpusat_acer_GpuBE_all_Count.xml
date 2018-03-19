@@ -1,0 +1,26 @@
+<runscript output="output">
+
+	<machine name="hermann" cpu="8xE5520@2.27GHz" memory="12GB"/>
+
+	<config name="seq-gpusat-prim" template="templates/seq-gpusat-prim.sh"/>
+
+	<system name="gpusat_p_update" measures="gpusat" version="0" config="seq-gpusat-prim">
+		<setting name="prim_count_update"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+	</system>
+	
+	<system name="gpusat_i_update" measures="gpusat" version="0" config="seq-gpusat-inci">
+		<setting name="inci_count_update"  cmdline="-c /home/mzisser/benchmark-tool/programs/kernel/ -w 14 -m 26"/>
+	</system>
+
+	<seqjob name="seq-gpusat" timeout="900" runs="1" parallel="1"/>
+
+	<benchmark name="counting">
+		<folder path="benchmarks/all_Count"/>
+	</benchmark>
+
+	<project name="gpusat_hermann_all_count_update" job="seq-gpusat">
+		<runtag machine="hermann" benchmark="counting" tag="*all*"/>
+	</project>
+
+</runscript>
+

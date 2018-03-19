@@ -7,6 +7,7 @@ from benchmarktool.tools import escape
 runsolver_re = {
     "wall": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
+    "segfault": ("string", re.compile(r"^\s*Child\s*ended\s*because\s*it\s*received\s*signal\s*11\s*\((?P<val>SIGSEGV)\)\s*"), lambda x: x),
     "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memusage": ("float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x / 1024, 2))
 }
@@ -55,6 +56,7 @@ def dynasp(root, runspec, instance):
     #             8 = dnf, 16 = invalid decomposition, 32 = invalid input,
     #             64 = solver runtime error, 128 = unknown error
 
+    f=""
     try:
         f = open(os.path.join(root, '%s.watcher' % instance_str)).read()
         for line in f.splitlines():
@@ -76,6 +78,8 @@ def dynasp(root, runspec, instance):
         # errors='ignore',
         content = codecs.open(os.path.join(root, '%s.txt' % instance_str), encoding='utf-8')
 
+        errorFile = open(os.path.join(root, instance.instance + ".err"),"r").read()
+
         for line in content:
             for val, reg in dynasp_re.items():
                 m = reg[1].match(line)
@@ -84,12 +88,21 @@ def dynasp(root, runspec, instance):
         if res['wall'][1] - res['time_htd'][1] >= timeout:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout)
-        elif res['memerror'][1] != 'NA':
+        elif "segfault" in res:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 6)
+        elif res['memerror'][1] != 'NA' or "Maximum VSize exceeded: sending SIGTERM then SIGKILL" in f:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 4)
         elif "std::bad_alloc" in content:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 4)
+        elif "td->maximumBagSize() <= 30" in content:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 2)
+        elif "inf" in content:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 3)
         elif not '#models' in res:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 1)
@@ -104,7 +117,5 @@ def dynasp(root, runspec, instance):
     if not 'time' in res:
         res["timeout"] = ("float", 1)
         res["time"] = ('float', runspec.project.job.timeout + 5)
-    elif res["time"][1] < 900:
-        res["time"]= (res["time"][0],res["time"][1]-res['time_htd'][1])
 
     return [(key, val[0], val[1]) for key, val in res.items()]

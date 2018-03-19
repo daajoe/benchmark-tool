@@ -81,6 +81,10 @@ from benchmarktool.resultparser.miniC2D import miniC2D
 from benchmarktool.resultparser.cnf2eadt import cnf2eadt
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.bdd_minisat_all import bdd_minisat_all
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.miniC2D_WMC import miniC2D_WMC
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.countAntom import countAntom
 
 
 claspre_features 	= re.compile(r"^Features[ ]*:[ ]*(([0-9]+\.?[0-9]*)([,](.+\.?.*))*)\+?[ ]*$")

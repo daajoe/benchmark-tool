@@ -7,14 +7,18 @@ from benchmarktool.tools import escape
 
 runsolver_re = {
     "wall": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
+    "segfault": ("string", re.compile(r"^\s*Child\s*ended\s*because\s*it\s*received\s*signal\s*11\s*\((?P<val>SIGSEGV)\)\s*"), lambda x: x),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
     "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memusage": ("float", re.compile(r"^maximum resident set size= (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: round(x / 1024, 2))
 }
 
 gpusat_re = {
-    "#models": ("long", re.compile(r"^\s*\"\s*Model Count\s*\"\s*:\s*(?P<val>\d*\.\d+|\d+|\d*\.\d+e[-+]\d+)\s*$")),
-    "time_init": ("float", re.compile(r"^\s*,\s*\"Init_OpenCL\"\s*:\s*(?P<val>[0-9]+(\.[0-9]+)?)\s*$"))
+    "#models": ("string", re.compile(r"^\s*\"\s*Model Count\s*\"\s*:\s*(?P<val>(\d*\.\d+|\d+|\d*\.\d+e[-+]\d+)|inf)\s*$")),
+    "time_init": ("float", re.compile(r"^\s*,\s*\"Init_OpenCL\"\s*:\s*(?P<val>[0-9]+(\.[0-9]+)?)\s*$")),
+    "memerror": ("string", re.compile(r"^\s*what\(\):\s*(?P<val>std::bad_alloc)\s*"), lambda x: x),
+    "tderror": ("string", re.compile(r"^\s*Error:\s*(?P<val>tree decomposition)\s*"), lambda x: x),
+    "widtherror": ("string", re.compile(r"^\s*ERROR:\s*(?P<val>width > 60)\s*"), lambda x: x),
 }
 
 
@@ -55,6 +59,7 @@ def gpusat(root, runspec, instance):
     #             8 = dnf, 16 = invalid decomposition, 32 = invalid input,
     #             64 = solver runtime error, 128 = unknown error
 
+    f = ""
     try:
         f = open(os.path.join(root, 'runsolver.watcher')).read()
         for line in f.splitlines():
@@ -72,41 +77,29 @@ def gpusat(root, runspec, instance):
 
     if finished:
         # errors='ignore',
-        content = open(os.path.join(root, 'runsolver.solver')).read()
+        content = codecs.open(os.path.join(root, 'runsolver.solver'), encoding='utf-8')
 
-        try:
-            content = json.loads(content)
-            if 'Model Count' in content:
-                res['#models'] = ('int', content['Model Count'])
-            if 'Time' in content:
-                res['time_init'] = ('float', content['Time']['Init_OpenCL'])
-            if 'Statistics' in content:
-                res['#joins'] = ('int', content['Statistics']['Num Join'])
-                res['#forgets'] = ('int', content['Statistics']['Num Forget'])
-                res['#introduces'] = ('int', content['Statistics']['Num Introduce'])
-                res['#leafs'] = ('int', content['Statistics']['Num Leaf'])
-                res['#actual paths min'] = ('int', content['Statistics']['Actual Paths']['min'])
-                res['#actual paths max'] = ('int', content['Statistics']['Actual Paths']['max'])
-                res['#actual paths mean'] = ('int', content['Statistics']['Actual Paths']['mean'])
-                res['#current paths min'] = ('int', content['Statistics']['Current Paths']['min'])
-                res['#current paths max'] = ('int', content['Statistics']['Current Paths']['max'])
-                res['#current paths mean'] = ('int', content['Statistics']['Current Paths']['mean'])
-        except BaseException:
-            pass
+        for line in content:
+            for val, reg in gpusat_re.items():
+                m = reg[1].match(line)
+                if m: res[val] = (reg[0], float(m.group("val")) if reg[0] == "float" else m.group("val"))
 
         if res['wall'][1] >= timeout:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout)
-        elif res['memerror'][1] != 'NA':
+        elif "segfault" in res:
+            res["timeout"] = ("float", 1)
+            res["time"] = ('float', runspec.project.job.timeout + 6)
+        elif res['memerror'][1] != 'NA' or "Maximum VSize exceeded: sending SIGTERM then SIGKILL" in f:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 4)
         elif "std::bad_alloc" in content:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 4)
-        elif "inf" in content:
+        elif "#models" in res and res['#models'][1] == "inf":
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 3)
-        elif "Error: tree decomposition" in content:
+        elif "tderror" in res or "widtherror" in res or "Error: tree decomposition" in content:
             res["timeout"] = ("float", 1)
             res["time"] = ('float', runspec.project.job.timeout + 2)
         elif not '#models' in res:
@@ -129,6 +122,6 @@ def gpusat(root, runspec, instance):
 
     if not 'time' in res:
         res["timeout"] = ("float", 1)
-        res["time"] = ('float', runspec.project.job.timeout + 2)
+        res["time"] = ('float', runspec.project.job.timeout + 5)
 
     return [(key, val[0], val[1]) for key, val in res.items()]

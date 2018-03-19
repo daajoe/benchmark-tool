@@ -308,8 +308,8 @@ class Parser:
             run.addJob(job)
 
         for node in root.xpath("./seqjob"):
-            attr = self._filterAttr(node, ["name", "memout", "timeout", "runs", "parallel"])
-            job = SeqJob(node.get("name"), tools.xmlTime(node.get("memout")), tools.xmlTime(node.get("timeout")), int(node.get("runs")), int(node.get("parallel")), attr)
+            attr = self._filterAttr(node, ["name", "timeout", "runs", "parallel"])
+            job = SeqJob(node.get("name"), tools.xmlTime(node.get("timeout")), int(node.get("runs")), int(node.get("parallel")), attr)
             run.addJob(job)
         
         for node in root.xpath("./machine"):
