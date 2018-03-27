@@ -6,20 +6,18 @@ Modified on Mar 19, 2017
 @author: Johannes K. Fichte
 '''
 import os
-import zipfile
 from collections import OrderedDict
 from collections import defaultdict
-from itertools import izip, count, imap, cycle, ifilter
-from operator import attrgetter, itemgetter
-import time
-import numpy as np
-import pandas as pd
+from itertools import izip, imap, cycle, ifilter
+from operator import itemgetter
+
 # without X
 import matplotlib as mpl
+import numpy as np
+import pandas as pd
 
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 
 try:
     from cStringIO import StringIO
@@ -27,7 +25,6 @@ except:
     from io import StringIO
 from benchmarktool.tools import Sortable, cmp
 from csv import DictWriter
-import math
 
 
 def all_same(iterable):
@@ -230,7 +227,7 @@ class InstanceTable(ResultTable):
         # TODO(1): move sort order to xml-file: use parameter keys
         basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'ubound',
                             'abs_improvement', 'rel_improvement', 'solved', 'time',
-                            'time', 'solver', 'solver_config', 'error_code']
+                            'time', 'solver', 'solver_config', 'error_code', 'objective']
         sum_order = ['', 'mean', 'count', 'count_nonzero', 'sum', 'amin', 'amax', 'std']
         sort_order = []
         for i in basic_sort_order:
@@ -331,7 +328,7 @@ class InstanceTable(ResultTable):
         for key, values in results.iteritems():
             benchmark_info = dict(izip(keys, key))
             benchmark_info['solver_config'] = '%s-%s' % (
-            benchmark_info['solver_config'], benchmark_info['solver_version'])
+                benchmark_info['solver_config'], benchmark_info['solver_version'])
             # gather additional plot infos
             pname = benchmark_info['plot_name'] if benchmark_info['plot_name'] else benchmark_info['solver_config']
             pcolor = benchmark_info['plot_color'] if benchmark_info['plot_color'] else 'm'
@@ -359,14 +356,16 @@ class InstanceTable(ResultTable):
         df = pd.DataFrame(rows)
         df.replace(to_replace='-1', value=np.nan, inplace=True)
 
-        df = df[(df['error'] < 64)]
+        # df = df[(df['error'] < 64)]
 
         # list of non-memedout instances
         nonmemout = df[(df['error'] < 2)][['full_path', 'instance']]
+
         def myfunc(x):
-            ret = x.replace('./','').split('/')
-            ret = '%s/%s' %(ret[4], '/'.join(ret[6:-2]))
+            ret = x.replace('./', '').split('/')
+            ret = '%s/%s' % (ret[4], '/'.join(ret[6:-2]))
             return ret
+
         nonmemout['full_path'] = df['full_path'].apply(myfunc)
         nonmemout.sort_values(by=['full_path', 'instance'], inplace=True)
         nonmemout.drop_duplicates().reset_index(drop=True).to_csv(output_path('nomemout'), index=False)
@@ -378,7 +377,8 @@ class InstanceTable(ResultTable):
         output['by-mem'] = df_mem_range.groupby(
             ['benchmark_name', 'mem_range', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum}).reset_index()
+             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
+             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         df_time_range = df.copy()
         df_time_range['time_range'] = df['time']
@@ -386,27 +386,32 @@ class InstanceTable(ResultTable):
         output['by-time'] = df_time_range.groupby(
             ['benchmark_name', 'time_range', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum}).reset_index()
+             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
+             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-run'] = df
         output['by-instance'] = df.groupby(['instance', 'benchmark_name', 'class', 'solver_config', 'solver',
                                             'solver_args', 'status', 'timelimit', 'memlimit', 'solved']).agg(
             {'run': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+             'memusage': [np.mean, np.max, np.min, np.std],
+             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-class'] = df.groupby(
             ['benchmark_name', 'class', 'solver_config', 'solver', 'solver_args', 'status', 'timelimit',
              'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+             'memusage': [np.mean, np.max, np.min, np.std],
+             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-benchmark'] = df.groupby(['benchmark_name', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+             'memusage': [np.mean, np.max, np.min, np.std],
+             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-all'] = df.groupby(['solver_config']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+             'memusage': [np.mean, np.max, np.min, np.std],
+             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         for k in output.iterkeys():
             with open(os.path.join(prefix, '%s-%s%s' % (project_name, k, suffix)), 'w') as outfile:
@@ -449,7 +454,7 @@ class InstanceTable(ResultTable):
 
                 # output a minimal attribute file
                 max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'time', 'solved',
-                            'solver_config']
+                            'solver_config', 'objective']
                 av_cols = map(lambda x: x[0] if isinstance(x, tuple) else x, list(output[k].columns.values))
                 sel_cols = [item for item in max_cols if item in av_cols]
 
@@ -467,7 +472,6 @@ class InstanceTable(ResultTable):
 
         self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
         self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
-
 
     def compute_vbest_solution_quality_all(self, df):
         self.compute_vbest_solution_quality_all(df, 'abs_improvement')
@@ -521,13 +525,13 @@ class InstanceTable(ResultTable):
     #     vbest_improved = vbest[(vbest['abs_improvement'] > 0)]
     #     return vbest, vbest_improved
 
-
     # TODO: move to different sheet
     # TODO: move to pandas
     def print_error_sheets(self, prefix, project_name, suffix, results, keys):
         error_codes = {0: 'ok', 1: 'timeout', 2: 'memout', 4: 'presolver_timeout', 8: 'dnf',
                        16: 'invalid_decomposition', 32: 'invalid_input',
-                       64: 'solver_runtime_error', 128: 'unknown_error'}
+                       64: 'solver_runtime_error', 128: 'unknown_error',
+                       256: 'runsolver_glitch'}
         errors = {i: [] for i in error_codes.iterkeys()}
         num_instances = 0
         output = []
