@@ -530,8 +530,9 @@ class InstanceTable(ResultTable):
     def print_error_sheets(self, prefix, project_name, suffix, results, keys):
         error_codes = {0: 'ok', 1: 'timeout', 2: 'memout', 4: 'presolver_timeout', 8: 'dnf',
                        16: 'invalid_decomposition', 32: 'invalid_input',
-                       64: 'solver_runtime_error', 128: 'unknown_error',
-                       256: 'runsolver_glitch'}
+                       64: 'invalid_json', 128: 'unknown_error',
+                       256: 'runsolver_glitch', 512: 'signal_handling', 1024: 'cluster_error',
+                       2048: 'invalid_result', 4096: 'cplex_trail_license', 8192: 'grounding_memout'}
         errors = {i: [] for i in error_codes.iterkeys()}
         num_instances = 0
         output = []
@@ -550,8 +551,7 @@ class InstanceTable(ResultTable):
                                 if res['error'] == 0:
                                     errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
                                 continue
-                            val = res['error'] // err_key
-                            if val == 1:
+                            if res['error'] & err_key > 0:
                                 errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
                         num_instances += 1
                         output.append(run_line)
@@ -568,6 +568,7 @@ class InstanceTable(ResultTable):
             summary.append(
                 {'error/ok': v, 'error_code': k, 'abs_num': len(errors[k]), 'rel_num': len(errors[k]) / num_instances})
         with open(os.path.join(prefix, '%s-%s%s' % (project_name, 'error-0summary', suffix)), 'w') as outfile:
+            summary.sort(key=itemgetter('error_code'))
             ResultTable.printSheet(self, out=outfile, results=summary)
 
     def printSheetTrellis(self, prefix, project_name, suffix, results, keys):
