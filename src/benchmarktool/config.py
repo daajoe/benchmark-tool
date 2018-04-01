@@ -31,6 +31,8 @@ from benchmarktool.resultparser.minisat import minisat
 from benchmarktool.resultparser.zchaff import zchaff
 # noinspection PyUnresolvedReferences
 #from benchmarktool.resultparser.trellis import trellis
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.fhtd import fhtd
 
 
 

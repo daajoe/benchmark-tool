@@ -29,7 +29,7 @@ def parse_args():
         #TODO: summary
         #memout:t,timeout:t
         args.measures = 'wall:t,time:t,width:t,error:t,error_str:t,run:t,solved:t,stderr:t,full_path:t,num_verts:t,' \
-                        'num_edges:t,ubound:t,status:t,timelimit:t,memlimit:t,memusage:t'
+                        'num_edges:t,ubound:t,status:t,timelimit:t,memlimit:t,memusage:t,objective:t'
     return args
 
 
