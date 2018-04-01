@@ -6,7 +6,15 @@
     <!--templates/runsolver_template.py-->
     <!--TODO: measures-->
     <system name="fhtd" version="0.7" measures="fhtd" config="pbs-generic">
-        <setting name="default" tag="sat" cmdline="" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat" tag="sat" cmdline="--disable_clique_breaking --disable_twin_breaking --disable-prepocessing" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-clique4" tag="sat" cmdline="--disable_twin_breaking --disable-prepocessing" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-twin" tag="sat" cmdline="--disable_twin_breaking --disable-prepocessing" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-pre-clique4" tag="sat" cmdline="--disable_twin_breaking" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-pre-twin" tag="sat" cmdline="--disable_twin_breaking" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-pre-clique3-twin" tag="sat" cmdline="--clique_k=3" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-pre-clique4-twin" tag="sat" cmdline="--clique_k=4" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-pre-clique6-twin" tag="sat" cmdline="--clique_k=6" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+        <setting name="sat-pre-clique8-twin" tag="sat" cmdline="--clique_k=8" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
     </system>
 
     <!-- todo condor job priority -->

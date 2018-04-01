@@ -110,7 +110,10 @@ class CSV:
                         if value_type == 'int':
                             row[name] = int(value)
                         elif value_type == 'float':
-                            row[name] = float(value)
+                            if value == 'None':
+                                row[name] = 'nan'
+                            else:
+                                row[name] = float(value)
                         else:
                             row[name] = value
                     runs[run.number] = row
