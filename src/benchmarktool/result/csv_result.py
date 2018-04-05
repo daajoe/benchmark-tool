@@ -400,20 +400,20 @@ class InstanceTable(ResultTable):
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-class'] = df.groupby(
-            ['benchmark_name', 'class', 'solver_config', 'solver', 'solver_args', 'status', 'timelimit',
+            ['benchmark_name', 'class', 'solver', 'solver_config',  'solver_args', 'status', 'timelimit',
              'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std],
+             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
-        output['by-benchmark'] = df.groupby(['benchmark_name', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
+        output['by-benchmark'] = df.groupby(['benchmark_name', 'solver', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std],
+             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
-        output['by-all'] = df.groupby(['solver_config']).agg(
+        output['by-all'] = df.groupby(['solver', 'solver_config']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std],
+             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         for k in output.iterkeys():
@@ -492,14 +492,14 @@ class InstanceTable(ResultTable):
 
     def compute_short_df(self, df, vbest):
         # take short vbest
-        vbest_short = vbest[['instance', 'solver_config', 'time', 'memusage']]
+        vbest_short = vbest[['instance', 'solved', 'solver', 'solver_config', 'time', 'memusage']]
         # ignore warning deliberately
         pd.options.mode.chained_assignment = None
         vbest_short['solver_config'] = 'vbest'
         pd.options.mode.chained_assignment = 'warn'
-        short_df = df[['instance', 'solver_config', 'time', 'memusage']]
+        short_df = df[['instance', 'solver', 'solver_config', 'time', 'memusage', 'solved']]
         short_df = short_df.append(vbest_short)
-        short_df = short_df.reindex_axis(['solver_config', 'instance', 'time', 'memusage'], axis=1)
+        short_df = short_df.reindex_axis(['solver', 'solver_config', 'instance', 'solved', 'time', 'memusage'], axis=1)
         return short_df
 
     def compute_vbest_solution_quality(self, df):
@@ -568,6 +568,7 @@ class InstanceTable(ResultTable):
         # print summary outputs
         summary = []
         for k, v in error_codes.iteritems():
+            #TODO: add solver and solver config..
             summary.append(
                 {'error/ok': v, 'error_code': k, 'abs_num': len(errors[k]), 'rel_num': len(errors[k]) / num_instances})
         with open(os.path.join(prefix, '%s-%s%s' % (project_name, 'error-0summary', suffix)), 'w') as outfile:
