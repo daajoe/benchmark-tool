@@ -54,7 +54,7 @@ def fhtd(root, runspec, instance):
         'full_call': ('string', None),
         'full_path': ('string', root),
         'hash': ('string', None),  # TODO:
-        'solved': ('int', -1),
+        'solved': ('int', 0),
         'wall': ('float', 0),
         'run': ('int', 0),
         'objective': ('float', 'nan'),
