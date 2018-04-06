@@ -16,6 +16,7 @@
       <setting name="sat-pre-clique4-twin" tag="sat" cmdline="-ck=4" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
       <setting name="sat-pre-clique6-twin" tag="sat" cmdline="-ck=6" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
       <setting name="sat-pre-clique8-twin" tag="sat" cmdline="-ck=8" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
+      <setting name="sat-pre-clique8-twin" tag="sat" cmdline="-ck=4 -bo" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
     </system>
     <system name="detkdecomp-prog" version="1.0" measures="detkdecomp" config="pbs-generic">
         <setting name="default" tag="comb" cmdline="50" ppn="1" procs="1" pbstemplate="templates/pbs/single-behemoth-fhtd.pbs"/>
