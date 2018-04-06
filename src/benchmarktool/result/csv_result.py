@@ -400,13 +400,14 @@ class InstanceTable(ResultTable):
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-class'] = df.groupby(
-            ['benchmark_name', 'class', 'solver', 'solver_config',  'solver_args', 'status', 'timelimit',
+            ['benchmark_name', 'class', 'solver', 'solver_config', 'solver_args', 'status', 'timelimit',
              'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
              'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
-        output['by-benchmark'] = df.groupby(['benchmark_name', 'solver', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
+        output['by-benchmark'] = df.groupby(
+            ['benchmark_name', 'solver', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
              'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
@@ -536,9 +537,11 @@ class InstanceTable(ResultTable):
                        64: 'invalid_json', 128: 'unknown_error',
                        256: 'runsolver_glitch', 512: 'signal_handling', 1024: 'cluster_error',
                        2048: 'invalid_result', 4096: 'cplex_trail_license', 8192: 'grounding_memout'}
-        errors = {i: [] for i in error_codes.iterkeys()}
+        # errors = {i: [] for i in error_codes.iterkeys()}
         num_instances = 0
         output = []
+        errors = []
+        solvers = set()
         for key, values in results.iteritems():
             benchmark_info = dict(izip(keys, key))
             for clazz, clazz_val in values.iteritems():
@@ -549,31 +552,55 @@ class InstanceTable(ResultTable):
                         run_line.update(
                             {'instance': instance, 'class': clazz, 'error': res['error'], 'solved': res['solved'],
                              'full_path': res['full_path']})
-                        for err_key in errors.iterkeys():
-                            if err_key == 0:
-                                if res['error'] == 0:
-                                    errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
-                                continue
-                            if res['error'] & err_key > 0:
-                                errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
-                        num_instances += 1
-                        output.append(run_line)
+                        solvers.add((run_line['solver'], run_line['solver_config']))
+                        for err_key in error_codes.iterkeys():
+                            if (res['error'] & err_key > 0) or (err_key == 0 and res['error'] == 0):
+                                errors.append(
+                                    {'instance': instance, 'full_path': res['full_path'], 'solver': run_line['solver'],
+                                     'solver_config': run_line['solver_config'], 'error': int(err_key),
+                                     'error/ok': error_codes[err_key]})
+                            num_instances += 1
+                            output.append(run_line)
 
-        # print single instance outputs
-        for k, v in error_codes.iteritems():
-            with open(os.path.join(prefix, '%s-error-%s%s' % (project_name, v, suffix)), 'w') as outfile:
-                errors[k].sort(key=itemgetter('instance'))
-                ResultTable.printSheet(self, out=outfile, results=errors[k])
+        err_columns = ['instance', 'full_path', 'solver', 'solver_config']
+        err_df = pd.DataFrame.from_dict(errors)
 
-        # print summary outputs
-        summary = []
+        detailed_error_output_path = os.path.join(prefix, 'Zerror_details')
+        if not os.path.exists(detailed_error_output_path):
+            os.makedirs(detailed_error_output_path)
+
+        # by solver and instance and error
         for k, v in error_codes.iteritems():
-            #TODO: add solver and solver config..
-            summary.append(
-                {'error/ok': v, 'error_code': k, 'abs_num': len(errors[k]), 'rel_num': len(errors[k]) / num_instances})
-        with open(os.path.join(prefix, '%s-%s%s' % (project_name, 'error-0summary', suffix)), 'w') as outfile:
-            summary.sort(key=itemgetter('error_code'))
-            ResultTable.printSheet(self, out=outfile, results=summary)
+            for s in solvers:
+                out = err_df[
+                    (err_df.solver == s[0]) & (err_df.solver_config == s[1]) & (err_df.error == k)].reset_index()
+                out.sort_values(by=['instance'], ascending=[True], inplace=True)
+                with open(os.path.join(detailed_error_output_path,
+                                       '%s-error-%s-%s_%s%s' % (project_name, s[0], s[1], v, suffix)), 'w') as outfile:
+                    out.to_csv(outfile, index=False)
+
+        # summary by solver
+        for s in solvers:
+            # filter to solver
+            out = err_df[(err_df.solver == s[0]) & (err_df.solver_config == s[1])].reset_index()
+            # group by error
+            out = out.groupby(['error', 'error/ok']).agg({'instance': 'count'}).reset_index()
+            # .agg({'instance': 'count'}).reset_index()
+            out.sort_values(by=['error'], ascending=[True], inplace=True)
+            with open(os.path.join(detailed_error_output_path, '%s-error-0summary_%s%s%s' % (project_name, s[0], s[1], suffix)),
+                      'w') as outfile:
+                out.to_csv(outfile, index=False)
+
+        # overall summary by error code
+        out = err_df.groupby(['error', 'error/ok', 'solver', 'solver_config']).agg({'instance': 'count'}).reset_index()
+        # out.sort_values(by=['instance'], ascending=[True], inplace=True)
+        with open(os.path.join(prefix, '%s-error-00summary-by-errorcode%s' % (project_name, suffix)), 'w') as outfile:
+            out.to_csv(outfile, index=False)
+        # overall summary by solver
+        out = err_df.groupby(['solver', 'solver_config', 'error', 'error/ok']).agg({'instance': 'count'}).reset_index()
+        # out.sort_values(by=['instance'], ascending=[True], inplace=True)
+        with open(os.path.join(prefix, '%s-error-00summary-bysolver%s' % (project_name, suffix)), 'w') as outfile:
+            out.to_csv(outfile, index=False)
 
     def printSheetTrellis(self, prefix, project_name, suffix, results, keys):
         def output_path(oparm, osuffix=suffix):
@@ -650,7 +677,8 @@ class InstanceTable(ResultTable):
 
         for k in output.iterkeys():
             with open(os.path.join(prefix, '%s-%s%s' % (project_name, k, suffix)), 'w') as outfile:
-                with open(os.path.join(prefix, '%s-improved-%s%s' % (project_name, k, suffix)), 'w') as outfile_filter:
+                with open(os.path.join(prefix, '%s-improved-%s%s' % (project_name, k, suffix)),
+                          'w') as outfile_filter:
                     # order header
                     col_ord = self.sort_order(list(output[k].columns))
                     output[k] = output[k].reindex_axis(col_ord, axis=1)
@@ -680,7 +708,8 @@ class InstanceTable(ResultTable):
                         filter = ('abs_improvement', 'amax')
                         # ('abs_improvement', 'amax')
                         output[k].sort_values(
-                            by=['benchmark_name', ('abs_improvement', 'sum'), ('instance', 'count'), ('time', 'mean')],
+                            by=['benchmark_name', ('abs_improvement', 'sum'), ('instance', 'count'),
+                                ('time', 'mean')],
                             ascending=[True, False, False, True], inplace=True)
                     elif k == 'by-all':
                         filter = ('abs_improvement', 'amax')
@@ -697,7 +726,8 @@ class InstanceTable(ResultTable):
                     output[k].to_csv(outfile, index=False)
 
                     # output a minimal attribute file
-                    max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'time', 'solved',
+                    max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'time',
+                                'solved',
                                 'solver_config']
                     av_cols = map(lambda x: x[0] if isinstance(x, tuple) else x, list(output[k].columns.values))
                     sel_cols = [item for item in max_cols if item in av_cols]
@@ -906,113 +936,110 @@ class InstanceTable(ResultTable):
         short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'time'], axis=1)
         return short_df
 
+    class Summary(ResultTable):
+        pass
+        # TODO: signature
+        # def printSheet(self, prefix, project_name, suffix, results, keys):
+        #     # inplace because output might be really large
+        #     output = defaultdict(list)
+        #     for key, values in results.iteritems():
+        #         benchmark_info = dict(izip(keys, key))
+        #         benchmark_lines = defaultdict(list)
+        #         for clazz, clazz_val in values.iteritems():
+        #             clazz_lines = defaultdict(list)
+        #             for instance, runs in clazz_val.iteritems():
+        #                 instance_lines = defaultdict(list)
+        #                 for run_id, res in runs.iteritems():
+        #                     run_line = {}
+        #
+        #
+        #                     for k, measure in res.iteritems():
+        #                         if type(measure) == float:
+        #                             measure = round(measure, 4)
+        #                         run_line[k] = measure
+        #
+        #                     run_line.update(benchmark_info)
+        #                     run_line.update({'instance': instance, 'class': clazz, 'width': res['width'], 'ubound': res['ubound'], 'improvement': })
+        #
+        #                     output['by-run'].append(run_line)
+        #                     for k, v in run_line.iteritems():
+        #                         instance_lines[k].append(v)
+        #
+        #                 self.store_and_merge(clazz_lines, instance_lines, 'by-instance', output)
+        #             self.store_and_merge(benchmark_lines, clazz_lines, 'by-class', output)
+        #         self.store_and_merge(None, benchmark_lines, 'by-benchmark', output)
+        #
+        #     for k in output.iterkeys():
+        #         with open(os.path.join(prefix, '%s-solution_quality-%s%s' % (project_name, k, suffix)), 'w') as outfile:
+        #             if k in ('by-instance', 'by-run'):
+        #                 output[k].sort(key=itemgetter('instance', 'time'))
+        #             if k == 'by-class':
+        #                 output[k].sort(key=itemgetter('class', 'time'))
+        #             if k == 'by-benchmark':
+        #                 output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
+        #             ResultTable.printSheet(self, out=outfile, results=output[k])
+        #
+        #     #TODO: compute cactus plots
+        #     pass
 
-class Summary(ResultTable):
-    pass
-    # TODO: signature
-    # def printSheet(self, prefix, project_name, suffix, results, keys):
-    #     # inplace because output might be really large
-    #     output = defaultdict(list)
-    #     for key, values in results.iteritems():
-    #         benchmark_info = dict(izip(keys, key))
-    #         benchmark_lines = defaultdict(list)
-    #         for clazz, clazz_val in values.iteritems():
-    #             clazz_lines = defaultdict(list)
-    #             for instance, runs in clazz_val.iteritems():
-    #                 instance_lines = defaultdict(list)
-    #                 for run_id, res in runs.iteritems():
-    #                     run_line = {}
-    #
-    #
-    #                     for k, measure in res.iteritems():
-    #                         if type(measure) == float:
-    #                             measure = round(measure, 4)
-    #                         run_line[k] = measure
-    #
-    #                     run_line.update(benchmark_info)
-    #                     run_line.update({'instance': instance, 'class': clazz, 'width': res['width'], 'ubound': res['ubound'], 'improvement': })
-    #
-    #                     output['by-run'].append(run_line)
-    #                     for k, v in run_line.iteritems():
-    #                         instance_lines[k].append(v)
-    #
-    #                 self.store_and_merge(clazz_lines, instance_lines, 'by-instance', output)
-    #             self.store_and_merge(benchmark_lines, clazz_lines, 'by-class', output)
-    #         self.store_and_merge(None, benchmark_lines, 'by-benchmark', output)
-    #
-    #     for k in output.iterkeys():
-    #         with open(os.path.join(prefix, '%s-solution_quality-%s%s' % (project_name, k, suffix)), 'w') as outfile:
-    #             if k in ('by-instance', 'by-run'):
-    #                 output[k].sort(key=itemgetter('instance', 'time'))
-    #             if k == 'by-class':
-    #                 output[k].sort(key=itemgetter('class', 'time'))
-    #             if k == 'by-benchmark':
-    #                 output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
-    #             ResultTable.printSheet(self, out=outfile, results=output[k])
-    #
-    #     #TODO: compute cactus plots
-    #     pass
+    class ValueColumn:
+        def __init__(self, name, valueType):
+            self.offset = None
+            self.content = []
+            self.name = name
+            self.type = valueType
+            self.summary = Summary()
 
+        def addCell(self, line, value):
+            if self.type == "classresult":
+                self.summary.add(float(value[1]))
+            elif self.type == "float" and value is not None:
+                value = float(value)
+                self.summary.add(value)
+            while len(self.content) <= line:
+                self.content.append(None)
+            self.content[line] = value
 
-class ValueColumn:
-    def __init__(self, name, valueType):
-        self.offset = None
-        self.content = []
-        self.name = name
-        self.type = valueType
-        self.summary = Summary()
+    class SystemColumn(Sortable):
+        def __init__(self, setting, machine):
+            self.setting = setting
+            self.machine = machine
+            self.columns = {}
+            self.offset = None
 
-    def addCell(self, line, value):
-        if self.type == "classresult":
-            self.summary.add(float(value[1]))
-        elif self.type == "float" and value is not None:
-            value = float(value)
-            self.summary.add(value)
-        while len(self.content) <= line:
-            self.content.append(None)
-        self.content[line] = value
+        def genName(self, addMachine):
+            res = self.setting.system.name + "-" + self.setting.system.version + "/" + self.setting.name
+            if addMachine:
+                res += " ({0})".format(self.machine.name)
+            return res
 
+        def __cmp__(self, other):
+            return cmp((self.setting.system.order, self.setting.order, self.machine.name),
+                       (other.setting.system.order, other.setting.order, other.machine.name))
 
-class SystemColumn(Sortable):
-    def __init__(self, setting, machine):
-        self.setting = setting
-        self.machine = machine
-        self.columns = {}
-        self.offset = None
+        def __hash__(self):
+            return hash((self.setting, self.machine))
 
-    def genName(self, addMachine):
-        res = self.setting.system.name + "-" + self.setting.system.version + "/" + self.setting.name
-        if addMachine:
-            res += " ({0})".format(self.machine.name)
-        return res
+        def iter(self, measures):
+            if measures == "":
+                for column in sorted(self.columns, cmp=lambda x: x.name):
+                    yield column
+            else:
+                for name, _ in measures:
+                    if name in self.columns:
+                        yield self.columns[name]
 
-    def __cmp__(self, other):
-        return cmp((self.setting.system.order, self.setting.order, self.machine.name),
-                   (other.setting.system.order, other.setting.order, other.machine.name))
+        # TODO:
+        # def calcSummary(self, n, ref):
+        #     for name, column in self.columns.items():
+        #         minimum = maximum = median = None
+        #         if len(ref) == 3:
+        #             minimum = ref[0].columns[name].content
+        #             maximum = ref[1].columns[name].content
+        #             median = ref[2].columns[name].content
+        #         column.summary.calc(n, column.content, minimum, maximum, median)
 
-    def __hash__(self):
-        return hash((self.setting, self.machine))
-
-    def iter(self, measures):
-        if measures == "":
-            for column in sorted(self.columns, cmp=lambda x: x.name):
-                yield column
-        else:
-            for name, _ in measures:
-                if name in self.columns:
-                    yield self.columns[name]
-
-    # TODO:
-    # def calcSummary(self, n, ref):
-    #     for name, column in self.columns.items():
-    #         minimum = maximum = median = None
-    #         if len(ref) == 3:
-    #             minimum = ref[0].columns[name].content
-    #             maximum = ref[1].columns[name].content
-    #             median = ref[2].columns[name].content
-    #         column.summary.calc(n, column.content, minimum, maximum, median)
-
-    def addCell(self, line, name, value_type, value):
-        if not name in self.columns:
-            self.columns[name] = ValueColumn(name, value_type)
-        self.columns[name].addCell(line, value)
+        def addCell(self, line, name, value_type, value):
+            if not name in self.columns:
+                self.columns[name] = ValueColumn(name, value_type)
+            self.columns[name].addCell(line, value)
