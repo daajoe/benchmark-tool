@@ -108,12 +108,12 @@ class CSV:
                     row = {}
                     for name, value_type, value in run.iter(self.measures):
                         if value_type == 'int':
-                            row[name] = int(value)
+                            row[name] = np.nan if value == 'nan' else np.int(value)
                         elif value_type == 'float':
                             if value == 'None':
-                                row[name] = 'nan'
+                                row[name] = np.nan
                             else:
-                                row[name] = float(value)
+                                row[name] = np.float(value)
                         else:
                             row[name] = value
                     runs[run.number] = row
@@ -359,19 +359,22 @@ class InstanceTable(ResultTable):
         df = pd.DataFrame(rows)
         df.replace(to_replace='-1', value=np.nan, inplace=True)
 
+
+
+
         # df = df[(df['error'] < 64)]
 
-        # list of non-memedout instances
-        nonmemout = df[(df['error'] < 2)][['full_path', 'instance']]
-
-        def myfunc(x):
-            ret = x.replace('./', '').split('/')
-            ret = '%s/%s' % (ret[4], '/'.join(ret[6:-2]))
-            return ret
-
-        nonmemout['full_path'] = df['full_path'].apply(myfunc)
-        nonmemout.sort_values(by=['full_path', 'instance'], inplace=True)
-        nonmemout.drop_duplicates().reset_index(drop=True).to_csv(output_path('nomemout'), index=False)
+        # # list of non-memedout instances
+        # nonmemout = df[(df['error'] < 2)][['full_path', 'instance']]
+        #
+        # def myfunc(x):
+        #     ret = x.replace('./', '').split('/')
+        #     ret = '%s/%s' % (ret[4], '/'.join(ret[6:-2]))
+        #     return ret
+        #
+        # nonmemout['full_path'] = df['full_path'].apply(myfunc)
+        # nonmemout.sort_values(by=['full_path', 'instance'], inplace=True)
+        # nonmemout.drop_duplicates().reset_index(drop=True).to_csv(output_path('nomemout'), index=False)
 
         # TODO: generalize to xml file
         df_mem_range = df.copy()
@@ -386,6 +389,7 @@ class InstanceTable(ResultTable):
         df_time_range = df.copy()
         df_time_range['time_range'] = df['time']
         df_time_range['time_range'] = pd.cut(df_mem_range['time'], np.arange(0, 1800, 120))
+
         output['by-time'] = df_time_range.groupby(
             ['benchmark_name', 'time_range', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
@@ -474,8 +478,57 @@ class InstanceTable(ResultTable):
         short_df = self.compute_short_df(df, vbest)
         short_df_non_zero = short_df[(short_df[key1] > 0)]
 
-        self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
-        self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
+        #fast
+        #self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
+        #self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
+
+        #==============================================================================
+        # only for fhtd
+        #==============================================================================
+        #max graph size
+        df_max = df.groupby(['solver','solver_config', 'solved']).agg({'num_verts': np.max, 'num_hyperedges': np.max, 'size_largest_hyperedge': np.max}).reset_index()
+        df_max.to_csv(output_path('0-solved-max_input'))
+
+
+        #instances of certain size solved
+        # df_ranges.to_csv(output_path('00foo'), index=False)
+        ranges = [('num_verts',np.arange(0, 2000, 50)), ('num_hyperedges',np.arange(0, 2000, 50)),
+                  ('num_twins',np.arange(0, 2000, 50)), ('pre_size_max_twin',np.arange(0, 2000, 50)),
+                  ('pre_clique_size',np.arange(0, 2000, 50)), ('size_largest_hyperedge',np.arange(0, 20, 2))]
+        for i, r in ranges:
+            df_ranges = df.copy()
+            df_ranges['%s_range'%i] = df['%s'%i]
+            # pd.cut(df["B"], np.arange(0,1.0+0.155,0.155))
+            df_ranges['%s_range'%i] = pd.cut(df_ranges['%s'%i], r)
+
+            #'benchmark_name',
+            df_ranges=df_ranges.groupby(
+                ['%s_range'%i, 'solver', 'solver_config', 'solver_args']).agg(
+                {'instance': 'count', 'objective': [np.mean, np.max, np.min, np.std],
+                 'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std, np.sum],
+                 'solved': [np.sum]}).reset_index()
+            df_ranges.to_csv(output_path('0-range-by-%s'%i))
+        exit(1)
+
+
+        #'np.max(df['num_verts']), np.max(df['num_hyperedges']), np.max((df['size_largest_hyperedge']))'
+        #print df['num_verts'][(df.num_verts != np.nan)]
+        output = df.groupby(
+            ['benchmark_name', 'class', 'solver', 'solver_config', 'solver_args', 'status', 'timelimit',
+             'memlimit']).agg(
+            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std],
+             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
+        # output.to_csv(output_path('foo'), index=False)
+
+        exit(1)
+
+        df_ranges['he_range'] = df['#hyperedges']
+        # pd.cut(df["B"], np.arange(0,1.0+0.155,0.155))
+        df_ranges['he_range'] = pd.cut(df_ranges['#hyperedges'], np.arange(0, 10000, 1000))
+        df_ranges['he_range'].to_csv(output_path('0-range-by-hyperedges'), index=False)
+        exit(1)
+
+
 
     def compute_vbest_solution_quality_all(self, df):
         self.compute_vbest_solution_quality_all(df, 'abs_improvement')

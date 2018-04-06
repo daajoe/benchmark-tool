@@ -53,6 +53,8 @@ def fhtd(root, runspec, instance):
         'solver_args': ('string', escape(runspec.setting.cmdline)),
         'full_call': ('string', None),
         'full_path': ('string', root),
+        'num_verts': ('int', 'nan'),
+        'num_hyperedges': ('int', 'nan'),
         'hash': ('string', None),  # TODO:
         'solved': ('int', 0),
         'wall': ('float', 0),
@@ -193,19 +195,38 @@ def fhtd(root, runspec, instance):
     except KeyError, e:
         pass
 
+    #TODO: twins
+
+    def nan_or_value(tpl, stats):
+        try:
+            return (tpl[0], stats[tpl[1]])
+        except KeyError, e:
+            return (tpl[0], 'nan')
+
     # PROBLEM/SOLVER SPECIFIC OUTPUT
     if error == 0:
-        try:
-            res['objective'] = ('float', stats['width'])
-            res['run'] = ('int', stats['run'])
-            res['hash'] = ('string', stats['hash'][0:16] + '*')
+        res['objective'] = nan_or_value(('float', 'width'), stats)
+        res['run'] = nan_or_value(('int', 'run'), stats)
+        res['num_hyperedges'] = nan_or_value(('int', '#hyperedges'), stats)
+        res['num_verts'] = nan_or_value(('int', '#vertices'), stats)
+        res['pre_wall'] = nan_or_value(('float', 'pre_wall'), stats)
+        res['z3_wall'] = nan_or_value(('float', 'z3_wall'), stats)
+        res['enc_wall'] = nan_or_value(('float', 'enc_wall'), stats)
+        res['size_largest_hyperedge'] = nan_or_value(('int', 'size_largest_hyperedge'), stats)
+        res['pre_clique_k'] = nan_or_value(('int', 'pre_clique_k'),stats)
+        res['pre_clique_size'] = nan_or_value(('int', 'pre_clique_size'),stats)
+        res['num_twins'] = nan_or_value(('int', 'num_twins'),stats)
+        res['pre_size_max_twin'] = nan_or_value(('int', 'pre_size_max_twin'),stats)
 
+        try:
+            res['hash'] = ('string', stats['hash'][0:16] + '*')
             cut = os.path.join(*instance.location.split('/')[1:])
             index = stats['instance'].find(cut)
             if index != -1:
                 res['instance_path'] = ('string', stats['instance'][index + len(cut) + 1:])
         except KeyError, e:
-            sys.stderr.write('Missing attribute "%s" for instance "%s".\n' % (str(e), root))
+            # sys.stderr.write('Missing attribute "%s" for instance "%s".\n' % (str(e), root))
+            pass
         try:
             res['full_call'] = ('string', b64encode(stats['call']))
         except KeyError:
