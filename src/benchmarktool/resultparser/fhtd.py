@@ -86,7 +86,7 @@ def fhtd(root, runspec, instance):
         if 'raise TimeoutException(\'signal\')' in err_content or 'SIGNAL received' in err_content:
             res['timeout'] = ('int', 1)
             signal_handling_error = True
-        elif 'MemoryError: std::bad_alloc' in err_content:
+        elif 'MemoryError: std::bad_alloc' in err_content or 'z3.z3types.Z3Exception: out of memory' in err_content:
             res['memout'] = ('int', 1)
             grounding_error = True
         elif 'ERROR in Tree Decomposition' in err_content:

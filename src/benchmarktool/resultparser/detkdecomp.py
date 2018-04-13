@@ -5,6 +5,7 @@ Created on Mar 18, 2017
 '''
 
 import codecs
+import json
 import os
 import re
 import sys
@@ -24,34 +25,6 @@ runsolver_re = {
     "status": ("int", re.compile(r"Child status: (?P<val>[0-9]+)"), lambda x: x),
     "cumcpu_time": (
         "float", re.compile("Current children cumulated CPU time \(s\)\s(?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x)
-}
-
-detkdecomp_re = {
-    "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
-    "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
-    "parse_wall": ("float", re.compile(r"^Parsing input file done in (?P<val>[0-9]+(\.[0-9]+)) sec"), lambda x: x),
-    "hgbuild_wall": (
-    "float", re.compile(r"^Building\s*hypergraph\s*done\s*in\s*(?P<val>[0-9]+(\.[0-9]+)*)\s*sec."), lambda x: x),
-    "solve_wall": (
-        "float", re.compile(r"Building hypertree done in (?P<val>[0-9]+(\.[0-9]+)*) sec \(hypertree-width: [0-9]+\)."),
-        lambda x: x),
-    "verify_wall": (
-    "float", re.compile(r"^Checking hypertree conditions done in (?P<val>[0-9]+(\.[0-9]+)*) sec."), lambda x: x),
-    "num_variables": (
-        "int", re.compile(
-            r"^Parsing\s*input\s*file\s*done\s*in\s*[0-9]+(\.[0-9]+)*\s*sec\s*\(([0-9]+)\s*atoms,\s*(?P<val>[0-9]+)\s*variables\)."),
-        lambda x: x),
-    "num_hyperedges": (
-        "int", re.compile(
-            r"^Parsing\s*input\s*file\s*done\s*in\s*[0-9]+(\.[0-9]+)*\s*sec\s*\((?P<val>[0-9]+)\s*atoms,\s*([0-9]+)\s*variables\)."),
-        lambda x: x),
-    "objective": (
-        "float", re.compile(r"Building hypertree done in [0-9]+(\.[0-9]+)* sec \(hypertree-width: (?P<val>[0-9]+)\)."),
-        lambda x: x),
-    "cond1": ("string", re.compile(r"^Condition 1: (?P<val>satisfied)."), lambda x: x),
-    "cond2": ("string", re.compile(r"^Condition 2: (?P<val>satisfied)."), lambda x: x),
-    "cond3": ("string", re.compile(r"^Condition 3: (?P<val>satisfied)."), lambda x: x),
-    "cond4": ("string", re.compile(r"^Condition 4: (?P<val>satisfied)."), lambda x: x)
 }
 
 
@@ -169,18 +142,28 @@ def detkdecomp(root, runspec, instance):
     try:
         # errors='ignore',
         content = codecs.open(os.path.join(root, '%s.txt' % instance_str), encoding='utf-8').read()
-        for line in content.splitlines():
-            # print line
-            for val, reg in detkdecomp_re.items():
-                m = reg[1].match(line)
-                if m: res[val] = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
-
+        valid_json = True
         try:
-            if res['cond1'] == res['cond2'] == res['cond3'] == res['cond4'] and res['objective']:
-                res['solved'] = ('int', 1)
-        except KeyError:
-            res['solved'] = ('int', 0)
-            invalid_result = True
+            stats = json.loads(content)
+
+            try:
+                if type(stats['objective']) is int:
+                    res['solved'] = ('int', 1)
+                    res['objective'] = ('int', stats['objective'])
+            except KeyError:
+                #TODO: bugfix.
+                res['objective'] = ('int', 'nan')
+                invalid_result = True
+
+        except ValueError, e:
+            sys.stderr.write('Error (invalid JSON): %s ("%s"); %s\n' % (instance.instance, root, str(e)))
+            res['error_str'] = ('string', res['error_str'][1] + str(e))
+            with open(os.path.join(root, '%s.err' % instance_str)) as fstderr:
+                res['stderr'] = ('string', escape(fstderr.read().replace('\n', ' ').replace('  ', '')))
+            valid_json = False
+
+            #for space reasons TODO: fixme
+            del res['stderr']
 
     except IOError:
         sys.stderr.write('Instance %s did not finish properly. Missing output file.\n' % root)
@@ -191,6 +174,7 @@ def detkdecomp(root, runspec, instance):
     # 2048 = invalid result, 4096 = cplex license issue
     error += int(res['timeout'][1])
     error += int(res['memout'][1]) * 2
+    error += int(not valid_json) * 64
     error += int(not valid_solver_run) * 128
     error += int(runsolver_error) * 256
     # error += int(signal_handling_error) * 512
@@ -204,6 +188,42 @@ def detkdecomp(root, runspec, instance):
         res['wall'] = ('float', stats['wall'])
     except KeyError, e:
         pass
+
+
+    def nan_or_value(tpl, stats):
+        try:
+            return (tpl[0], stats[tpl[1]])
+        except KeyError, e:
+            return (tpl[0], 'nan')
+
+    # PROBLEM/SOLVER SPECIFIC OUTPUT
+    if error == 0:
+        res['run'] = nan_or_value(('int', 'run'), stats)
+        res['num_hyperedges'] = nan_or_value(('int', '#hyperedges'), stats)
+        res['num_verts'] = nan_or_value(('int', '#vertices'), stats)
+        res['pre_wall'] = nan_or_value(('float', 'pre_wall'), stats)
+        res['z3_wall'] = nan_or_value(('float', 'z3_wall'), stats)
+        res['enc_wall'] = nan_or_value(('float', 'enc_wall'), stats)
+        res['size_largest_hyperedge'] = nan_or_value(('int', 'size_largest_hyperedge'), stats)
+        res['pre_clique_k'] = nan_or_value(('int', 'pre_clique_k'), stats)
+        res['pre_clique_size'] = nan_or_value(('int', 'pre_clique_size'), stats)
+        res['num_twins'] = nan_or_value(('int', 'num_twins'), stats)
+        res['pre_size_max_twin'] = nan_or_value(('int', 'pre_size_max_twin'), stats)
+
+        try:
+            res['hash'] = ('string', stats['hash'][0:16] + '*')
+            cut = os.path.join(*instance.location.split('/')[1:])
+            index = stats['instance'].find(cut)
+            if index != -1:
+                res['instance_path'] = ('string', stats['instance'][index + len(cut) + 1:])
+        except KeyError, e:
+            # sys.stderr.write('Missing attribute "%s" for instance "%s".\n' % (str(e), root))
+            pass
+        try:
+            res['full_call'] = ('string', b64encode(stats['call']))
+        except KeyError:
+            res['full_call'] = ('string', 'nan')
+            # sys.stderr.write('Could not find "call" in json values (instance = %s).\n' % root)
 
     # PROBLEM/SOLVER SPECIFIC OUTPUT
     # if error == 0:

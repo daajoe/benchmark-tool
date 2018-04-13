@@ -25,6 +25,9 @@ import time
 
 from os.path import dirname
 
+import psutil
+
+
 def handler(signum, frame):
   sys.stderr.write('SIGNAL received %s\n' %signum)
   current_process = psutil.Process()

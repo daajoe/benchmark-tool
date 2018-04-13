@@ -8,15 +8,18 @@ Modified on Mar 19, 2017
 import os
 from collections import OrderedDict
 from collections import defaultdict
-from itertools import izip, imap, cycle, ifilter
+from itertools import izip, imap, cycle, ifilter, combinations
 from operator import itemgetter
 
 # without X
 import matplotlib as mpl
+mpl.use('TkAgg')
+
 import numpy as np
 import pandas as pd
 
-mpl.use('Agg')
+from matplotlib.backends.backend_pdf import PdfPages
+
 import matplotlib.pyplot as plt
 
 try:
@@ -123,7 +126,8 @@ class CSV:
         d['solver_measure'] = runspec.setting.system.measures
         d['solver_version'] = runspec.setting.system.version
         d['solver_config'] = runspec.setting.name
-        d['plot_type'] = runspec.setting.plot_type
+        d['plot_marker'] = runspec.setting.plot_marker
+        d['plot_linestyle'] = runspec.setting.plot_linestyle
         d['plot_color'] = runspec.setting.plot_color
         d['plot_name'] = runspec.setting.plot_name
         d['plot_show'] = runspec.setting.plot_show
@@ -246,8 +250,9 @@ class InstanceTable(ResultTable):
 
     def output_cactus_plot(self, plots, filename, benchmark, mapping, indices=('time', 'memusage'), ignore_vbest=False,
                            limit=5):
+        #TODO: fix vbest
         if 'vbest' not in mapping:
-            mapping['vbest'] = (True, 'vbest', 'm', ':')
+            mapping['vbest'] = (True, 'vbest', 'm', '.', ':')
         for index in indices:
             configs = plots['solver_config'].unique()
             NUM_COLORS = len(configs) + 1
@@ -261,7 +266,8 @@ class InstanceTable(ResultTable):
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-            lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            # lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            lfont = lambda x: x #lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
             ignorelist = imap(lambda x: x[0], ifilter(lambda x: x[1], mapping))
 
             for key in configs:
@@ -276,7 +282,8 @@ class InstanceTable(ResultTable):
                 plot.reset_index(inplace=True)
                 ts = pd.Series(plot[index])
                 label = lfont(mapping[key][1]) if mapping.has_key(key) else key
-                ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2], linestyle=mapping[key][3])
+                ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2],
+                             marker=mapping[key][3], linestyle=mapping[key][4])
 
             fig.subplots_adjust(bottom=0.3, left=0.1)
             # box = ax.get_position()
@@ -335,13 +342,15 @@ class InstanceTable(ResultTable):
             # gather additional plot infos
             pname = benchmark_info['plot_name'] if benchmark_info['plot_name'] else benchmark_info['solver_config']
             pcolor = benchmark_info['plot_color'] if benchmark_info['plot_color'] else 'm'
-            ptype = benchmark_info['plot_type'] if benchmark_info['plot_type'] else ':'
+            pmarker = benchmark_info['plot_marker'] if benchmark_info['plot_marker'] else ':'
+            plstyle = benchmark_info['plot_linestyle'] if benchmark_info['plot_linestyle'] else ':'
             pshow = benchmark_info['plot_show'] if benchmark_info['plot_show'] else True
-            plot_mappings[benchmark_info['solver_config']] = (pshow, pname, pcolor, ptype)
+            plot_mappings[benchmark_info['solver_config']] = (pshow, pname, pcolor, pmarker, plstyle)
             del benchmark_info['plot_show']
             del benchmark_info['plot_name']
             del benchmark_info['plot_color']
-            del benchmark_info['plot_type']
+            del benchmark_info['plot_marker']
+            del benchmark_info['plot_linestyle']
 
             for clazz, clazz_val in values.iteritems():
                 for instance, runs in clazz_val.iteritems():
@@ -358,8 +367,6 @@ class InstanceTable(ResultTable):
 
         df = pd.DataFrame(rows)
         df.replace(to_replace='-1', value=np.nan, inplace=True)
-
-
 
 
         # df = df[(df['error'] < 64)]
@@ -479,8 +486,8 @@ class InstanceTable(ResultTable):
         short_df_non_zero = short_df[(short_df[key1] > 0)]
 
         #fast
-        #self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
-        #self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
+        # self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
+        # self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
 
         #==============================================================================
         # only for fhtd
@@ -508,27 +515,223 @@ class InstanceTable(ResultTable):
                  'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std, np.sum],
                  'solved': [np.sum]}).reset_index()
             df_ranges.to_csv(output_path('0-range-by-%s'%i))
+
+        self.objective_comparison(df, output_path)
+
+        import code
+        code.interact(local=locals())
+
+        exit(0)
+
+
+        #output 1:1 comparision
+
+
+        # 1:1 comparison between results of solver
+        #df['objective']
+
+
+        # print best
         exit(1)
+        # df.filter('solver = detkd')
+        # exit(1)
+        #
+
+    def objective_comparison(self, df, output_path):
+        #TODO: cleanup
+        # **************************************************************************************************************
+        # OBJECTIVE COMPARISONS
+        # **************************************************************************************************************
+        # ========================================================================================================
+        # 1:1 comparison between best sat config and detkdecomp
+        # ========================================================================================================
+        #
+        # get best configs by solver
+        df2 = df.copy()
+        best = df2.groupby(['solver_config', 'solver']).agg({'solved': [np.sum]}).reset_index()
+        best.sort_values(by=[('solved', 'sum')], ascending=[False], inplace=True)
+        seen = set()
+        drops = list()
+        for idx, row in best.iterrows():
+            val = row['solver'].values[0]
+            if val in seen:
+                drops.append(idx)
+            else:
+                seen.add(val)
+        best.drop(drops, inplace=True)
+        best = best[['solver', 'solver_config']].reset_index()
+        # ========================================================================================================
+        # construct 1:1 comparision
+        # ========================================================================================================
+        # SET SOME VALUE FOR TESTING
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'default-n1-1.0'), 'objective'] = 0
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-clique4-n1-0.7'), 'objective'] = 1
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-n1-0.7'), 'objective'] = 2
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique3-twin-n1-0.7'), 'objective'] = 3
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique4-n1-0.7'), 'objective'] = 4
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique4-twin-n1-0.7'), 'objective'] = 5
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique6-twin-n1-0.7'), 'objective'] = 6
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-twin-n1-0.7'), 'objective'] = 7
+        df3 = df2.copy()
+        df3["solver_config"] = df3["solver"].map(str) + '_' + df3["solver_config"]
+        df3.drop(columns=['solver'], inplace=True)
+        df_sorted = df3[['instance', 'benchmark_name', 'objective', 'solver_config']].sort_values(['solver_config'])
+        # groupby and unstack/transpose
+        direct_comp_by_config = df_sorted.groupby(['instance', 'benchmark_name'])['objective']. \
+            apply(lambda df_sorted: df_sorted.reset_index(drop=True)).unstack().reset_index()
+        # construct nice names
+        mapping = {}
+        for i, c in enumerate(df_sorted['solver_config'].unique()):
+            mapping[i] = c
+        direct_comp_by_config.rename(index=str, columns=mapping, inplace=True)
+        direct_comp_by_config.to_csv(output_path('objective_direct_comparison'))
+        # TODO: fixme
+        best_col = 'fhtd_' + best[best.solver == 'fhtd'].solver_config.values[0]
+        comp_col = 'detkdecomp-prog_default-n1-1.0'
+        cols = [best_col, comp_col, 'odiff']
+
+        htd_vs_fhtd = direct_comp_by_config[['benchmark_name', 'instance', comp_col, best_col]]
+        htd_vs_fhtd.reset_index(inplace=True)
+
+        htd_vs_fhtd=htd_vs_fhtd.assign(odiff=htd_vs_fhtd[best_col] - htd_vs_fhtd[comp_col])
+        htd_vs_fhtd.sort_values(by='odiff', inplace=True)
+        htd_vs_fhtd.reset_index(inplace=True)
+        htd_vs_fhtd=htd_vs_fhtd[htd_vs_fhtd.odiff.notnull()]
+
+        # construct a nice plot here
+        # plt.rc('font', family='serif')
+        # plt.rcParams['text.usetex'] = True
+        # plt.rcParams['text.latex.preamble'] = [r'\usepackage{amsmath}\def\hy{\hbox{-}\nobreak\hskip0pt}']
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        lfont = lambda x: x  # lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+        ignorelist = imap(lambda x: x[0], ifilter(lambda x: x[1], mapping))
+
+        #TODO: take nice names colors and markers here
+        #fixme to universal names
+        configs = {
+            'detkdecomp-prog_default-n1-1.0':
+                {
+                    'color': '#8da0cb',
+                    'marker': '',
+                    'linestyle': '-',
+                    'label': 'htd',
+                    'linewidth': 0.5,
+                },
+            'fhtd_sat-pre-clique6-twin-n1-0.7':
+                {
+                    'color': '#fc8d62',
+                    'marker': '',
+                    'linestyle': '-',
+                    'label': 'fhtd',
+                    'linewidth': 0.5,
+                },
+            'odiff':
+                {
+                    'color': '#66c2a5',
+                    'marker': '',
+                    'linestyle': '-',
+                    'label': 'diff',
+                    'linewidth': 0.5,
+                }
+        }
+        for config in cols:
+            print config
+            # ignore warning deliberately
+            pd.options.mode.chained_assignment = None
+            # sort by objective
+            pd.options.mode.chained_assignment = 'warn'
+            ts = pd.Series(htd_vs_fhtd[config])
+
+            # label = lfont(mapping[key][1]) if mapping.has_key(key) else key
+            ax = ts.plot(markeredgecolor='none', label=configs[config]['label'], color=configs[config]['color'],
+                         marker=configs[config]['marker'], linestyle=configs[config]['linestyle'],
+                         linewidth=configs[config]['linewidth'])
+
+        fig.subplots_adjust(bottom=0.3, left=0.1)
+        #TODO: fixme
+        plt.savefig(output_path('')[:-4]+'objective_comp.pdf', bbox_inches="tight")  # , additional_artists=art)
+
+        # print htd_vs_fhtd.head(5)
+
+        #TODO: fixme
+        htd_vs_fhtd=htd_vs_fhtd[htd_vs_fhtd.odiff > 0]
+
+        omax = np.max(htd_vs_fhtd['odiff'])
+        intervals = np.arange(0, omax+0.5, 0.5)
+        htd_vs_fhtd['odiff_range'] = pd.cut(htd_vs_fhtd['odiff'], intervals)
+        # print htd_vs_fhtd.columns
+        # print htd_vs_fhtd[['odiff_range', 'odiff']]
+        # htd_vs_fhtd.reset_index(inplace=True)
+        ranges = htd_vs_fhtd[['odiff_range']]
+        ranges = ranges.groupby(['odiff_range'])
+        ranges = ranges.agg({'odiff_range': np.count_nonzero}) #.reset_index()
+        ranges = ranges[ranges.odiff_range > 0]
+        ranges.rename(index=str, columns={'odiff_range': 'count'}, inplace=True)
+        print ranges
 
 
-        #'np.max(df['num_verts']), np.max(df['num_hyperedges']), np.max((df['size_largest_hyperedge']))'
-        #print df['num_verts'][(df.num_verts != np.nan)]
-        output = df.groupby(
-            ['benchmark_name', 'class', 'solver', 'solver_config', 'solver_args', 'status', 'timelimit',
-             'memlimit']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std],
-             'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
-        # output.to_csv(output_path('foo'), index=False)
+        fig, ax = plt.subplots()
+        pdf = PdfPages(output_path('')[:-4]+'output.pdf')
+
+        explode = (0.15, 0.15, 0.15, 0.1, 0.075) #, 0.05, 0.3) #, 0, 0, 0, 0, 0)
+        # explode = explode,
+    #['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628']
+
+        col_dict = {
+            "(0.0, 0.5]": '#a6cee3',
+            "(0.5, 1.0]": '#1f78b4',
+            "(1.0, 1.5]": '#b2df8a',
+            "(1.5, 2.0]": '#33a02c',
+            # "(2.0, 2.5]": '#fb9a99',
+            # "(2.5, 3.0]": '#e31a1c',
+            "(3.0, 3.5]": '#fdbf6f',
+        }
+        colors = col_dict.values()
+
+        print ranges['count']
+        #%d  '%.2f'
+        def absolute_value(val):
+            a = np.round(val / 100. * ranges['count'].sum(), 0)
+            return int(a)
+
+        ranges['count'].plot.pie(subplots=True, autopct=absolute_value, figsize=(6, 4), colors=colors, explode=explode)
+        ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.7))
+        plt.gcf().subplots_adjust(bottom=0, top=0.9, right=0.74)
+        pdf.savefig()
 
         exit(1)
-
-        df_ranges['he_range'] = df['#hyperedges']
-        # pd.cut(df["B"], np.arange(0,1.0+0.155,0.155))
-        df_ranges['he_range'] = pd.cut(df_ranges['#hyperedges'], np.arange(0, 10000, 1000))
-        df_ranges['he_range'].to_csv(output_path('0-range-by-hyperedges'), index=False)
-        exit(1)
-
-
+        # exit(1)
+        # take configs and do 1:1 comparison between solver
+        comps = []
+        for i, j in combinations(best.itertuples(index=False), 2):
+            compdf = df2[((df2.solver == i[1]) | (df2.solver == j[1])) &
+                         ((df2.solver_config == i[2]) | ((df2.solver_config == j[2])))]
+            print compdf.solver_config.unique()
+            compdf = compdf[['benchmark_name', 'instance', 'solver', 'objective']]
+            print compdf.groupby(['benchmark_name', 'instance']).agg(
+                {'objective': [np.max, np.min, np.ptp]})  # .reset_index()
+            # TODO: finish
+            # df[df=]
+            # print i[1],i[2], j[1], j[2]
+            # comps.append()
+        # print direct_comp_by_config.head(5) #[direct_comp_by_config.instance =='tpch-synthetic-q9.hg']
+        # ========================================================================================================
+        # compute different values
+        # ========================================================================================================
+        # cols = filter(lambda x: x.startswith('fhtd'), direct_comp_by_config.columns[2:])
+        # pd.merge(df1, df2, on=['A', 'B'], how='left', indicator=True)['_merge'] == 'both'
+        # Y = pd.merge(X, X, on=['fhtd_sat-n1-0.7', 'fhtd_sat-pre-twin-n1-0.7'], how='left', indicator=True)['_merge']
+        # Z=df2[(df2.instance == 'Dubois-015.xml.hg')][['instance','benchmark_name','objective']]
+        # Z=df2[(df2.instance == 'Dubois-015.xml.hg') & (df.solver == 'fhtd')][['instance','benchmark_name','objective', 'solver','solver_config']]
+        # same = lambda X: all(X.head(1) == e for e in X)
+        # same = lambda X: all(X.values[0] == e for e in X.values)
+        diff_objective = df2.groupby(['benchmark_name', 'instance', 'solver']).agg({'objective': np.ptp})
+        diff_objective = diff_objective[
+            (diff_objective.objective != 0) & (diff_objective.objective.notnull())]  # .reset_index()
+        diff_objective.to_csv(output_path('objective_difference'))
 
     def compute_vbest_solution_quality_all(self, df):
         self.compute_vbest_solution_quality_all(df, 'abs_improvement')
@@ -560,11 +763,10 @@ class InstanceTable(ResultTable):
         return self.compute_vbest(df, 'abs_improvement')
 
     def compute_vbest(self, df, key):
-        max_improvements = df.reset_index()
-        max_improvements.sort_values(by=['benchmark_name', 'class', 'instance', key],
-                                     ascending=[True, True, True, False], inplace=True)
-        vbest = max_improvements.groupby(['benchmark_name', 'class', 'instance']).head(1)
-        # order header
+        df2 = df.reset_index()
+        df2.sort_values(by=['benchmark_name', 'class', 'instance', key],
+                                     ascending=[True, True, True, True], inplace=True)
+        vbest = df2.groupby(['benchmark_name', 'class', 'instance']).head(1)
         col_ord = self.sort_order(list(vbest.columns))
         vbest = vbest.reindex_axis(col_ord, axis=1)
         vbest_improved = vbest[(vbest[key] > 0)]
@@ -845,7 +1047,9 @@ class InstanceTable(ResultTable):
                        'tcs-b150-n1': 'bforce-150-1800',
                        'vbest': 'vbest'}
 
-            lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            # lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            #TODO: move coloring function to XML?
+            lfont = lambda x : x
             # mapping = {}
 
             # b: blue
