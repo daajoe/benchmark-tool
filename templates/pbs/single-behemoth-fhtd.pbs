@@ -1,13 +1,14 @@
 #!/bin/bash
-#PBS -m n
-#PBS -j oe
-#PBS -r n
-#PBS -l walltime={walltime}
-#PBS -l nodes={nodes}:ppn={ppn}
-#PBS -l bc4
-#PBS -e /home1/johannes.fichte/pbs_out/
-#PBS -o /home1/johannes.fichte/pbs_out/
+#$ -m n
+#$ -r n
+#$ -l h_rt={walltime}
+#$ -l mem_free=8G
+#$ -l h_vmem=8G
+#$ -l bc4
+#$ -e /home1/johannes.fichte/pbs_out/
+#$ -o /home1/johannes.fichte/pbs_out/
 
+##PBS -l nodes={nodes}:ppn={ppn}
 ##PBS -l nice=-20
 ##PBS -W x=FLAGS:ADVRES:joe.0
 ##PBS -W x=NACCESSPOLICY:SINGLEJOB
