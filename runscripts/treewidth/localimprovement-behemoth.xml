@@ -5,6 +5,31 @@
 	<config name="pbs-generic" template="templates/seq-tw-LI.sh"/>
 	<!--templates/runsolver_template.py-->
 	<!--TODO: measures-->
+
+	 <!-- PLOT INFOS see:
+            b: blue
+            g: green
+            r: red
+            c: cyan
+            m: magenta
+            y: yellow
+            k: black
+            w: white
+            ['-', '- -', '-.', ':'])
+            https://xkcd.com/color/rgb/
+            cm = plt.get_cmap('gist_rainbow')
+            ax.set_prop_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            marker = cycle(('.', 'p', '^', '*', 'd', 's', 'o'))  # (',', '+', '.', 'o', '*'))
+            marker = cycle(('.', 'p', '^'))  # (',', '+', '.', 'o', '*'))
+            ax.set_color_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            ...
+            linestyle='', marker=marker.next()
+            TODO: define cycle
+            https://matplotlib.org/users/colormaps.html
+            TODO: define plot config and default plot config
+            TODO: move Latex Fonts to xml
+    -->
+
 	<system name="tw-limprovement" version="1.0" measures="pace_jkf" config="pbs-generic">
  		<!--<setting name="default" tag="sat" cmdline="-w 900 -b -1" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
  		<!--<setting name="roofy5" tag="sat" cmdline="-w 900 -b -1 -r 5" ppn="4" procs="1"/>

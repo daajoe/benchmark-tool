@@ -53,6 +53,8 @@ def fhtd(root, runspec, instance):
         'solver_args': ('string', escape(runspec.setting.cmdline)),
         'full_call': ('string', None),
         'full_path': ('string', root),
+        'num_verts': ('int', 'nan'),
+        'num_hyperedges': ('int', 'nan'),
         'hash': ('string', None),  # TODO:
         'solved': ('int', 0),
         'wall': ('float', 0),
@@ -84,7 +86,7 @@ def fhtd(root, runspec, instance):
         if 'raise TimeoutException(\'signal\')' in err_content or 'SIGNAL received' in err_content:
             res['timeout'] = ('int', 1)
             signal_handling_error = True
-        elif 'MemoryError: std::bad_alloc' in err_content:
+        elif 'MemoryError: std::bad_alloc' in err_content or 'z3.z3types.Z3Exception: out of memory' in err_content:
             res['memout'] = ('int', 1)
             grounding_error = True
         elif 'ERROR in Tree Decomposition' in err_content:
@@ -137,7 +139,7 @@ def fhtd(root, runspec, instance):
                 sys.stderr.write('instance %s did not finish properly\n' % root)
         except IOError:
             res['error_str'] = ('string', 'Did not finish.')
-            return res
+            return [(key, val[0], val[1]) for key, val in res.items()]
 
     else:
         log_content = open(os.path.join(root, "condor.log")).read()
@@ -193,26 +195,46 @@ def fhtd(root, runspec, instance):
     except KeyError, e:
         pass
 
+    #TODO: twins
+
+    def nan_or_value(tpl, stats):
+        try:
+            return (tpl[0], stats[tpl[1]])
+        except KeyError, e:
+            return (tpl[0], 'nan')
+
     # PROBLEM/SOLVER SPECIFIC OUTPUT
     if error == 0:
-        try:
-            res['objective'] = ('float', stats['width'])
-            res['run'] = ('int', stats['run'])
-            res['hash'] = ('string', stats['hash'][0:16] + '*')
+        res['objective'] = nan_or_value(('float', 'width'), stats)
+        res['run'] = nan_or_value(('int', 'run'), stats)
+        res['num_hyperedges'] = nan_or_value(('int', '#hyperedges'), stats)
+        res['num_verts'] = nan_or_value(('int', '#vertices'), stats)
+        res['pre_wall'] = nan_or_value(('float', 'pre_wall'), stats)
+        res['z3_wall'] = nan_or_value(('float', 'z3_wall'), stats)
+        res['enc_wall'] = nan_or_value(('float', 'enc_wall'), stats)
+        res['size_largest_hyperedge'] = nan_or_value(('int', 'size_largest_hyperedge'), stats)
+        res['pre_clique_k'] = nan_or_value(('int', 'pre_clique_k'),stats)
+        res['pre_clique_size'] = nan_or_value(('int', 'pre_clique_size'),stats)
+        res['num_twins'] = nan_or_value(('int', 'num_twins'),stats)
+        res['pre_size_max_twin'] = nan_or_value(('int', 'pre_size_max_twin'),stats)
 
+        try:
+            res['hash'] = ('string', stats['hash'][0:16] + '*')
             cut = os.path.join(*instance.location.split('/')[1:])
             index = stats['instance'].find(cut)
             if index != -1:
                 res['instance_path'] = ('string', stats['instance'][index + len(cut) + 1:])
         except KeyError, e:
-            sys.stderr.write('Missing attribute "%s" for instance "%s".\n' % (str(e), root))
+            # sys.stderr.write('Missing attribute "%s" for instance "%s".\n' % (str(e), root))
+            pass
         try:
             res['full_call'] = ('string', b64encode(stats['call']))
         except KeyError:
             res['full_call'] = ('string', 'nan')
             # sys.stderr.write('Could not find "call" in json values (instance = %s).\n' % root)
 
-    # print res
+    print res
+    print 'heeerreee'
     # if '2bitcomp_5.hg' in root:
     #     exit(1)
 

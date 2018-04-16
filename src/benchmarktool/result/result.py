@@ -181,7 +181,7 @@ class Setting:
     Represents a setting.
     """
 
-    def __init__(self, system, name, cmdline, tag, order, attr, plot_type, plot_color, plot_name, plot_show):
+    def __init__(self, system, name, cmdline, tag, order, attr, plot_marker, plot_linestyle, plot_color, plot_name, plot_show):
         """
         Initializes a setting.
     
@@ -199,7 +199,8 @@ class Setting:
         self.tag = tag
         self.order = order
         self.attr = attr
-        self.plot_type = plot_type
+        self.plot_marker = plot_marker
+        self.plot_linestyle = plot_linestyle
         self.plot_color = plot_color
         self.plot_name = plot_name
         self.plot_show = plot_show

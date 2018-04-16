@@ -8,15 +8,18 @@ Modified on Mar 19, 2017
 import os
 from collections import OrderedDict
 from collections import defaultdict
-from itertools import izip, imap, cycle, ifilter
+from itertools import izip, imap, cycle, ifilter, combinations
 from operator import itemgetter
 
 # without X
 import matplotlib as mpl
+mpl.use('TkAgg')
+
 import numpy as np
 import pandas as pd
 
-mpl.use('Agg')
+from matplotlib.backends.backend_pdf import PdfPages
+
 import matplotlib.pyplot as plt
 
 try:
@@ -108,12 +111,12 @@ class CSV:
                     row = {}
                     for name, value_type, value in run.iter(self.measures):
                         if value_type == 'int':
-                            row[name] = int(value)
+                            row[name] = np.nan if value == 'nan' else np.int(value)
                         elif value_type == 'float':
                             if value == 'None':
-                                row[name] = 'nan'
+                                row[name] = np.nan
                             else:
-                                row[name] = float(value)
+                                row[name] = np.float(value)
                         else:
                             row[name] = value
                     runs[run.number] = row
@@ -123,7 +126,8 @@ class CSV:
         d['solver_measure'] = runspec.setting.system.measures
         d['solver_version'] = runspec.setting.system.version
         d['solver_config'] = runspec.setting.name
-        d['plot_type'] = runspec.setting.plot_type
+        d['plot_marker'] = runspec.setting.plot_marker
+        d['plot_linestyle'] = runspec.setting.plot_linestyle
         d['plot_color'] = runspec.setting.plot_color
         d['plot_name'] = runspec.setting.plot_name
         d['plot_show'] = runspec.setting.plot_show
@@ -246,8 +250,9 @@ class InstanceTable(ResultTable):
 
     def output_cactus_plot(self, plots, filename, benchmark, mapping, indices=('time', 'memusage'), ignore_vbest=False,
                            limit=5):
+        #TODO: fix vbest
         if 'vbest' not in mapping:
-            mapping['vbest'] = (True, 'vbest', 'm', ':')
+            mapping['vbest'] = (True, 'vbest', 'm', '.', ':')
         for index in indices:
             configs = plots['solver_config'].unique()
             NUM_COLORS = len(configs) + 1
@@ -261,7 +266,8 @@ class InstanceTable(ResultTable):
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-            lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            # lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            lfont = lambda x: x #lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
             ignorelist = imap(lambda x: x[0], ifilter(lambda x: x[1], mapping))
 
             for key in configs:
@@ -276,7 +282,13 @@ class InstanceTable(ResultTable):
                 plot.reset_index(inplace=True)
                 ts = pd.Series(plot[index])
                 label = lfont(mapping[key][1]) if mapping.has_key(key) else key
-                ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2], linestyle=mapping[key][3])
+                try:
+                    ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2],
+                                 marker=mapping[key][3], linestyle=mapping[key][4])
+                except ValueError, e:
+                    print e
+                    print 'marker=', mapping[key][3], 'line=', mapping[key][4]
+                    print "For configuration %s" %key
 
             fig.subplots_adjust(bottom=0.3, left=0.1)
             # box = ax.get_position()
@@ -335,13 +347,15 @@ class InstanceTable(ResultTable):
             # gather additional plot infos
             pname = benchmark_info['plot_name'] if benchmark_info['plot_name'] else benchmark_info['solver_config']
             pcolor = benchmark_info['plot_color'] if benchmark_info['plot_color'] else 'm'
-            ptype = benchmark_info['plot_type'] if benchmark_info['plot_type'] else ':'
+            pmarker = benchmark_info['plot_marker'] if benchmark_info['plot_marker'] else '.'
+            plstyle = benchmark_info['plot_linestyle'] if benchmark_info['plot_linestyle'] else ':'
             pshow = benchmark_info['plot_show'] if benchmark_info['plot_show'] else True
-            plot_mappings[benchmark_info['solver_config']] = (pshow, pname, pcolor, ptype)
+            plot_mappings[benchmark_info['solver_config']] = (pshow, pname, pcolor, pmarker, plstyle)
             del benchmark_info['plot_show']
             del benchmark_info['plot_name']
             del benchmark_info['plot_color']
-            del benchmark_info['plot_type']
+            del benchmark_info['plot_marker']
+            del benchmark_info['plot_linestyle']
 
             for clazz, clazz_val in values.iteritems():
                 for instance, runs in clazz_val.iteritems():
@@ -359,19 +373,20 @@ class InstanceTable(ResultTable):
         df = pd.DataFrame(rows)
         df.replace(to_replace='-1', value=np.nan, inplace=True)
 
+
         # df = df[(df['error'] < 64)]
 
-        # list of non-memedout instances
-        nonmemout = df[(df['error'] < 2)][['full_path', 'instance']]
-
-        def myfunc(x):
-            ret = x.replace('./', '').split('/')
-            ret = '%s/%s' % (ret[4], '/'.join(ret[6:-2]))
-            return ret
-
-        nonmemout['full_path'] = df['full_path'].apply(myfunc)
-        nonmemout.sort_values(by=['full_path', 'instance'], inplace=True)
-        nonmemout.drop_duplicates().reset_index(drop=True).to_csv(output_path('nomemout'), index=False)
+        # # list of non-memedout instances
+        # nonmemout = df[(df['error'] < 2)][['full_path', 'instance']]
+        #
+        # def myfunc(x):
+        #     ret = x.replace('./', '').split('/')
+        #     ret = '%s/%s' % (ret[4], '/'.join(ret[6:-2]))
+        #     return ret
+        #
+        # nonmemout['full_path'] = df['full_path'].apply(myfunc)
+        # nonmemout.sort_values(by=['full_path', 'instance'], inplace=True)
+        # nonmemout.drop_duplicates().reset_index(drop=True).to_csv(output_path('nomemout'), index=False)
 
         # TODO: generalize to xml file
         df_mem_range = df.copy()
@@ -386,6 +401,7 @@ class InstanceTable(ResultTable):
         df_time_range = df.copy()
         df_time_range['time_range'] = df['time']
         df_time_range['time_range'] = pd.cut(df_mem_range['time'], np.arange(0, 1800, 120))
+
         output['by-time'] = df_time_range.groupby(
             ['benchmark_name', 'time_range', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
@@ -400,13 +416,14 @@ class InstanceTable(ResultTable):
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-class'] = df.groupby(
-            ['benchmark_name', 'class', 'solver', 'solver_config',  'solver_args', 'status', 'timelimit',
+            ['benchmark_name', 'class', 'solver', 'solver_config', 'solver_args', 'status', 'timelimit',
              'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
              'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
-        output['by-benchmark'] = df.groupby(['benchmark_name', 'solver', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
+        output['by-benchmark'] = df.groupby(
+            ['benchmark_name', 'solver', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
              'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
@@ -473,8 +490,260 @@ class InstanceTable(ResultTable):
         short_df = self.compute_short_df(df, vbest)
         short_df_non_zero = short_df[(short_df[key1] > 0)]
 
+        #fast
+        # print plot_mappings
         self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
         self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
+
+        #==============================================================================
+        # only for fhtd
+        #==============================================================================
+        #max graph size
+        df_max = df.groupby(['solver','solver_config', 'solved']).agg({'num_verts': np.max, 'num_hyperedges': np.max, 'size_largest_hyperedge': np.max}).reset_index()
+        df_max.to_csv(output_path('0-solved-max_input'))
+
+
+        #instances of certain size solved
+        # df_ranges.to_csv(output_path('00foo'), index=False)
+        ranges = [('num_verts',np.arange(0, 2000, 50)), ('num_hyperedges',np.arange(0, 2000, 50)),
+                  ('num_twins',np.arange(0, 2000, 50)), ('pre_size_max_twin',np.arange(0, 2000, 50)),
+                  ('pre_clique_size',np.arange(0, 2000, 50)), ('size_largest_hyperedge',np.arange(0, 20, 2))]
+        for i, r in ranges:
+            df_ranges = df.copy()
+            df_ranges['%s_range'%i] = df['%s'%i]
+            # pd.cut(df["B"], np.arange(0,1.0+0.155,0.155))
+            df_ranges['%s_range'%i] = pd.cut(df_ranges['%s'%i], r)
+
+            #'benchmark_name',
+            df_ranges=df_ranges.groupby(
+                ['%s_range'%i, 'solver', 'solver_config', 'solver_args']).agg(
+                {'instance': 'count', 'objective': [np.mean, np.max, np.min, np.std],
+                 'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std, np.sum],
+                 'solved': [np.sum]}).reset_index()
+            df_ranges.to_csv(output_path('0-range-by-%s'%i))
+
+        self.objective_comparison(df, output_path)
+
+        return
+        import code
+        code.interact(local=locals())
+
+        exit(0)
+
+
+        #output 1:1 comparision
+
+
+        # 1:1 comparison between results of solver
+        #df['objective']
+
+
+        # print best
+        exit(1)
+        # df.filter('solver = detkd')
+        # exit(1)
+        #
+
+    def objective_comparison(self, df, output_path):
+        #TODO: cleanup
+        # **************************************************************************************************************
+        # OBJECTIVE COMPARISONS
+        # **************************************************************************************************************
+        # ========================================================================================================
+        # 1:1 comparison between best sat config and detkdecomp
+        # ========================================================================================================
+        #
+        # get best configs by solver
+        df2 = df.copy()
+        best = df2.groupby(['solver_config', 'solver']).agg({'solved': [np.sum]}).reset_index()
+        best.sort_values(by=[('solved', 'sum')], ascending=[False], inplace=True)
+        seen = set()
+        drops = list()
+        for idx, row in best.iterrows():
+            val = row['solver'].values[0]
+            if val in seen:
+                drops.append(idx)
+            else:
+                seen.add(val)
+        best.drop(drops, inplace=True)
+        best = best[['solver', 'solver_config']].reset_index()
+        # ========================================================================================================
+        # construct 1:1 comparision
+        # ========================================================================================================
+        # SET SOME VALUE FOR TESTING
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'default-n1-1.0'), 'objective'] = 0
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-clique4-n1-0.7'), 'objective'] = 1
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-n1-0.7'), 'objective'] = 2
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique3-twin-n1-0.7'), 'objective'] = 3
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique4-n1-0.7'), 'objective'] = 4
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique4-twin-n1-0.7'), 'objective'] = 5
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-clique6-twin-n1-0.7'), 'objective'] = 6
+        # df2.loc[(df2.instance == 'tpch-synthetic-q9.hg') & (df2.solver_config == 'sat-pre-twin-n1-0.7'), 'objective'] = 7
+        df3 = df2.copy()
+        df3["solver_config"] = df3["solver"].map(str) + '_' + df3["solver_config"]
+        df3.drop(columns=['solver'], inplace=True)
+        df_sorted = df3[['instance', 'benchmark_name', 'objective', 'solver_config']].sort_values(['solver_config'])
+        # groupby and unstack/transpose
+        direct_comp_by_config = df_sorted.groupby(['instance', 'benchmark_name'])['objective']. \
+            apply(lambda df_sorted: df_sorted.reset_index(drop=True)).unstack().reset_index()
+        # construct nice names
+        mapping = {}
+        for i, c in enumerate(df_sorted['solver_config'].unique()):
+            mapping[i] = c
+        direct_comp_by_config.rename(index=str, columns=mapping, inplace=True)
+        direct_comp_by_config.to_csv(output_path('objective_direct_comparison'))
+        # TODO: fixme
+        best_col = 'fhtd_' + best[best.solver == 'fhtd'].solver_config.values[0]
+        comp_col = 'detkdecomp-prog_default-n1-1.0'
+        cols = [best_col, comp_col, 'odiff']
+
+        htd_vs_fhtd = direct_comp_by_config[['benchmark_name', 'instance', comp_col, best_col]]
+        htd_vs_fhtd.reset_index(inplace=True)
+
+        htd_vs_fhtd=htd_vs_fhtd.assign(odiff=htd_vs_fhtd[best_col] - htd_vs_fhtd[comp_col])
+        htd_vs_fhtd.sort_values(by='odiff', inplace=True)
+        htd_vs_fhtd.reset_index(inplace=True)
+        htd_vs_fhtd=htd_vs_fhtd[htd_vs_fhtd.odiff.notnull()]
+
+        # construct a nice plot here
+        # plt.rc('font', family='serif')
+        # plt.rcParams['text.usetex'] = True
+        # plt.rcParams['text.latex.preamble'] = [r'\usepackage{amsmath}\def\hy{\hbox{-}\nobreak\hskip0pt}']
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        lfont = lambda x: x  # lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+        ignorelist = imap(lambda x: x[0], ifilter(lambda x: x[1], mapping))
+
+        #TODO: take nice names colors and markers here
+        #fixme to universal names
+        configs = {
+            'detkdecomp-prog_default-n1-1.0':
+                {
+                    'color': '#8da0cb',
+                    'marker': '',
+                    'linestyle': '-',
+                    'label': 'htd',
+                    'linewidth': 0.5,
+                },
+            'fhtd_sat-pre-clique6-twin-n1-0.7':
+                {
+                    'color': '#fc8d62',
+                    'marker': '',
+                    'linestyle': '-',
+                    'label': 'fhtd',
+                    'linewidth': 0.5,
+                },
+            'odiff':
+                {
+                    'color': '#66c2a5',
+                    'marker': '',
+                    'linestyle': '-',
+                    'label': 'diff',
+                    'linewidth': 0.5,
+                }
+        }
+        for config in cols:
+            print config
+            # ignore warning deliberately
+            pd.options.mode.chained_assignment = None
+            # sort by objective
+            pd.options.mode.chained_assignment = 'warn'
+            ts = pd.Series(htd_vs_fhtd[config])
+            try:
+                # label = lfont(mapping[key][1]) if mapping.has_key(key) else key
+                ax = ts.plot(markeredgecolor='none', label=configs[config]['label'], color=configs[config]['color'],
+                             marker=configs[config]['marker'], linestyle=configs[config]['linestyle'],
+                             linewidth=configs[config]['linewidth'])
+            except KeyError:
+                print 'Missing values for configuration %s' %config
+
+        fig.subplots_adjust(bottom=0.3, left=0.1)
+        #TODO: fixme
+        plt.savefig(output_path('')[:-4]+'objective_comp.pdf', bbox_inches="tight")  # , additional_artists=art)
+
+        # print htd_vs_fhtd.head(5)
+
+        #TODO: fixme
+        htd_vs_fhtd=htd_vs_fhtd[htd_vs_fhtd.odiff > 0]
+
+        omax = np.max(htd_vs_fhtd['odiff'])
+        intervals = np.arange(0, omax+0.5, 0.5)
+        htd_vs_fhtd['odiff_range'] = pd.cut(htd_vs_fhtd['odiff'], intervals)
+        # print htd_vs_fhtd.columns
+        # print htd_vs_fhtd[['odiff_range', 'odiff']]
+        # htd_vs_fhtd.reset_index(inplace=True)
+        ranges = htd_vs_fhtd[['odiff_range']]
+        ranges = ranges.groupby(['odiff_range'])
+        ranges = ranges.agg({'odiff_range': np.count_nonzero}) #.reset_index()
+        ranges = ranges[ranges.odiff_range > 0]
+        ranges.rename(index=str, columns={'odiff_range': 'count'}, inplace=True)
+        print ranges
+
+
+        fig, ax = plt.subplots()
+        pdf = PdfPages(output_path('')[:-4]+'diff_fhtd-htd-pie.pdf')
+
+        explode = (0.15, 0.15, 0.15, 0.1, 0.075) #, 0.05, 0.3) #, 0, 0, 0, 0, 0)
+        # explode = explode,
+        #['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628']
+
+        col_dict = {
+            "(0.0, 0.5]": '#a6cee3',
+            "(0.5, 1.0]": '#1f78b4',
+            "(1.0, 1.5]": '#b2df8a',
+            "(1.5, 2.0]": '#33a02c',
+            # "(2.0, 2.5]": '#fb9a99',
+            # "(2.5, 3.0]": '#e31a1c',
+            "(3.0, 3.5]": '#fdbf6f',
+        }
+        colors = col_dict.values()
+
+        print ranges['count']
+        #%d  '%.2f'
+        def absolute_value(val):
+            a = np.round(val / 100. * ranges['count'].sum(), 0)
+            return int(a)
+
+        try:
+            ranges['count'].plot.pie(subplots=True, autopct=absolute_value, figsize=(6, 4), colors=colors, explode=explode)
+            ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.7))
+            plt.gcf().subplots_adjust(bottom=0, top=0.9, right=0.74)
+            pdf.savefig()
+        except TypeError:
+            print "Missing data..."
+
+        # exit(1)
+        #TODO: next
+        # take configs and do 1:1 comparison between solver
+        comps = []
+        for i, j in combinations(best.itertuples(index=False), 2):
+            compdf = df2[((df2.solver == i[1]) | (df2.solver == j[1])) &
+                         ((df2.solver_config == i[2]) | ((df2.solver_config == j[2])))]
+            print compdf.solver_config.unique()
+            compdf = compdf[['benchmark_name', 'instance', 'solver', 'objective']]
+            print compdf.groupby(['benchmark_name', 'instance']).agg(
+                {'objective': [np.max, np.min, np.ptp]})  # .reset_index()
+            # TODO: finish
+            # df[df=]
+            # print i[1],i[2], j[1], j[2]
+            # comps.append()
+        # print direct_comp_by_config.head(5) #[direct_comp_by_config.instance =='tpch-synthetic-q9.hg']
+        # ========================================================================================================
+        # compute different values
+        # ========================================================================================================
+        # cols = filter(lambda x: x.startswith('fhtd'), direct_comp_by_config.columns[2:])
+        # pd.merge(df1, df2, on=['A', 'B'], how='left', indicator=True)['_merge'] == 'both'
+        # Y = pd.merge(X, X, on=['fhtd_sat-n1-0.7', 'fhtd_sat-pre-twin-n1-0.7'], how='left', indicator=True)['_merge']
+        # Z=df2[(df2.instance == 'Dubois-015.xml.hg')][['instance','benchmark_name','objective']]
+        # Z=df2[(df2.instance == 'Dubois-015.xml.hg') & (df.solver == 'fhtd')][['instance','benchmark_name','objective', 'solver','solver_config']]
+        # same = lambda X: all(X.head(1) == e for e in X)
+        # same = lambda X: all(X.values[0] == e for e in X.values)
+        diff_objective = df2.groupby(['benchmark_name', 'instance', 'solver']).agg({'objective': np.ptp})
+        diff_objective = diff_objective[
+            (diff_objective.objective != 0) & (diff_objective.objective.notnull())]  # .reset_index()
+        diff_objective.to_csv(output_path('objective_difference'))
 
     def compute_vbest_solution_quality_all(self, df):
         self.compute_vbest_solution_quality_all(df, 'abs_improvement')
@@ -506,11 +775,10 @@ class InstanceTable(ResultTable):
         return self.compute_vbest(df, 'abs_improvement')
 
     def compute_vbest(self, df, key):
-        max_improvements = df.reset_index()
-        max_improvements.sort_values(by=['benchmark_name', 'class', 'instance', key],
-                                     ascending=[True, True, True, False], inplace=True)
-        vbest = max_improvements.groupby(['benchmark_name', 'class', 'instance']).head(1)
-        # order header
+        df2 = df.reset_index()
+        df2.sort_values(by=['benchmark_name', 'class', 'instance', key],
+                                     ascending=[True, True, True, True], inplace=True)
+        vbest = df2.groupby(['benchmark_name', 'class', 'instance']).head(1)
         col_ord = self.sort_order(list(vbest.columns))
         vbest = vbest.reindex_axis(col_ord, axis=1)
         vbest_improved = vbest[(vbest[key] > 0)]
@@ -536,9 +804,11 @@ class InstanceTable(ResultTable):
                        64: 'invalid_json', 128: 'unknown_error',
                        256: 'runsolver_glitch', 512: 'signal_handling', 1024: 'cluster_error',
                        2048: 'invalid_result', 4096: 'cplex_trail_license', 8192: 'grounding_memout'}
-        errors = {i: [] for i in error_codes.iterkeys()}
+        # errors = {i: [] for i in error_codes.iterkeys()}
         num_instances = 0
         output = []
+        errors = []
+        solvers = set()
         for key, values in results.iteritems():
             benchmark_info = dict(izip(keys, key))
             for clazz, clazz_val in values.iteritems():
@@ -549,31 +819,55 @@ class InstanceTable(ResultTable):
                         run_line.update(
                             {'instance': instance, 'class': clazz, 'error': res['error'], 'solved': res['solved'],
                              'full_path': res['full_path']})
-                        for err_key in errors.iterkeys():
-                            if err_key == 0:
-                                if res['error'] == 0:
-                                    errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
-                                continue
-                            if res['error'] & err_key > 0:
-                                errors[err_key].append({'instance': instance, 'full_path': res['full_path']})
-                        num_instances += 1
-                        output.append(run_line)
+                        solvers.add((run_line['solver'], run_line['solver_config']))
+                        for err_key in error_codes.iterkeys():
+                            if (res['error'] & err_key > 0) or (err_key == 0 and res['error'] == 0):
+                                errors.append(
+                                    {'instance': instance, 'full_path': res['full_path'], 'solver': run_line['solver'],
+                                     'solver_config': run_line['solver_config'], 'error': int(err_key),
+                                     'error/ok': error_codes[err_key]})
+                            num_instances += 1
+                            output.append(run_line)
 
-        # print single instance outputs
-        for k, v in error_codes.iteritems():
-            with open(os.path.join(prefix, '%s-error-%s%s' % (project_name, v, suffix)), 'w') as outfile:
-                errors[k].sort(key=itemgetter('instance'))
-                ResultTable.printSheet(self, out=outfile, results=errors[k])
+        err_columns = ['instance', 'full_path', 'solver', 'solver_config']
+        err_df = pd.DataFrame.from_dict(errors)
 
-        # print summary outputs
-        summary = []
+        detailed_error_output_path = os.path.join(prefix, 'Zerror_details')
+        if not os.path.exists(detailed_error_output_path):
+            os.makedirs(detailed_error_output_path)
+
+        # by solver and instance and error
         for k, v in error_codes.iteritems():
-            #TODO: add solver and solver config..
-            summary.append(
-                {'error/ok': v, 'error_code': k, 'abs_num': len(errors[k]), 'rel_num': len(errors[k]) / num_instances})
-        with open(os.path.join(prefix, '%s-%s%s' % (project_name, 'error-0summary', suffix)), 'w') as outfile:
-            summary.sort(key=itemgetter('error_code'))
-            ResultTable.printSheet(self, out=outfile, results=summary)
+            for s in solvers:
+                out = err_df[
+                    (err_df.solver == s[0]) & (err_df.solver_config == s[1]) & (err_df.error == k)].reset_index()
+                out.sort_values(by=['instance'], ascending=[True], inplace=True)
+                with open(os.path.join(detailed_error_output_path,
+                                       '%s-error-%s-%s_%s%s' % (project_name, s[0], s[1], v, suffix)), 'w') as outfile:
+                    out.to_csv(outfile, index=False)
+
+        # summary by solver
+        for s in solvers:
+            # filter to solver
+            out = err_df[(err_df.solver == s[0]) & (err_df.solver_config == s[1])].reset_index()
+            # group by error
+            out = out.groupby(['error', 'error/ok']).agg({'instance': 'count'}).reset_index()
+            # .agg({'instance': 'count'}).reset_index()
+            out.sort_values(by=['error'], ascending=[True], inplace=True)
+            with open(os.path.join(detailed_error_output_path, '%s-error-0summary_%s%s%s' % (project_name, s[0], s[1], suffix)),
+                      'w') as outfile:
+                out.to_csv(outfile, index=False)
+
+        # overall summary by error code
+        out = err_df.groupby(['error', 'error/ok', 'solver', 'solver_config']).agg({'instance': 'count'}).reset_index()
+        # out.sort_values(by=['instance'], ascending=[True], inplace=True)
+        with open(os.path.join(prefix, '%s-error-00summary-by-errorcode%s' % (project_name, suffix)), 'w') as outfile:
+            out.to_csv(outfile, index=False)
+        # overall summary by solver
+        out = err_df.groupby(['solver', 'solver_config', 'error', 'error/ok']).agg({'instance': 'count'}).reset_index()
+        # out.sort_values(by=['instance'], ascending=[True], inplace=True)
+        with open(os.path.join(prefix, '%s-error-00summary-bysolver%s' % (project_name, suffix)), 'w') as outfile:
+            out.to_csv(outfile, index=False)
 
     def printSheetTrellis(self, prefix, project_name, suffix, results, keys):
         def output_path(oparm, osuffix=suffix):
@@ -650,7 +944,8 @@ class InstanceTable(ResultTable):
 
         for k in output.iterkeys():
             with open(os.path.join(prefix, '%s-%s%s' % (project_name, k, suffix)), 'w') as outfile:
-                with open(os.path.join(prefix, '%s-improved-%s%s' % (project_name, k, suffix)), 'w') as outfile_filter:
+                with open(os.path.join(prefix, '%s-improved-%s%s' % (project_name, k, suffix)),
+                          'w') as outfile_filter:
                     # order header
                     col_ord = self.sort_order(list(output[k].columns))
                     output[k] = output[k].reindex_axis(col_ord, axis=1)
@@ -680,7 +975,8 @@ class InstanceTable(ResultTable):
                         filter = ('abs_improvement', 'amax')
                         # ('abs_improvement', 'amax')
                         output[k].sort_values(
-                            by=['benchmark_name', ('abs_improvement', 'sum'), ('instance', 'count'), ('time', 'mean')],
+                            by=['benchmark_name', ('abs_improvement', 'sum'), ('instance', 'count'),
+                                ('time', 'mean')],
                             ascending=[True, False, False, True], inplace=True)
                     elif k == 'by-all':
                         filter = ('abs_improvement', 'amax')
@@ -697,7 +993,8 @@ class InstanceTable(ResultTable):
                     output[k].to_csv(outfile, index=False)
 
                     # output a minimal attribute file
-                    max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'time', 'solved',
+                    max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'time',
+                                'solved',
                                 'solver_config']
                     av_cols = map(lambda x: x[0] if isinstance(x, tuple) else x, list(output[k].columns.values))
                     sel_cols = [item for item in max_cols if item in av_cols]
@@ -762,7 +1059,9 @@ class InstanceTable(ResultTable):
                        'tcs-b150-n1': 'bforce-150-1800',
                        'vbest': 'vbest'}
 
-            lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            # lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            #TODO: move coloring function to XML?
+            lfont = lambda x : x
             # mapping = {}
 
             # b: blue
@@ -906,113 +1205,110 @@ class InstanceTable(ResultTable):
         short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'time'], axis=1)
         return short_df
 
+    class Summary(ResultTable):
+        pass
+        # TODO: signature
+        # def printSheet(self, prefix, project_name, suffix, results, keys):
+        #     # inplace because output might be really large
+        #     output = defaultdict(list)
+        #     for key, values in results.iteritems():
+        #         benchmark_info = dict(izip(keys, key))
+        #         benchmark_lines = defaultdict(list)
+        #         for clazz, clazz_val in values.iteritems():
+        #             clazz_lines = defaultdict(list)
+        #             for instance, runs in clazz_val.iteritems():
+        #                 instance_lines = defaultdict(list)
+        #                 for run_id, res in runs.iteritems():
+        #                     run_line = {}
+        #
+        #
+        #                     for k, measure in res.iteritems():
+        #                         if type(measure) == float:
+        #                             measure = round(measure, 4)
+        #                         run_line[k] = measure
+        #
+        #                     run_line.update(benchmark_info)
+        #                     run_line.update({'instance': instance, 'class': clazz, 'width': res['width'], 'ubound': res['ubound'], 'improvement': })
+        #
+        #                     output['by-run'].append(run_line)
+        #                     for k, v in run_line.iteritems():
+        #                         instance_lines[k].append(v)
+        #
+        #                 self.store_and_merge(clazz_lines, instance_lines, 'by-instance', output)
+        #             self.store_and_merge(benchmark_lines, clazz_lines, 'by-class', output)
+        #         self.store_and_merge(None, benchmark_lines, 'by-benchmark', output)
+        #
+        #     for k in output.iterkeys():
+        #         with open(os.path.join(prefix, '%s-solution_quality-%s%s' % (project_name, k, suffix)), 'w') as outfile:
+        #             if k in ('by-instance', 'by-run'):
+        #                 output[k].sort(key=itemgetter('instance', 'time'))
+        #             if k == 'by-class':
+        #                 output[k].sort(key=itemgetter('class', 'time'))
+        #             if k == 'by-benchmark':
+        #                 output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
+        #             ResultTable.printSheet(self, out=outfile, results=output[k])
+        #
+        #     #TODO: compute cactus plots
+        #     pass
 
-class Summary(ResultTable):
-    pass
-    # TODO: signature
-    # def printSheet(self, prefix, project_name, suffix, results, keys):
-    #     # inplace because output might be really large
-    #     output = defaultdict(list)
-    #     for key, values in results.iteritems():
-    #         benchmark_info = dict(izip(keys, key))
-    #         benchmark_lines = defaultdict(list)
-    #         for clazz, clazz_val in values.iteritems():
-    #             clazz_lines = defaultdict(list)
-    #             for instance, runs in clazz_val.iteritems():
-    #                 instance_lines = defaultdict(list)
-    #                 for run_id, res in runs.iteritems():
-    #                     run_line = {}
-    #
-    #
-    #                     for k, measure in res.iteritems():
-    #                         if type(measure) == float:
-    #                             measure = round(measure, 4)
-    #                         run_line[k] = measure
-    #
-    #                     run_line.update(benchmark_info)
-    #                     run_line.update({'instance': instance, 'class': clazz, 'width': res['width'], 'ubound': res['ubound'], 'improvement': })
-    #
-    #                     output['by-run'].append(run_line)
-    #                     for k, v in run_line.iteritems():
-    #                         instance_lines[k].append(v)
-    #
-    #                 self.store_and_merge(clazz_lines, instance_lines, 'by-instance', output)
-    #             self.store_and_merge(benchmark_lines, clazz_lines, 'by-class', output)
-    #         self.store_and_merge(None, benchmark_lines, 'by-benchmark', output)
-    #
-    #     for k in output.iterkeys():
-    #         with open(os.path.join(prefix, '%s-solution_quality-%s%s' % (project_name, k, suffix)), 'w') as outfile:
-    #             if k in ('by-instance', 'by-run'):
-    #                 output[k].sort(key=itemgetter('instance', 'time'))
-    #             if k == 'by-class':
-    #                 output[k].sort(key=itemgetter('class', 'time'))
-    #             if k == 'by-benchmark':
-    #                 output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
-    #             ResultTable.printSheet(self, out=outfile, results=output[k])
-    #
-    #     #TODO: compute cactus plots
-    #     pass
+    class ValueColumn:
+        def __init__(self, name, valueType):
+            self.offset = None
+            self.content = []
+            self.name = name
+            self.type = valueType
+            self.summary = Summary()
 
+        def addCell(self, line, value):
+            if self.type == "classresult":
+                self.summary.add(float(value[1]))
+            elif self.type == "float" and value is not None:
+                value = float(value)
+                self.summary.add(value)
+            while len(self.content) <= line:
+                self.content.append(None)
+            self.content[line] = value
 
-class ValueColumn:
-    def __init__(self, name, valueType):
-        self.offset = None
-        self.content = []
-        self.name = name
-        self.type = valueType
-        self.summary = Summary()
+    class SystemColumn(Sortable):
+        def __init__(self, setting, machine):
+            self.setting = setting
+            self.machine = machine
+            self.columns = {}
+            self.offset = None
 
-    def addCell(self, line, value):
-        if self.type == "classresult":
-            self.summary.add(float(value[1]))
-        elif self.type == "float" and value is not None:
-            value = float(value)
-            self.summary.add(value)
-        while len(self.content) <= line:
-            self.content.append(None)
-        self.content[line] = value
+        def genName(self, addMachine):
+            res = self.setting.system.name + "-" + self.setting.system.version + "/" + self.setting.name
+            if addMachine:
+                res += " ({0})".format(self.machine.name)
+            return res
 
+        def __cmp__(self, other):
+            return cmp((self.setting.system.order, self.setting.order, self.machine.name),
+                       (other.setting.system.order, other.setting.order, other.machine.name))
 
-class SystemColumn(Sortable):
-    def __init__(self, setting, machine):
-        self.setting = setting
-        self.machine = machine
-        self.columns = {}
-        self.offset = None
+        def __hash__(self):
+            return hash((self.setting, self.machine))
 
-    def genName(self, addMachine):
-        res = self.setting.system.name + "-" + self.setting.system.version + "/" + self.setting.name
-        if addMachine:
-            res += " ({0})".format(self.machine.name)
-        return res
+        def iter(self, measures):
+            if measures == "":
+                for column in sorted(self.columns, cmp=lambda x: x.name):
+                    yield column
+            else:
+                for name, _ in measures:
+                    if name in self.columns:
+                        yield self.columns[name]
 
-    def __cmp__(self, other):
-        return cmp((self.setting.system.order, self.setting.order, self.machine.name),
-                   (other.setting.system.order, other.setting.order, other.machine.name))
+        # TODO:
+        # def calcSummary(self, n, ref):
+        #     for name, column in self.columns.items():
+        #         minimum = maximum = median = None
+        #         if len(ref) == 3:
+        #             minimum = ref[0].columns[name].content
+        #             maximum = ref[1].columns[name].content
+        #             median = ref[2].columns[name].content
+        #         column.summary.calc(n, column.content, minimum, maximum, median)
 
-    def __hash__(self):
-        return hash((self.setting, self.machine))
-
-    def iter(self, measures):
-        if measures == "":
-            for column in sorted(self.columns, cmp=lambda x: x.name):
-                yield column
-        else:
-            for name, _ in measures:
-                if name in self.columns:
-                    yield self.columns[name]
-
-    # TODO:
-    # def calcSummary(self, n, ref):
-    #     for name, column in self.columns.items():
-    #         minimum = maximum = median = None
-    #         if len(ref) == 3:
-    #             minimum = ref[0].columns[name].content
-    #             maximum = ref[1].columns[name].content
-    #             median = ref[2].columns[name].content
-    #         column.summary.calc(n, column.content, minimum, maximum, median)
-
-    def addCell(self, line, name, value_type, value):
-        if not name in self.columns:
-            self.columns[name] = ValueColumn(name, value_type)
-        self.columns[name].addCell(line, value)
+        def addCell(self, line, name, value_type, value):
+            if not name in self.columns:
+                self.columns[name] = ValueColumn(name, value_type)
+            self.columns[name].addCell(line, value)
