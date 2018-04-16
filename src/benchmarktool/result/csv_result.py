@@ -282,8 +282,13 @@ class InstanceTable(ResultTable):
                 plot.reset_index(inplace=True)
                 ts = pd.Series(plot[index])
                 label = lfont(mapping[key][1]) if mapping.has_key(key) else key
-                ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2],
-                             marker=mapping[key][3], linestyle=mapping[key][4])
+                try:
+                    ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2],
+                                 marker=mapping[key][3], linestyle=mapping[key][4])
+                except ValueError, e:
+                    print e
+                    print 'marker=', mapping[key][3], 'line=', mapping[key][4]
+                    print "For configuration %s" %key
 
             fig.subplots_adjust(bottom=0.3, left=0.1)
             # box = ax.get_position()
@@ -342,7 +347,7 @@ class InstanceTable(ResultTable):
             # gather additional plot infos
             pname = benchmark_info['plot_name'] if benchmark_info['plot_name'] else benchmark_info['solver_config']
             pcolor = benchmark_info['plot_color'] if benchmark_info['plot_color'] else 'm'
-            pmarker = benchmark_info['plot_marker'] if benchmark_info['plot_marker'] else ':'
+            pmarker = benchmark_info['plot_marker'] if benchmark_info['plot_marker'] else '.'
             plstyle = benchmark_info['plot_linestyle'] if benchmark_info['plot_linestyle'] else ':'
             pshow = benchmark_info['plot_show'] if benchmark_info['plot_show'] else True
             plot_mappings[benchmark_info['solver_config']] = (pshow, pname, pcolor, pmarker, plstyle)
@@ -486,8 +491,9 @@ class InstanceTable(ResultTable):
         short_df_non_zero = short_df[(short_df[key1] > 0)]
 
         #fast
-        # self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
-        # self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
+        # print plot_mappings
+        self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
+        self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
 
         #==============================================================================
         # only for fhtd
@@ -518,6 +524,7 @@ class InstanceTable(ResultTable):
 
         self.objective_comparison(df, output_path)
 
+        return
         import code
         code.interact(local=locals())
 
@@ -644,11 +651,13 @@ class InstanceTable(ResultTable):
             # sort by objective
             pd.options.mode.chained_assignment = 'warn'
             ts = pd.Series(htd_vs_fhtd[config])
-
-            # label = lfont(mapping[key][1]) if mapping.has_key(key) else key
-            ax = ts.plot(markeredgecolor='none', label=configs[config]['label'], color=configs[config]['color'],
-                         marker=configs[config]['marker'], linestyle=configs[config]['linestyle'],
-                         linewidth=configs[config]['linewidth'])
+            try:
+                # label = lfont(mapping[key][1]) if mapping.has_key(key) else key
+                ax = ts.plot(markeredgecolor='none', label=configs[config]['label'], color=configs[config]['color'],
+                             marker=configs[config]['marker'], linestyle=configs[config]['linestyle'],
+                             linewidth=configs[config]['linewidth'])
+            except KeyError:
+                print 'Missing values for configuration %s' %config
 
         fig.subplots_adjust(bottom=0.3, left=0.1)
         #TODO: fixme
@@ -674,11 +683,11 @@ class InstanceTable(ResultTable):
 
 
         fig, ax = plt.subplots()
-        pdf = PdfPages(output_path('')[:-4]+'output.pdf')
+        pdf = PdfPages(output_path('')[:-4]+'diff_fhtd-htd-pie.pdf')
 
         explode = (0.15, 0.15, 0.15, 0.1, 0.075) #, 0.05, 0.3) #, 0, 0, 0, 0, 0)
         # explode = explode,
-    #['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628']
+        #['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628']
 
         col_dict = {
             "(0.0, 0.5]": '#a6cee3',
@@ -697,13 +706,16 @@ class InstanceTable(ResultTable):
             a = np.round(val / 100. * ranges['count'].sum(), 0)
             return int(a)
 
-        ranges['count'].plot.pie(subplots=True, autopct=absolute_value, figsize=(6, 4), colors=colors, explode=explode)
-        ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.7))
-        plt.gcf().subplots_adjust(bottom=0, top=0.9, right=0.74)
-        pdf.savefig()
+        try:
+            ranges['count'].plot.pie(subplots=True, autopct=absolute_value, figsize=(6, 4), colors=colors, explode=explode)
+            ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.7))
+            plt.gcf().subplots_adjust(bottom=0, top=0.9, right=0.74)
+            pdf.savefig()
+        except TypeError:
+            print "Missing data..."
 
-        exit(1)
         # exit(1)
+        #TODO: next
         # take configs and do 1:1 comparison between solver
         comps = []
         for i, j in combinations(best.itertuples(index=False), 2):

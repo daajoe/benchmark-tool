@@ -139,7 +139,7 @@ def fhtd(root, runspec, instance):
                 sys.stderr.write('instance %s did not finish properly\n' % root)
         except IOError:
             res['error_str'] = ('string', 'Did not finish.')
-            return res
+            return [(key, val[0], val[1]) for key, val in res.items()]
 
     else:
         log_content = open(os.path.join(root, "condor.log")).read()
@@ -233,7 +233,8 @@ def fhtd(root, runspec, instance):
             res['full_call'] = ('string', 'nan')
             # sys.stderr.write('Could not find "call" in json values (instance = %s).\n' % root)
 
-    # print res
+    print res
+    print 'heeerreee'
     # if '2bitcomp_5.hg' in root:
     #     exit(1)
 
