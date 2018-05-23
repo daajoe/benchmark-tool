@@ -33,9 +33,11 @@ def clasp(root, runspec, instance):
     #for f in [instance.instance"runsolver.solver", "runsolver.watcher"]:
         for line in codecs.open(os.path.join(root, f), errors='ignore', encoding='utf-8'):
             for val, reg in clasp_re.items():
+                #print line, val, reg
                 m = reg[1].match(line)
                 if m: res[val] = (reg[0], float(m.group("val")) if reg[0] == "float" else m.group("val"))
-
+    #print res
+    #print instance.instance
     #print res["time"][1]
     if "memerror" in res:
         res["error"]  = ("string", "std::bad_alloc")
@@ -45,6 +47,7 @@ def clasp(root, runspec, instance):
         #res["error"] = ("string", "timeout")
         res["status"] = ("string", "UNKNOWN")
     result   = []
+    #print res
     error    = not "status" in res or ("error" in res and res["error"][1] != "std::bad_alloc")
     memout   = "error" in res and res["error"][1] == "std::bad_alloc"
     status   = res["status"][1] if "status" in res else None

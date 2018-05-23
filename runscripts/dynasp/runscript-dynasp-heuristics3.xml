@@ -1,0 +1,146 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="24x8xE5520@2.27GHz" memory="24GB"/>
+
+	<config name="condor-generic" template="templates/condor/runsolver_template.py"/>
+	
+	<system name="heur_steiner" version="3.0" measures="asp" config="condor-generic">
+ 	  <setting name="auto1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 3629 auto" ppn="4" procs="1"/>		
+ 	  <setting name="frumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 3629 frumpy" ppn="4" procs="1"/>		
+ 	  <setting name="jumpy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 3629 jumpy" ppn="4" procs="1"/>		
+ 	  <setting name="tweety1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 3629 tweety" ppn="4" procs="1"/>		
+	  <setting name="crafty1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 3629 crafty" ppn="4" procs="1"/>		
+ 	  <setting name="handy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 3629 handy" ppn="4" procs="1"/>		
+ 	  <setting name="trendy1" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 3629 trendy" ppn="4" procs="1"/>		
+
+	  <setting name="auto2" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 91437 auto" ppn="4" procs="1"/>		
+ 	  <setting name="frumpy2" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 91437 frumpy" ppn="4" procs="1"/>		
+ 	  <setting name="jumpy2" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 91437 jumpy" ppn="4" procs="1"/>		
+ 	  <setting name="tweety2" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 91437 tweety" ppn="4" procs="1"/>		
+	  <setting name="crafty2" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 91437 crafty" ppn="4" procs="1"/>		
+ 	  <setting name="handy2" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 91437 handy" ppn="4" procs="1"/>		
+ 	  <setting name="trendy2" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 91437 trendy" ppn="4" procs="1"/>		
+
+	  <setting name="auto3" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 62926 auto" ppn="4" procs="1"/>		
+ 	  <setting name="frumpy3" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 62926 frumpy" ppn="4" procs="1"/>		
+ 	  <setting name="jumpy3" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 62926 jumpy" ppn="4" procs="1"/>		
+ 	  <setting name="tweety3" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 62926 tweety" ppn="4" procs="1"/>		
+	  <setting name="crafty3" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 62926 crafty" ppn="4" procs="1"/>		
+ 	  <setting name="handy3" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 62926 handy" ppn="4" procs="1"/>		
+ 	  <setting name="trendy3" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 62926 trendy" ppn="4" procs="1"/>		
+
+
+	  <setting name="auto4" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 26482 auto" ppn="4" procs="1"/>		
+ 	  <setting name="frumpy4" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 26482 frumpy" ppn="4" procs="1"/>		
+ 	  <setting name="jumpy4" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 26482 jumpy" ppn="4" procs="1"/>		
+ 	  <setting name="tweety4" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 26482 tweety" ppn="4" procs="1"/>		
+	  <setting name="crafty4" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 26482 crafty" ppn="4" procs="1"/>		
+ 	  <setting name="handy4" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 26482 handy" ppn="4" procs="1"/>		
+ 	  <setting name="trendy4" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 26482 trendy" ppn="4" procs="1"/>		
+
+
+	  <setting name="auto5" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 349 auto" ppn="4" procs="1"/>		
+ 	  <setting name="frumpy5" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 349 frumpy" ppn="4" procs="1"/>		
+ 	  <setting name="jumpy5" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 349 jumpy" ppn="4" procs="1"/>		
+ 	  <setting name="tweety5" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 349 tweety" ppn="4" procs="1"/>		
+	  <setting name="crafty5" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 349 crafty" ppn="4" procs="1"/>		
+ 	  <setting name="handy5" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 349 handy" ppn="4" procs="1"/>		
+ 	  <setting name="trendy5" tag="asp" cmdline="/mnt/vg01/lv01/home/hecher/monolithic_mg2.lp 349 trendy" ppn="4" procs="1"/>		
+
+
+
+	</system>
+	<!--
+	<system name="cryptominisat" version="5.0.1" measures="sat" config="condor-generic">
+ 	  <setting name="cryptominisat" tag="sat" cmdline="" ppn="4" procs="1"/>		
+	</system>
+	<system name="clasp" version="3.3.2" measures="sat" config="condor-generic">
+	  <setting name="clasp" tag="sat" cmdline="" ppn="4" procs="1"/>
+ 	</system>
+	<system name="lingeling" version="bbc.9230" measures="sat" config="condor-generic">
+ 	  <setting name="lingeling" tag="sat" cmdline="" ppn="4" procs="1"/>	
+ 	</system>
+	<system name="treengeling" version="bbc.9230" measures="sat" config="condor-generic">
+   	  <setting name="treengeling" tag="sat" cmdline="" ppn="4" procs="1"/>
+ 	</system>
+	-->
+	<!--
+	    TODO: need a binary
+	<system name="berkmin" version="1.0" measures="sat" config="condor-generic">
+  	  <setting name="berkmin" tag="sat" cmdline="" ppn="4" procs="1"/>	
+ 	  </system>
+	-->
+	<!--<system name="zchaff32" version="2001.2.17" measures="zchaff" config="condor-generic">
+  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1"/>
+ 	  </system>
+	<system name="zchaff32" version="2004.11.15" measures="zchaff" config="condor-generic">
+  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1"/>
+ 	</system>
+	<system name="zchaff64" version="2007.3.12" measures="sat" config="condor-generic">
+  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1"/>
+ 	</system>
+	<system name="zchaff64" version="2008.10.12" measures="zchaff" config="condor-generic">
+  	  <setting name="zchaff64" tag="sat" cmdline="" ppn="4" procs="1"/>
+ 	</system>-->
+
+
+	<!-- todo condor job priority -->
+	<condorjob name="condor-generic" memout="8172" timeout="1200" runs="2" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
+
+	<benchmark name="3col">
+	  <folder path="benchmarks/dynasp/3col/"/>
+	</benchmark>
+	<benchmark name="2col_crafted">
+	  <folder path="benchmarks/dynasp/2col/crafted/"/>
+	</benchmark>
+	<benchmark name="2col_ext_crafted">
+	  <folder path="benchmarks/dynasp/2col/ext_crafted/"/>
+	</benchmark>
+	<benchmark name="2col">
+	  <folder path="benchmarks/dynasp/2col/plain/"/>
+	</benchmark>
+	<benchmark name="clique">
+	  <folder path="benchmarks/dynasp/clique/"/>
+	</benchmark>
+	<benchmark name="ds">
+	  <folder path="benchmarks/dynasp/ds/"/>
+	</benchmark>
+	<benchmark name="steiner">
+	  <folder path="benchmarks/dynasp/steiner/"/>
+	</benchmark>
+	<benchmark name="sub_ds">
+	  <folder path="benchmarks/dynasp/sub_ds/"/>
+	</benchmark>
+	<benchmark name="vc_plain">
+	  <folder path="benchmarks/dynasp/vc/plain/"/>
+	</benchmark>
+	<benchmark name="vc_subset_min">
+	  <folder path="benchmarks/dynasp/vc/subset_min/"/>
+	</benchmark>
+	<benchmark name="vc">
+	  <folder path="benchmarks/dynasp/vc/"/>
+	</benchmark>
+	<benchmark name="dynasp_steiner_15">
+	  <folder path="benchmarks/dynasp_steiner_/steiner_05-15/"/>
+	</benchmark>
+	<benchmark name="dynasp_steiner_18">
+	  <folder path="benchmarks/dynasp_steiner_/steiner_10-18/"/>
+	</benchmark>
+	<benchmark name="dynasp_steiner_mg2_15">
+	  <folder path="benchmarks/dynasp_steiner_/mg2_05-15"/>
+	</benchmark>
+
+	<benchmark name="nonground">
+	  <folder path="benchmarks/suites/dflat-benchmarks/graphs/lp/gtfs-data-exchange/"/>
+	</benchmark>
+
+	<benchmark name="nonground_steiner">
+	  <folder path="benchmarks/nonground/"/>
+	</benchmark>
+
+
+
+	<project name="structure-vs-clasp-batch3" job="condor-generic">
+	  <runtag machine="cobra" benchmark="nonground_steiner" tag="*all*"/>
+	</project>
+</runscript>
