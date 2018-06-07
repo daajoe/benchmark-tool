@@ -206,6 +206,8 @@ def fhtd(root, runspec, instance):
     # PROBLEM/SOLVER SPECIFIC OUTPUT
     if error == 0:
         res['objective'] = nan_or_value(('float', 'width'), stats)
+        if res['objective'] == '1':
+            res['solved'] = 1
         res['run'] = nan_or_value(('int', 'run'), stats)
         res['num_hyperedges'] = nan_or_value(('int', '#hyperedges'), stats)
         res['num_verts'] = nan_or_value(('int', '#vertices'), stats)
