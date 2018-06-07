@@ -1,6 +1,7 @@
 universe = vanilla 
 requirements = machine != "cobra-submit.kr.tuwien.ac.at"
-request_memory = +8172
+request_memory = +16384
+#TODO:
 
 #TODO: check cluster timeout and memlimit
 #periodic_remove = (CurrentTime - JobCurrentStartDate) >= {{timeout}}
@@ -25,7 +26,8 @@ initialdir = {{initialdir}}
 # ENVIRONMENT
 #=========================================================================
 getenv=True
-environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/:/home/jfichte/src/benchmark-tool/programs/treewidth/:/home/jfichte/bin/jdk1.8.0_121/bin LD_LIBRARY_PATH=:/home/jfichte/.local/lib"
+environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/:/home/jfichte/src/benchmark-tool/programs/treewidth/:/home/jfichte/bin/jdk1.8.0_121/bin LD_LIBRARY_PATH=:/home/jfichte/.local/lib:/home/jfichte/anaconda2/envs/fhtd"
+
 
 #=========================================================================
 # NOTIFICATION
