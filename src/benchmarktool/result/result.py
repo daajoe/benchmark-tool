@@ -243,6 +243,7 @@ class SeqJob(Job):
         parallel - Number of processes to start in parallel 
         attrib   - Arbitrary extra arguments 
         """
+        print timeout
         Job.__init__(self, name, timeout, runs, attrib)
         self.parallel = parallel
 

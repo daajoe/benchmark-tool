@@ -35,6 +35,8 @@ from benchmarktool.resultparser.zchaff import zchaff
 from benchmarktool.resultparser.fhtd import fhtd
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.detkdecomp import detkdecomp
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.sudokuresultparser import sudokuresultparser
 
 
 

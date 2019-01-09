@@ -29,6 +29,7 @@ def xmlTime(strRep):
     """
     Converts [[h:]m:]s time format to integer value in seconds. 
     """
+    # print strRep
     if strRep:
         timeout = strRep.split(":")
     seconds = int(timeout[-1])
