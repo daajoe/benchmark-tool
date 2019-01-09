@@ -121,8 +121,13 @@
         </folder>
     </benchmark>
 
+    <benchmark name="grids">
+        <folder path="benchmarks/hypergraphs/grids">
+            <ignore prefix="."/>
+        </folder>
+    </benchmark>
 
-    <project name="fhtd-hypergraphs" job="pbs-generic">
+    <project name="fhtd-hypergraphs-DET" job="pbs-generic">
       <!--
 	<runtag machine="behemoth" benchmark="hyperbench-cq" tag="comb"/>
         <runtag machine="behemoth" benchmark="hyperbench-csp_application" tag="comb"/>
@@ -134,6 +139,8 @@
         <runtag machine="behemoth" benchmark="hyperbench-maxsat" tag="comb"/>
         <runtag machine="behemoth" benchmark="hyperbench-other" tag="comb"/>
 	-->
+        <runtag machine="behemoth" benchmark="grids" tag="*all*"/>
+        <!--
         <runtag machine="behemoth" benchmark="hyperbench-cq" tag="*all*"/>
         <runtag machine="behemoth" benchmark="hyperbench-csp_application" tag="*all*"/>
         <runtag machine="behemoth" benchmark="hyperbench-csp_other" tag="*all*"/>
@@ -143,5 +150,6 @@
         <runtag machine="behemoth" benchmark="hyperbench-iscas89" tag="*all*"/>
         <runtag machine="behemoth" benchmark="hyperbench-maxsat" tag="*all*"/>
         <runtag machine="behemoth" benchmark="hyperbench-other" tag="*all*"/>
+        -->
     </project>
 </runscript>

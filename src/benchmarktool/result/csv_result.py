@@ -13,6 +13,7 @@ from operator import itemgetter
 
 # without X
 import matplotlib as mpl
+
 mpl.use('TkAgg')
 
 import numpy as np
@@ -117,15 +118,13 @@ class CSV:
                         continue
                     row = {}
                     for name, value_type, value in run.iter(self.measures):
-                        if value_type == 'int':
-                            row[name] = np.nan if value == 'nan' else np.int(value)
-                        elif value_type == 'float':
-                            if value == 'None':
-                                row[name] = np.nan
-                            else:
-                                row[name] = np.float(value)
+                        if value_type == 'list':
+                            row[name] = []
+                            L = value[1:-1].split(',')
+                            for l_value in L:
+                                row[name].append(self.convert2datatype(l_value, value_type))
                         else:
-                            row[name] = value
+                            row[name] = self.convert2datatype(value, value_type)
                     runs[run.number] = row
                 benchmarks[clazz_name][inst_result.instance.name] = runs
         d = OrderedDict()
@@ -143,6 +142,32 @@ class CSV:
         d['machine'] = runspec.machine.name
         self.keys = d.keys()
         self.results[tuple(d.values())] = benchmarks
+
+    def convert2datatype(self, value, value_type):
+        if value_type == 'int':
+            if value == 'nan':
+                return np.nan
+            elif value.startswith('['):
+                value = value[1:-1]
+                if len(value) == 0:
+                    return np.nan
+                else:
+                    return map(np.int, value.split(','))
+            else:
+                return np.int(value)
+        elif value_type == 'float':
+            if value == 'None':
+                return np.nan
+            elif value.startswith('['):
+                value = value[1:-1]
+                if len(value) == 0:
+                    return np.nan
+                else:
+                    return map(np.float, value.split(','))
+            else:
+                return np.float(value)
+        else:
+            return value
 
 
 class Table:
@@ -255,16 +280,17 @@ class InstanceTable(ResultTable):
         header = sorted(columns, key=lambda val: sort_order[val])
         return header
 
-    def output_cactus_plot(self, df_plot, filename, benchmark, mapping, indices=('time', 'memusage'), ignore_vbest=False,
+    def output_cactus_plot(self, df_plot, filename, benchmark, mapping, indices=('time', 'memusage'),
+                           ignore_vbest=False,
                            limit=5):
-        #set unsolved instances to timeout
+        # set unsolved instances to timeout
         df_solved = df_plot.copy().reset_index()
         # print df_solved[(df_solved.solved != 0)][['solver', 'time', 'solved', 'error']]
-        df_solved.loc[(df_solved.solved == 0),'time'] = df_solved.timelimit
+        df_solved.loc[(df_solved.solved == 0), 'time'] = df_solved.timelimit
 
-        #TODO: fix vbest
+        # TODO: fix vbest
         if 'vbest' not in mapping:
-            #TODO: move vbest color to XML file
+            # TODO: move vbest color to XML file
             mapping['vbest'] = (True, 'vbest', '#ece7f2', '.', ':')
         for index in indices:
             configs = df_solved['solver_config'].unique()
@@ -280,9 +306,10 @@ class InstanceTable(ResultTable):
             ax = fig.add_subplot(111)
 
             # lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
-            lfont = lambda x: x #lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
+            lfont = lambda x: x  # lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
             ignorelist = imap(lambda x: x[0], ifilter(lambda x: x[1], mapping))
 
+            num_solved = {}
             for key in configs:
                 if key in ignorelist:
                     continue
@@ -295,9 +322,11 @@ class InstanceTable(ResultTable):
                 plot.reset_index(inplace=True)
                 ts = pd.Series(plot[index])
                 label = lfont(mapping[key][1]) if mapping.has_key(key) else key
+                num_solved[label] = df_solved[(df_solved['solver_config'] == key) & (df_solved['solved'] == 1)][
+                    'solved'].count()
                 try:
-                    #TODO: move dot size ms to central place
-                    #linestyle=mapping[key][4]
+                    # TODO: move dot size ms to central place
+                    # linestyle=mapping[key][4]
                     # ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2],
                     #              marker=mapping[key][3], linestyle=' ', markersize=3)
                     ax = ts.plot(markeredgecolor='none', label=label, color=mapping[key][2],
@@ -305,7 +334,25 @@ class InstanceTable(ResultTable):
                 except ValueError, e:
                     print e
                     print 'marker=', mapping[key][3], 'line=', mapping[key][4]
-                    print "For configuration %s" %key
+                    print "For configuration %s" % key
+
+            # sort labels in decreasing order from best configuration
+            num_solved = sorted(num_solved.iterkeys(), key=lambda k: num_solved[k], reverse=True)
+            # print num_solved
+            handles, labels = ax.get_legend_handles_labels()
+
+            # or sort them by labels
+            # print handles, labels
+            def mycomp(i, j):
+                if num_solved.index(i) < num_solved.index(j):
+                    return -1
+                else:
+                    return 1
+
+            import operator
+            hl = sorted(zip(handles, labels), key=operator.itemgetter(1), cmp=mycomp)
+            handles2, labels2 = zip(*hl)
+            # print handles2, labels2
 
             fig.subplots_adjust(bottom=0.3, left=0.1)
             # box = ax.get_position()
@@ -323,7 +370,8 @@ class InstanceTable(ResultTable):
             handles, labels = ax.get_legend_handles_labels()
             labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
             # print labels
-            ax.legend(handles, labels, loc='best', prop={'size': 12}, frameon=False, mode='expand')
+            # ax.legend(handles, labels, loc='best', prop={'size': 12}, frameon=False, mode='expand')
+            ax.legend(handles2, labels2, loc='best', prop={'size': 12}, frameon=False, mode='expand')
 
             # lgd = ax.legend(loc='best', prop={'size': 8}, frameon=False, mode='expand')
             # art.append(lgd)
@@ -390,6 +438,22 @@ class InstanceTable(ResultTable):
         df = pd.DataFrame(rows)
         df.replace(to_replace='-1', value=np.nan, inplace=True)
 
+        # TODO: fixme
+        # print df.columns
+        print df[['solver_config', 'objective']]
+        print df['solver_config'].unique()
+
+        # sat-clique4-lb-n1-0.7
+        # sat-pre-clique6-lb-n1-0.7
+        # sat-clique4-pre-lb-n1-0.7
+        # sat-n1-0.7
+        # default-n1-1.0
+        df_plot = df[df.solver_config == 'default-n1-1.0']
+        # print df_plot
+        print df_plot['objective'].dropna()
+        print
+        # print df_plot['width'].dropna()
+        # print df_plot['objective']
 
         # df = df[(df['error'] < 64)]
 
@@ -409,6 +473,8 @@ class InstanceTable(ResultTable):
         df_mem_range = df.copy()
         df_mem_range['mem_range'] = df['memusage']
         df_mem_range['mem_range'] = pd.cut(df_mem_range['memusage'], np.arange(0, 10000, 250))
+
+
         output['by-mem'] = df_mem_range.groupby(
             ['benchmark_name', 'mem_range', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
@@ -421,7 +487,8 @@ class InstanceTable(ResultTable):
 
         output['by-time'] = df_time_range.groupby(
             ['benchmark_name', 'time_range', 'solver_config', 'solver', 'solver_args']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum, np.median], 'error': [np.mean, np.max],
+            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum, np.median],
+             'error': [np.mean, np.max],
              'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
@@ -446,7 +513,8 @@ class InstanceTable(ResultTable):
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-all'] = df.groupby(['solver', 'solver_config', 'timelimit']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.median, np.sum], 'error': [np.mean, np.max],
+            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.median, np.sum],
+             'error': [np.mean, np.max],
              'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
 
@@ -507,78 +575,77 @@ class InstanceTable(ResultTable):
         short_df = self.compute_short_df(df, vbest)
         short_df_non_zero = short_df[(short_df[key1] > 0)]
 
-        #fast
+        # TODO: next
+
+        # fast
         # print plot_mappings
         self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name, plot_mappings)
         self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name, plot_mappings)
 
-        #==============================================================================
+        # ==============================================================================
         # only for fhtd
-        #==============================================================================
-        #output a nice table
+        # ==============================================================================
+        # output a nice table
         self.summary_table(df, plot_mappings, output_path('')[:-4])
 
-        #max graph size
-        df_max = df.groupby(['solver','solver_config', 'solved']).agg({'num_verts': np.max, 'num_hyperedges': np.max, 'size_largest_hyperedge': np.max}).reset_index()
+        # max graph size
+        df_max = df.groupby(['solver', 'solver_config', 'solved']).agg(
+            {'num_verts': np.max, 'num_hyperedges': np.max, 'size_largest_hyperedge': np.max}).reset_index()
         df_max.to_csv(output_path('0-solved-max_input'))
 
-
-        #instances of certain size solved
+        # instances of certain size solved
         # df_ranges.to_csv(output_path('00foo'), index=False)
-        ranges = [('num_verts',np.arange(0, 2000, 50)), ('num_hyperedges',np.arange(0, 2000, 50)),
-                  ('num_twins',np.arange(0, 2000, 50)), ('pre_size_max_twin',np.arange(0, 2000, 50)),
-                  ('pre_clique_size',np.arange(0, 2000, 50)), ('size_largest_hyperedge',np.arange(0, 20, 2))]
+        ranges = [('num_verts', np.arange(0, 2000, 50)), ('num_hyperedges', np.arange(0, 2000, 50)),
+                  ('num_twins', np.arange(0, 2000, 50)), ('pre_size_max_twin', np.arange(0, 2000, 50)),
+                  ('pre_clique_size', np.arange(0, 2000, 50)), ('size_largest_hyperedge', np.arange(0, 20, 2))]
         for i, r in ranges:
             df_ranges = df.copy()
-            df_ranges['%s_range'%i] = df['%s'%i]
+            df_ranges['%s_range' % i] = df['%s' % i]
             # pd.cut(df["B"], np.arange(0,1.0+0.155,0.155))
-            df_ranges['%s_range'%i] = pd.cut(df_ranges['%s'%i], r)
+            df_ranges['%s_range' % i] = pd.cut(df_ranges['%s' % i], r)
 
-            #'benchmark_name',
-            df_ranges=df_ranges.groupby(
-                ['%s_range'%i, 'solver', 'solver_config', 'solver_args']).agg(
+            # 'benchmark_name',
+            df_ranges = df_ranges.groupby(
+                ['%s_range' % i, 'solver', 'solver_config', 'solver_args']).agg(
                 {'instance': 'count', 'objective': [np.mean, np.max, np.min, np.std],
                  'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std, np.sum],
                  'solved': [np.sum]}).reset_index()
-            df_ranges.to_csv(output_path('0-range-by-%s'%i))
-
-        self.objective_comparison(df, output_path)
+            df_ranges.to_csv(output_path('0-range-by-%s' % i))
 
         return
+        self.objective_comparison(df, output_path)
+
         import code
         code.interact(local=locals())
-
+        return
         exit(0)
 
-
-        #output 1:1 comparision
-
+        # output 1:1 comparision
 
         # 1:1 comparison between results of solver
-        #df['objective']
-
+        # df['objective']
 
         # print best
-        exit(1)
         # df.filter('solver = detkd')
         # exit(1)
         #
 
     def summary_table(self, df, mappings, output_path):
-        print '*'*80
+        print '*' * 80
         print 'max statistics'
-        print '*'*80
-        print 'max num_verts="%s"'%np.max(df[df.num_verts > 0]['num_verts'])
-        print 'max num_hyperedges="%s"'%np.max(df[df.num_hyperedges > 0]['num_hyperedges'])
-        print 'max size_largest_hyperedge="%s"'%np.max(df[df.size_largest_hyperedge > 0]['size_largest_hyperedge'])
+        print '*' * 80
+        print 'max num_verts="%s"' % np.max(df[df.num_verts > 0]['num_verts'])
+        print 'max num_hyperedges="%s"' % np.max(df[df.num_hyperedges > 0]['num_hyperedges'])
+        print 'max size_largest_hyperedge="%s"' % np.max(df[df.size_largest_hyperedge > 0]['size_largest_hyperedge'])
         print df.columns
         # exit(1)
 
-        #TODO: we need the width in the summary table
+        # TODO: we need the width in the summary table
         df_summary = df.copy()
-        df_summary.loc[(df_summary.solved == 0),'time'] = df_summary.timelimit
+        df_summary.loc[(df_summary.solved == 0), 'time'] = df_summary.timelimit
         df_summary = df_summary.groupby(['solver', 'solver_config', 'timelimit']).agg(
-            {'instance': 'count', 'time': [np.median, np.mean, np.min, np.max, np.std, np.sum], 'error': [np.mean, np.max],
+            {'instance': 'count', 'time': [np.median, np.mean, np.min, np.max, np.std, np.sum],
+             'error': [np.mean, np.max],
              'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum,
              'objective': [np.mean, np.max, np.min, np.std]}).reset_index()
         df_summary.sort_values(
@@ -589,38 +656,31 @@ class InstanceTable(ResultTable):
         # print df.to_latex(index=False, column_format=formatting, na_rep='na', escape=False)
 
         # print df_summary
-        # exit(1)
-        df_summary=df_summary[['solver', 'solver_config', 'solved','time']].reset_index()
+        df_summary = df_summary[['solver', 'solver_config', 'solved', 'time']].reset_index()
         # print df_summary
-        # exit(1)
         # print df_summary.columns
-        # exit(1)
 
-        #rename or remove values according to xml
+        # rename or remove values according to xml
         for k, v in mappings.iteritems():
             if v[0] != '1':
                 df_summary = df_summary[df_summary.solver_config.str.contains(k) == False]
                 continue
             df_summary.loc[(df_summary.solver_config == k), 'solver_config'] = v[1]
         #
-        #TODO: rounding
+        # TODO: rounding
         # df_summary.loc[:, , pd.IndexSlice[:, 'objective']] = np.round(df_summary['objective'], decimals=2)
         # print df_summary['objective'].round(decimals=2)
         # df_summary.loc[:, pd.IndexSlice['objective', :]] = df_summary['objective'].round(decimals=2)
         # print df_summary
-        # exit(1)
-        print '*'*80
+        print '*' * 80
         with open(output_path + 'solved_instances_table.tex', 'w') as f:
             f.write(df_summary.to_latex(index=False, na_rep='na', escape=False))
         # print
-        print '*'*80
+        print '*' * 80
         print df_summary
 
-        # exit(1)
-
-
     def objective_comparison(self, df, output_path):
-        #TODO: cleanup
+        # TODO: cleanup
         # **************************************************************************************************************
         # OBJECTIVE COMPARISONS
         # **************************************************************************************************************
@@ -629,6 +689,17 @@ class InstanceTable(ResultTable):
         # ========================================================================================================
         #
         # get best configs by solver
+
+        # print df.columns
+        # print df[['solver_config', 'objective']]
+        # # print df['solver_config'].unique()
+        #
+        # df_plot=df[df.solver_config == 'sat-pre-clique6-lb-n1-0.7']
+        # # print df_plot
+        # print df_plot['objective'].dropna()
+        #
+        # exit(1)
+
         df2 = df.copy()
         best = df2.groupby(['solver_config', 'solver']).agg({'solved': [np.sum]}).reset_index()
         best.sort_values(by=[('solved', 'sum')], ascending=[False], inplace=True)
@@ -680,7 +751,7 @@ class InstanceTable(ResultTable):
         # exit(1)
         # df_plot.fillna(value=0, inplace=True)
 
-        df_plot=df_plot.assign(odiff=abs(df_plot[best_col] - df_plot[comp_col]))
+        df_plot = df_plot.assign(odiff=abs(df_plot[best_col] - df_plot[comp_col]))
         # print df_plot.columns
         # print df_plot
         # exit(1)
@@ -689,8 +760,8 @@ class InstanceTable(ResultTable):
         # htd_vs_fhtd.sort_values(by='fhtd_sat-pre-clique4-n1-0.7', inplace=True)
         # htd_vs_fhtd.sort_values(by='odiff', inplace=True)
         df_plot.reset_index(inplace=True)
-        df_save=df_plot[df_plot.odiff.notnull()]
-        df_save=df_save[(df_save.odiff != 0)]
+        df_save = df_plot[df_plot.odiff.notnull()]
+        df_save = df_save[(df_save.odiff != 0)]
 
         df_save.to_csv(output_path('objective_direct_comparison2'))
         # df_save_formatting = '{l@{~}||H@{~}r|@{~}r@{~~}r@{~~}r@{~~}r@{~~}r@{~~}r||r@{~~}|rH}'
@@ -714,8 +785,8 @@ class InstanceTable(ResultTable):
         lfont = lambda x: x  # lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
         ignorelist = imap(lambda x: x[0], ifilter(lambda x: x[1], mapping))
 
-        #TODO: take nice names colors and markers here
-        #fixme to universal names
+        # TODO: take nice names colors and markers here
+        # fixme to universal names
         configs = {
             'detkdecomp-prog_default-n1-1.0':
                 {
@@ -759,44 +830,47 @@ class InstanceTable(ResultTable):
                              marker=configs[config]['marker'], linestyle=configs[config]['linestyle'],
                              linewidth=configs[config]['linewidth'])
             except KeyError:
-                print 'Missing values for configuration %s' %config
+                print 'Missing values for configuration %s' % config
             except TypeError, e:
-                print 'Missing data. %s / %s' %(config, e)
+                print 'Missing data. %s / %s' % (config, e)
 
         fig.subplots_adjust(bottom=0.3, left=0.1)
-        #TODO: fixme
-        plt.savefig(output_path('')[:-4]+'objective_comp.pdf', bbox_inches="tight")  # , additional_artists=art)
+        # TODO: fixme
+        plt.savefig(output_path('')[:-4] + 'objective_comp.pdf', bbox_inches="tight")  # , additional_artists=art)
 
         # print htd_vs_fhtd.head(5)
 
-        #TODO: fixme
+        # TODO: fixme
         # htd_vs_fhtd=htd_vs_fhtd[htd_vs_fhtd.odiff > 0]
 
         df_plot = df3.copy()
         best_config = 'fhtd_sat-pre-clique6-lb-n1-0.7'
-        df_plot=df_plot[df_plot.solver_config == best_config]
+        df_plot = df_plot[df_plot.solver_config == best_config]
 
+        print df_plot['objective'].dropna()
+
+        exit(1)
 
         omax = np.max(df_plot['objective'])
         step = 1
-        intervals = np.arange(0, omax+step, step)
+        intervals = np.arange(0, omax + step, step)
         df_plot['width'] = pd.cut(df_plot['objective'], intervals)
         # print htd_vs_fhtd.columns
         # print htd_vs_fhtd[['odiff_range', 'odiff']]
         # htd_vs_fhtd.reset_index(inplace=True)
         ranges = df_plot[['width']]
         ranges = ranges.groupby(['width'])
-        ranges = ranges.agg({'width': np.count_nonzero}) #.reset_index()
+        ranges = ranges.agg({'width': np.count_nonzero})  # .reset_index()
         # ranges = ranges[ranges.width_range > 0]
         ranges.rename(index=str, columns={'width': 'count'}, inplace=True)
 
         fig, ax = plt.subplots()
         # pdf = PdfPages(output_path('')[:-4]+'diff_fhtd-htd-pie.pdf')
-        pdf = PdfPages(output_path('')[:-4]+'fhtd-htd-pie.pdf')
+        pdf = PdfPages(output_path('')[:-4] + 'fhtd-htd-pie.pdf')
 
         explode = (0.1, 0.1, 0.1, 0.1, 0.15, 0.15, 0.2, 0.25, 0.3)
         # explode = explode,
-        #['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628']
+        # ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628']
         # ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd']
         col_dict = {
             # "(0.0, 0.5]": '#a6cee3',
@@ -823,7 +897,7 @@ class InstanceTable(ResultTable):
         print 'COUNTS'
         print ranges['count'].to_latex(index=False, na_rep='na', escape=False)
 
-        #%d  '%.2f'
+        # %d  '%.2f'
         # def absolute_value(val):
         #     a = np.round(val / 100. * ranges['count'].sum(), 0)
         #     return int(a)
@@ -862,9 +936,8 @@ class InstanceTable(ResultTable):
         except TypeError:
             print "Missing data..."
 
-
         # exit(1)
-        #TODO: next
+        # TODO: next
         # take configs and do 1:1 comparison between solver
         comps = []
         for i, j in combinations(best.itertuples(index=False), 2):
@@ -917,7 +990,8 @@ class InstanceTable(ResultTable):
         pd.options.mode.chained_assignment = 'warn'
         short_df = df[['instance', 'solver', 'solver_config', 'time', 'memusage', 'solved', 'timelimit']]
         short_df = short_df.append(vbest_short)
-        short_df = short_df.reindex_axis(['solver', 'solver_config', 'instance', 'solved', 'time', 'timelimit', 'memusage'], axis=1)
+        short_df = short_df.reindex_axis(
+            ['solver', 'solver_config', 'instance', 'solved', 'time', 'timelimit', 'memusage'], axis=1)
         return short_df
 
     def compute_vbest_solution_quality(self, df):
@@ -926,14 +1000,14 @@ class InstanceTable(ResultTable):
     def compute_vbest(self, df, key):
         df2 = df.reset_index()
         df2.sort_values(by=['benchmark_name', 'class', 'instance', key],
-                                     ascending=[True, True, True, True], inplace=True)
+                        ascending=[True, True, True, True], inplace=True)
 
-        #treat all unsolved instances as timeout
+        # treat all unsolved instances as timeout
         df_solved = df2.copy()
         # print df_solved[(df_solved.solved != 0)][['solver', 'time', 'solved', 'error']]
-        df_solved.loc[(df_solved.solved == 0),'time'] = df2.timelimit
+        df_solved.loc[(df_solved.solved == 0), 'time'] = df2.timelimit
         # df_solved.loc[(df_solved.solved == 0),'time2'] = 7200 #df2.timelimit
-        #set NaN runtime to timeout
+        # set NaN runtime to timeout
         # df_solved.loc[(df2.time == np.nan),'time'] = df2.timelimit
         # print df_solved[['solver', 'time', 'solved', 'error']][(df_solved.error == 0)]
         vbest = df_solved.groupby(['benchmark_name', 'class', 'instance']).head(1)
@@ -1013,7 +1087,8 @@ class InstanceTable(ResultTable):
             out = out.groupby(['error', 'error/ok']).agg({'instance': 'count'}).reset_index()
             # .agg({'instance': 'count'}).reset_index()
             out.sort_values(by=['error'], ascending=[True], inplace=True)
-            with open(os.path.join(detailed_error_output_path, '%s-error-0summary_%s%s%s' % (project_name, s[0], s[1], suffix)),
+            with open(os.path.join(detailed_error_output_path,
+                                   '%s-error-0summary_%s%s%s' % (project_name, s[0], s[1], suffix)),
                       'w') as outfile:
                 out.to_csv(outfile, index=False)
 
@@ -1219,8 +1294,8 @@ class InstanceTable(ResultTable):
                        'vbest': 'vbest'}
 
             # lfont = lambda x: '$\mathtt{%s}$' % x.replace('-', '\hy')
-            #TODO: move coloring function to XML?
-            lfont = lambda x : x
+            # TODO: move coloring function to XML?
+            lfont = lambda x: x
             # mapping = {}
 
             # b: blue

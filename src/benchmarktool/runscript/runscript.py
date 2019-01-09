@@ -1444,6 +1444,8 @@ class Runscript:
                         out.write('\t\t\t<class id="{0.id}">\n'.format(classname))
                         instances = runspec.benchmark.instances[classname]
                         for instance in instances:
+                            if instance.instance == '.DS_Store':
+                                continue
                             out.write('\t\t\t\t<instance id="{0.id}">\n'.format(instance))
                             jobGen.evalResults(out, "\t\t\t\t\t", runspec, instance)
                             out.write('\t\t\t\t</instance>\n')

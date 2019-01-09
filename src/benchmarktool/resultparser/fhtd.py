@@ -107,47 +107,49 @@ def fhtd(root, runspec, instance):
 
     runsolver_error = False
     # WATCHER DATA HANDLING
-    if pbs_job:
+    try:
+        f = codecs.open(os.path.join(root, '%s.watcher' % instance_str), errors='ignore', encoding='utf-8').read()
+        for line in f.splitlines():
+            for val, reg in runsolver_re.items():
+                m = reg[1].match(line)
+                if m: res[val] = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
+                
+        if res['memerror'][1] != 'nan':
+            res["error_str"] = ("string", "std::bad_alloc")
+            res["error"] = ("int", 2)
+            res['memout'] = ("int", 1)
+        else:
+            res['memout'] = ("int", 0)
+
         try:
-            f = codecs.open(os.path.join(root, '%s.watcher' % instance_str), errors='ignore', encoding='utf-8').read()
-            for line in f.splitlines():
-                for val, reg in runsolver_re.items():
-                    m = reg[1].match(line)
-                    if m: res[val] = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
+            res['timeout'] = ('int', int(res["time"][1] >= res['timelimit'][1]))
+            if 'cumcpu_time' in res:
+                del res['cumcpu_time']
+        except KeyError, e:
+            # sometimes we obtain lost times during runs
+            # we report them here but note that there was a runsolver error
+            res['time'] = res['cumcpu_time']
+            res['timeout'] = ('int', int(res["time"][1] >= res['timelimit']))
+            runsolver_error = True
+                
+        res['finished'] = ('int', int(res['status'][1] >= 0))
+        # to = log_content.find('Child ended because it received signal 15 (SIGTERM)') >=0
+        if not res['finished']:
+            sys.stderr.write('instance %s did not finish properly\n' % root)
+    except IOError:
+        res['error_str'] = ('string', 'Did not finish.')
+        return [(key, val[0], val[1]) for key, val in res.items()]
 
-            if res['memerror'][1] != 'nan':
-                res["error_str"] = ("string", "std::bad_alloc")
-                res["error"] = ("int", 2)
-                res['memout'] = ("int", 1)
-            else:
-                res['memout'] = ("int", 0)
-
-            try:
-                res['timeout'] = ('int', int(res["time"][1] >= res['timelimit'][1]))
-                if 'cumcpu_time' in res:
-                    del res['cumcpu_time']
-            except KeyError, e:
-                # sometimes we obtain lost times during runs
-                # we report them here but note that there was a runsolver error
-                res['time'] = res['cumcpu_time']
-                res['timeout'] = ('int', int(res["time"][1] >= res['timelimit']))
-                runsolver_error = True
-
-            res['finished'] = ('int', int(res['status'][1] >= 0))
-            # to = log_content.find('Child ended because it received signal 15 (SIGTERM)') >=0
-            if not res['finished']:
-                sys.stderr.write('instance %s did not finish properly\n' % root)
-        except IOError:
-            res['error_str'] = ('string', 'Did not finish.')
-            return [(key, val[0], val[1]) for key, val in res.items()]
-
-    else:
+    if not pbs_job:
         log_content = open(os.path.join(root, "condor.log")).read()
         # ret = 9: runsolver error (heavy process)
         finished = log_content.find('Normal termination') >= 0 or log_content.find(
             'Abnormal termination (signal 9)') >= 0
         if not finished:
             sys.stderr.write('instance %s did not finish properly\n' % root)
+        
+
+            
 
     # READ RESULT OUTPUT FROM SOLVER
     valid_json = None
@@ -211,14 +213,14 @@ def fhtd(root, runspec, instance):
         res['run'] = nan_or_value(('int', 'run'), stats)
         res['num_hyperedges'] = nan_or_value(('int', '#hyperedges'), stats)
         res['num_verts'] = nan_or_value(('int', '#vertices'), stats)
-        res['pre_wall'] = nan_or_value(('float', 'pre_wall'), stats)
+        res['pre_wall'] = nan_or_value(('list', 'pre_wall'), stats)
         res['z3_wall'] = nan_or_value(('float', 'z3_wall'), stats)
         res['enc_wall'] = nan_or_value(('float', 'enc_wall'), stats)
         res['size_largest_hyperedge'] = nan_or_value(('int', 'size_largest_hyperedge'), stats)
-        res['pre_clique_k'] = nan_or_value(('int', 'pre_clique_k'),stats)
-        res['pre_clique_size'] = nan_or_value(('int', 'pre_clique_size'),stats)
-        res['num_twins'] = nan_or_value(('int', 'num_twins'),stats)
-        res['pre_size_max_twin'] = nan_or_value(('int', 'pre_size_max_twin'),stats)
+        res['pre_clique_k'] = nan_or_value(('list', 'pre_clique_k'),stats)
+        res['pre_clique_size'] = nan_or_value(('list', 'pre_clique_size'),stats)
+        res['num_twins'] = nan_or_value(('list', 'num_twins'),stats)
+        res['pre_size_max_twin'] = nan_or_value(('list', 'pre_size_max_twin'),stats)
 
         try:
             res['hash'] = ('string', stats['hash'][0:16] + '*')
@@ -234,10 +236,5 @@ def fhtd(root, runspec, instance):
         except KeyError:
             res['full_call'] = ('string', 'nan')
             # sys.stderr.write('Could not find "call" in json values (instance = %s).\n' % root)
-
-    print res
-    print 'heeerreee'
-    # if '2bitcomp_5.hg' in root:
-    #     exit(1)
 
     return [(key, val[0], val[1]) for key, val in res.items()]
