@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sys
+import subprocess
 from base64 import b64encode
 
 from benchmarktool.tools import escape
@@ -87,7 +88,7 @@ def sudokuresultparser(root, runspec, instance):
 
     # ERROR HANDLING
     try:
-        logfile = os.path.join(root, '%s.err' % instance_str)
+        logfile = os.path.join(root, 'runsolver.err')
         err_content = codecs.open(logfile, errors='ignore', encoding='utf-8').read()
         err_content = err_content.replace(",\n]", "\n]", 1)
 
@@ -116,7 +117,7 @@ def sudokuresultparser(root, runspec, instance):
     runsolver_error = False
     # WATCHER DATA HANDLING
     try:
-        f = codecs.open(os.path.join(root, '%s.watcher' % instance_str), errors='ignore', encoding='utf-8').read()
+        f = codecs.open(os.path.join(root, 'runsolver.watcher'), errors='ignore', encoding='utf-8').read()
         for line in f.splitlines():
             for val, reg in runsolver_re.items():
                 m = reg[1].match(line)
@@ -148,37 +149,29 @@ def sudokuresultparser(root, runspec, instance):
         res['error_str'] = ('string', 'Did not finish.')
         return [(key, val[0], val[1]) for key, val in res.items()]
 
-    if not pbs_job:
-        log_content = open(os.path.join(root, "condor.log")).read()
-        # ret = 9: runsolver error (heavy process)
-        finished = log_content.find('Normal termination') >= 0 or log_content.find(
-            'Abnormal termination (signal 9)') >= 0
-        if not finished:
-            sys.stderr.write('instance %s did not finish properly\n' % root)
+#    if not pbs_job:
+#        log_content = open(os.path.join(root, "condor.log")).read()
+#        # ret = 9: runsolver error (heavy process)
+#        finished = log_content.find('Normal termination') >= 0 or log_content.find(
+#            'Abnormal termination (signal 9)') >= 0
+#        if not finished:
+#            sys.stderr.write('instance %s did not finish properly\n' % root)
         
 
             
 
     # READ RESULT OUTPUT FROM SOLVER
-    valid_json = None
+    validator_output = None
+    content = None
     stats = {}
     error = 0
     cluster_error = False
 
     try:
-        # errors='ignore',
-        content = codecs.open(os.path.join(root, '%s.txt' % instance_str), encoding='utf-8').read()
-        valid_json = True
-
-        try:
-            stats = json.loads(content)
-        except ValueError, e:
-            sys.stderr.write('Error (invalid JSON): %s ("%s"); %s\n' % (instance.instance, root, str(e)))
-            res['error_str'] = ('string', res['error_str'][1] + str(e))
-            with open(os.path.join(root, '%s.err' % instance_str)) as fstderr:
-                res['stderr'] = ('string', escape(fstderr.read().replace('\n', ' ').replace('  ', '')))
-            valid_json = False
-
+        output_file = os.path.join(root, 'runsolver.solver')
+        validator = 'programs/sudoku_validate-1.0'
+        validator_output = subprocess.check_output("./%s -f %s" % (validator, output_file), shell=True)
+        
     except IOError:
         sys.stderr.write('Instance %s did not finish properly. Missing output file.\n' % root)
         cluster_error = True
@@ -188,7 +181,7 @@ def sudokuresultparser(root, runspec, instance):
     # 2048 = invalid result, 4096 = cplex license issue
     error += int(res['timeout'][1])
     error += int(res['memout'][1]) * 2
-    error += int(not valid_json) * 64
+   #  error += int(not valid_json) * 64
     error += int(not valid_solver_run) * 128
     error += int(runsolver_error) * 256
     error += int(signal_handling_error) * 512
@@ -199,11 +192,39 @@ def sudokuresultparser(root, runspec, instance):
 
     res['error'] = ('int', error)
 
-    try:
-        res['wall'] = ('float', stats['wall'])
-        res['solved'] = ('int', int(stats['solved']))
-    except KeyError, e:
-        pass
+    is_valid = True
+
+    if 'NOT CORRECT' in validator_output: is_valid = False
+
+    def clean_empty_lines(inp):
+        result = []
+        for line in inp:
+            if line != "":
+                result.append(line)
+        return result
+
+    # Validate if output is consistent with input
+    instance_output = codecs.open(os.path.join(root, 'runsolver.solver'), encoding='utf-8').read().split('\n')
+    instance_input = codecs.open(os.path.join(instance.location, instance.instance), encoding='utf-8').read().split('\n')    
+
+    instance_output = clean_empty_lines(instance_output)
+    instance_input = clean_empty_lines(instance_input)
+
+    if len(instance_output) < len(instance_input):
+        is_valid = False    
+    else:
+        for i in range(4,len(instance_input)):
+            for j, char in enumerate(instance_input[i]):
+                if char != '_' and instance_output[i][j] != char:
+                    is_valid = False
+                    break
+
+
+    #try:
+    # res['wall'] = ('float', stats['wall'])
+    res['solved'] = ('int', int(is_valid))
+    #except KeyError, e:
+    #    pass
 
     #TODO: twins
 
@@ -214,35 +235,5 @@ def sudokuresultparser(root, runspec, instance):
             return (tpl[0], 'nan')
 
     # PROBLEM/SOLVER SPECIFIC OUTPUT
-    if error == 0:
-        res['objective'] = nan_or_value(('float', 'width'), stats)
-        if res['objective'] == '1':
-            res['solved'] = 1
-        res['run'] = nan_or_value(('int', 'run'), stats)
-        res['num_hyperedges'] = nan_or_value(('int', '#hyperedges'), stats)
-        res['num_verts'] = nan_or_value(('int', '#vertices'), stats)
-        res['pre_wall'] = nan_or_value(('list', 'pre_wall'), stats)
-        res['z3_wall'] = nan_or_value(('float', 'z3_wall'), stats)
-        res['enc_wall'] = nan_or_value(('float', 'enc_wall'), stats)
-        res['size_largest_hyperedge'] = nan_or_value(('int', 'size_largest_hyperedge'), stats)
-        res['pre_clique_k'] = nan_or_value(('list', 'pre_clique_k'),stats)
-        res['pre_clique_size'] = nan_or_value(('list', 'pre_clique_size'),stats)
-        res['num_twins'] = nan_or_value(('list', 'num_twins'),stats)
-        res['pre_size_max_twin'] = nan_or_value(('list', 'pre_size_max_twin'),stats)
-
-        try:
-            res['hash'] = ('string', stats['hash'][0:16] + '*')
-            cut = os.path.join(*instance.location.split('/')[1:])
-            index = stats['instance'].find(cut)
-            if index != -1:
-                res['instance_path'] = ('string', stats['instance'][index + len(cut) + 1:])
-        except KeyError, e:
-            # sys.stderr.write('Missing attribute "%s" for instance "%s".\n' % (str(e), root))
-            pass
-        try:
-            res['full_call'] = ('string', b64encode(stats['call']))
-        except KeyError:
-            res['full_call'] = ('string', 'nan')
-            # sys.stderr.write('Could not find "call" in json values (instance = %s).\n' % root)
 
     return [(key, val[0], val[1]) for key, val in res.items()]
