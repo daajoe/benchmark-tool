@@ -166,8 +166,10 @@ def sudokuresultparser(root, runspec, instance):
     stats = {}
     error = 0
     cluster_error = False
+    instance_output = None
 
     try:
+        instance_output = codecs.open(os.path.join(root, 'runsolver.solver'), encoding='utf-8').read()
         output_file = os.path.join(root, 'runsolver.solver')
         validator = 'programs/sudoku_validate-1.0'
         validator_output = subprocess.check_output("./%s -f %s" % (validator, output_file), shell=True)
@@ -204,11 +206,10 @@ def sudokuresultparser(root, runspec, instance):
         return result
 
     # Validate if output is consistent with input
-    instance_output = codecs.open(os.path.join(root, 'runsolver.solver'), encoding='utf-8').read().split('\n')
-    instance_input = codecs.open(os.path.join(instance.location, instance.instance), encoding='utf-8').read().split('\n')    
+    instance_input = codecs.open(os.path.join(instance.location, instance.instance), encoding='utf-8').read()
 
-    instance_output = clean_empty_lines(instance_output)
-    instance_input = clean_empty_lines(instance_input)
+    instance_output = clean_empty_lines(instance_output.split('\n'))
+    instance_input = clean_empty_lines(instance_input.split('\n'))
 
     if len(instance_output) < len(instance_input):
         is_valid = False    
