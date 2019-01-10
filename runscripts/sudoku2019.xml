@@ -4,13 +4,13 @@
 
     <config name="local" template="templates/sudoku2019.sh"/>
 
-    <system name="sudoku_dummy" version="1.0" measures="sudokuresultparser" config="local">
+    <!-- <system name="sudoku_dummy" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="default" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+    </system> -->
+
+    <system name="sudoku_team6" version="1.0" measures="sudokuresultparser" config="local">
       <setting name="default" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
     </system>
-
-    <!--<system name="sudoku_solver_group2" version="1.0" measures="fhtd" config="local">-->
-      <!--<setting name="default" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>-->
-    <!--</system>-->
 
     <seqjob name="local" timeout="900" memout="8192" runs="1" parallel="2"/>
 
