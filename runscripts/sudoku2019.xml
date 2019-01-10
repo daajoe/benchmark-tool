@@ -8,11 +8,15 @@
       <setting name="default" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
     </system> -->
 
+    <system name="sudoku_team1" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="default" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+    </system>
+
     <system name="sudoku_team6" version="1.0" measures="sudokuresultparser" config="local">
       <setting name="default" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
     </system>
 
-    <seqjob name="local" timeout="900" memout="8192" runs="1" parallel="2"/>
+    <seqjob name="local" timeout="30" memout="8192" runs="1" parallel="2"/>
 
     <benchmark name="example_sudokus">
         <folder path="benchmarks/sudoku2019/sudokus">
