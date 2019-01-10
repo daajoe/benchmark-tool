@@ -1,7 +1,7 @@
 experiment: generator (Time: 0.001419 s)
 number of tasks: 1
 task: 1
-puzzle size: 3x3
+puzzle size: 9x9
 +-------+-------+-------+
 | _ _ 4 | 2 3 9 | _ _ _ |
 | _ 8 _ | 5 _ 6 | _ _ _ |

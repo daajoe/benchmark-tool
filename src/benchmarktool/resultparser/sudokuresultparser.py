@@ -173,10 +173,12 @@ def sudokuresultparser(root, runspec, instance):
         output_file = os.path.join(root, 'runsolver.solver')
         validator = 'programs/sudoku_validate-1.0'
         validator_output = subprocess.check_output("./%s -f %s" % (validator, output_file), shell=True)
-        
     except IOError:
         sys.stderr.write('Instance %s did not finish properly. Missing output file.\n' % root)
         cluster_error = True
+    except subprocess.CalledProcessError:
+        sys.stderr.write('Instance %s did not output anything. Empty output file.\n' % root)
+        error += 64
 
     # error codes: 0 = ok, 1 = timeout, 2 = memout, 64 = invalid output, 128 = program runtime error,
     # 256 = runsolver error/glitch, 512 = error signal handling, 1024 = cluster run error
@@ -196,7 +198,8 @@ def sudokuresultparser(root, runspec, instance):
 
     is_valid = True
 
-    if 'NOT CORRECT' in validator_output: is_valid = False
+    if validator_output is None or 'NOT CORRECT' in validator_output:
+        is_valid = False
 
     def clean_empty_lines(inp):
         result = []
