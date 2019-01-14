@@ -1,12 +1,20 @@
 THISFILE=$(readlink -f -- "${0}")
 THISDIR=${THISFILE%/*}
 
-SIZE=$(python $THISDIR/parse_input.py "$1")
+solver="riss"
+
+while [[ "$#" > 0 ]]; do case $1 in
+  -g|--glucose) solver="glucose -model";;
+  *) input=$1; break;
+esac; shift; done
+
+size=$(python $THISDIR/parse_input.py "$input")
+
 # echo "Start SAT Solving"
-$THISDIR/streamer $SIZE | riss > out.txt
+$THISDIR/streamer $size | $solver > out.txt
 # cat out.txt | grep CPU
 # cat out.txt | grep SAT
-python $THISDIR/parse_output.py $SIZE
+python $THISDIR/parse_output.py $size
 cat result.txt
 # echo "The output is: "
 # ./sudotest-linux64 -f result.txt

@@ -2,7 +2,7 @@
 
 FILE=$(readlink -f -- "$0")
 DIR=$(dirname "$FILE")
-$DIR/sudoku-sat $1 1> /dev/null && cat output.txt
+$DIR/sudoku-sat $@ 1> /dev/null && cat output.txt
 
 
 # Clean up

@@ -15,6 +15,6 @@ hostname >> runsolver.err
 	-M 8192 \
 	-w runsolver.watcher \
 	-W {run.timeout} \
-	"{run.root}/programs/{run.solver}" "{run.file}" > runsolver.solver 2>>runsolver.err
+	"{run.root}/programs/{run.solver}" {run.args} "{run.file}" > runsolver.solver 2>>runsolver.err
 
 touch .finished
