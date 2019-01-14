@@ -1,7 +1,7 @@
-experiment: 9x9
+experiment: 3x3
 number of tasks: 10
 task: 3
-puzzle size: 9x9
+puzzle size: 3x3
 +-------+-------+-------+
 | 7 _ 3 | _ _ _ | 5 _ 9 |
 | 5 _ 4 | 2 _ _ | 1 _ 8 |

@@ -18,7 +18,12 @@
       <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
     </system>
 
-    <seqjob name="local" timeout="10" memout="8192" runs="1" parallel="2"/>
+    <system name="sudoku_team7" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+      <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
+    </system>
+
+    <seqjob name="local" timeout="900" memout="8192" runs="1" parallel="2"/>
 
     <benchmark name="example_sudokus">
         <folder path="benchmarks/sudoku2019/sudokus">
