@@ -27,9 +27,8 @@ def get_model_information(file_name):
     file_ptr = open(file_name)
     for line in file_ptr.readlines():
         if "puzzle size:" in line:
-            n = line.split(" ")[-1].split("x")[-1]
-            N_sqrt = int(np.sqrt(int(n)))
-            N = int(n)
+            N_sqrt = int(line.split(" ")[-1].split("x")[-1])
+            N = N_sqrt * N_sqrt
             break
 
     file_ptr.close()
