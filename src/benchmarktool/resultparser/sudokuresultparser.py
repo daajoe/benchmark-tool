@@ -38,7 +38,7 @@ def sudokuresultparser(root, runspec, instance):
     """
     Extracts some clingo statistics.
     """
-
+    
     # DEFAULT VALUES
     res = {
         'instance': ('string', instance.instance),
@@ -58,7 +58,7 @@ def sudokuresultparser(root, runspec, instance):
         'solved': ('int', 0),
         'wall': ('float', 0),
         'run': ('int', 0),
-        # 'objective': ('float', 'nan'),
+        'objective': ('int', 0),
         'error': ('int', 0),
         # 'error_str': ('string', ''),
         # 'stderr': ('string', ''),
@@ -176,7 +176,7 @@ def sudokuresultparser(root, runspec, instance):
     except IOError:
         sys.stderr.write('Instance %s did not finish properly. Missing output file.\n' % root)
         cluster_error = True
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         sys.stderr.write('Instance %s did not output anything. Empty output file.\n' % root)
         error += 64
 
@@ -204,7 +204,7 @@ def sudokuresultparser(root, runspec, instance):
     def clean_empty_lines(inp):
         result = []
         for line in inp:
-            if line != "":
+            if line != "" and line != "\n":
                 result.append(line)
         return result
 
@@ -215,7 +215,7 @@ def sudokuresultparser(root, runspec, instance):
     instance_input = clean_empty_lines(instance_input.split('\n'))
 
     if len(instance_output) < len(instance_input):
-        is_valid = False    
+        is_valid = False
     else:
         for i in range(4,len(instance_input)):
             for j, char in enumerate(instance_input[i]):
@@ -227,6 +227,7 @@ def sudokuresultparser(root, runspec, instance):
     #try:
     # res['wall'] = ('float', stats['wall'])
     res['solved'] = ('int', int(is_valid))
+    res['objective'] = ('int', int(is_valid))
     #except KeyError, e:
     #    pass
 
