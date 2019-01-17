@@ -13,6 +13,11 @@
       <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
     </system>
 
+    <system name="sudoku_team4" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+      <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
+    </system>
+
     <system name="sudoku_team6" version="1.0" measures="sudokuresultparser" config="local">
       <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
       <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
