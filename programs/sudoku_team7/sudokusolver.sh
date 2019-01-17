@@ -1,3 +1,5 @@
+#!/bin/bash
+
 FILE=$(readlink -f -- "$0")
 DIR=$(dirname "$FILE")
 
@@ -8,4 +10,4 @@ while [[ "$#" > 0 ]]; do case $1 in
   *) input=$1;
 esac; shift; done
 
-java -jar "$DIR/SudokuSolver.jar" "$1" "$solver"
+java -jar "$DIR/SudokuSolver.jar" "$input" "$solver"
