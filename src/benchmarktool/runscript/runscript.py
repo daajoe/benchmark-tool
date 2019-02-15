@@ -4,7 +4,6 @@ It can be used to create scripts to start a benchmark
 specified by the run script. 
 """
 from itertools import count
-from itertools import izip
 
 __author__ = "Roland Kaminski"
 
@@ -725,7 +724,7 @@ class CondorScriptGen(ScriptGen):
                 run.timelimit = self.job.timeout
                 run.finished = finish
                 startfile.write(template.format(run=run))
-            os.chmod(startpath, 0770)
+            os.chmod(startpath, 0o770)
             self.startfiles.append((runspec, path, "start.py"))
             tools.setExecutable(startpath)
 

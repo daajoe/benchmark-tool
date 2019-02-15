@@ -77,7 +77,12 @@ def sudokuresultparser(root, runspec, instance):
         for line in f.splitlines():
             for val, reg in runsolver_re.items():
                 m = reg[1].match(line)
-                if m: res[val] = (reg[0], reg[2](float(m.group("val"))) if reg[0] == "float" else m.group("val"))
+                if m:
+                    parser = str
+                    if reg[0] == 'float': parser = float
+                    elif reg[0] == 'int': parser = int
+
+                    res[val] = (reg[0], reg[2](parser(m.group("val"))))
                 
         if res['memerror'][1] != 'nan':
             res["error_str"] = ("string", "std::bad_alloc")
@@ -90,13 +95,13 @@ def sudokuresultparser(root, runspec, instance):
             res['timeout'] = ('int', int(res["time"][1] >= res['timelimit'][1]))
             if 'cumcpu_time' in res:
                 del res['cumcpu_time']
-        except KeyError, e:
+        except KeyError:
             # sometimes we obtain lost times during runs
             # we report them here but note that there was a runsolver error
             res['time'] = res['cumcpu_time']
             res['timeout'] = ('int', int(res["time"][1] >= res['timelimit']))
             runsolver_error = True
-                
+            
         res['finished'] = ('int', int(res['status'][1] >= 0))
         # to = log_content.find('Child ended because it received signal 15 (SIGTERM)') >=0
         if not res['finished']:
@@ -118,7 +123,7 @@ def sudokuresultparser(root, runspec, instance):
         instance_output = codecs.open(os.path.join(root, 'runsolver.solver'), encoding='utf-8').read()
         output_file = os.path.join(root, 'runsolver.solver')
         validator = 'benchmarks/sudokusat2019/bin/sudoku_validate-1.0'
-        validator_output = subprocess.check_output("./%s -f %s" % (validator, output_file), shell=True)
+        validator_output = subprocess.check_output("./%s -f %s" % (validator, output_file), shell=True, encoding='utf-8')
     except IOError:
         sys.stderr.write('Instance %s did not finish properly. Missing output file.\n' % root)
         cluster_error = True
@@ -178,7 +183,7 @@ def sudokuresultparser(root, runspec, instance):
     def nan_or_value(tpl, stats):
         try:
             return (tpl[0], stats[tpl[1]])
-        except KeyError, e:
+        except KeyError:
             return (tpl[0], 'nan')
 
     # PROBLEM/SOLVER SPECIFIC OUTPUT

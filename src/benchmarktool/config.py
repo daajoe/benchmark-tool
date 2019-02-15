@@ -9,36 +9,6 @@ import re
 import sys
 import codecs
 
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.claspar import claspar
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.cudf import cudf
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.clasp import clasp
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.claspD import claspD
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.clingo import clingo
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.pace_jkf import pace_jkf
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.dynasp_jkf import dynasp_jkf
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.sat import sat
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.minisat import minisat
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.zchaff import zchaff
-# noinspection PyUnresolvedReferences
-#from benchmarktool.resultparser.trellis import trellis
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.fhtd import fhtd
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.detkdecomp import detkdecomp
-# noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.sudokuresultparser import sudokuresultparser
-
-
 
 claspre_features 	= re.compile(r"^Features[ ]*:[ ]*(([0-9]+\.?[0-9]*)([,](.+\.?.*))*)\+?[ ]*$")
 claspre_conf = re.compile(r"^Chosen configuration:[ ]*(.*)\+?[ ]*$")
