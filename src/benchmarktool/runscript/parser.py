@@ -97,7 +97,7 @@ class Parser:
         </xs:choice>
         <xs:attribute name="name" type="nameType" use="required"/>
         <xs:attribute name="version" type="versionType" use="required"/>
-        <xs:attribute name="measures" type="nameType" use="required"/>
+        <xs:attribute name="measures" type="pythonPathType" use="required"/>
         <xs:attribute name="config" type="nameType" use="required"/>
     </xs:complexType>
 
@@ -229,6 +229,12 @@ class Parser:
     <xs:simpleType name="nameType">
         <xs:restriction base="xs:string">
             <xs:pattern value="[A-Za-z_\-0-9]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="pythonPathType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\w+(\.\w+)*"/>
         </xs:restriction>
     </xs:simpleType>
     
