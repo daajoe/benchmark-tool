@@ -25,6 +25,9 @@ import time
 
 from os.path import dirname
 
+import psutil
+
+
 def handler(signum, frame):
   sys.stderr.write('SIGNAL received %s\n' %signum)
   current_process = psutil.Process()
@@ -45,13 +48,13 @@ class dotdict(dict):
   __delattr__ = dict.__delitem__
 
 args=dotdict()
-args.runsolver = '{run.root}/programs/runsolver-3.3.5'
+args.runsolver = '{run.root}/programs/runsolver-3.3.6'
 args.memlimit = '{run.memlimit}'
 args.timelimit = '{run.timeout}'
 args.solver = '{run.root}/programs/{run.solver}'
 args.watcher= '{run.root}/{run.path}/{run.instancebase}.watcher'
 args.solver_args='{run.args}'
-args.filename = ['{run.root}/{run.instance}']
+args.filename = ['{run.file}']
 args.stdout='{run.root}/{run.path}/{run.instancebase}.txt'
 #args.stdout='/dev/stdout'
 args.stderr='{run.root}/{run.path}/{run.instancebase}.err'
@@ -86,7 +89,8 @@ def main(args):
 
   #USE CONDOR SPECIFIC VARIABLES
   if condor:
-    tmp=os.environ['_CONDOR_SCRATCH_DIR']
+    #tmp=os.environ['_CONDOR_SCRATCH_DIR']
+    tmp='{run.root}/{run.path}'
   else:
     tmp=tempfile.gettempdir()
   
@@ -96,10 +100,12 @@ def main(args):
   sys.stderr.write(args.solver_args)
   sys.stderr.write('\n')
 
+  dir_path = os.path.dirname(os.path.realpath(__file__))
+
   cmd = '%s -M %s -W %s -w %s %s %s -t %s --runid %s -f %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, ''.join(args.solver_args), tmp, args.run, ' '.join(args.filename), args.stdout, args.stderr)
   sys.stderr.write('COMMAND=%s\n' %cmd)
 
-  p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
+  p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True, cwd=dir_path)
   output, err = p_solver.communicate()
   sys.stdout.write('%s RETCODE %s\n' % ('*' * 40, '*' * 40))
   sys.stdout.write('ret=%s\n' %p_solver.returncode)
@@ -108,7 +114,7 @@ def main(args):
   sys.stderr.write('%s STDERR %s\n' %('*'*40, '*'*40))
   sys.stderr.write(err)
   childreturncode=0
-  with open(args.watcher) as f:
+  with open(os.path.join(dir_path, args.watcher)) as f:
     for line in f:
       line=line.split()
       if line==[]:
@@ -116,7 +122,7 @@ def main(args):
       if line[0] == 'Child' and line[1] == 'status:':
         childreturncode=int(line[2])
   if int(p_solver.returncode) == 0 and childreturncode == 0:
-    open(args.finished,'a').close()
+    open(os.path.join(dir_path,args.finished),'a').close()
 
 
 if __name__ == "__main__":

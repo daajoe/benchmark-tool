@@ -208,7 +208,7 @@ class Job(Sortable):
     Base class for all jobs. 
     """
 
-    def __init__(self, name, timeout, runs, attr):
+    def __init__(self, name, memout, timeout, runs, attr):
         """
         Initializes a job.
         
@@ -222,6 +222,7 @@ class Job(Sortable):
         self.timeout = timeout
         self.runs = runs
         self.attr = attr
+        self.memout = memout
 
     def _toXml(self, out, indent, xmltag, extra):
         """
@@ -754,7 +755,7 @@ class CondorScriptGen(ScriptGen):
                     condorsubmitfile.write(
                         t.render(instances=chunk, timeout=self.job.timeout,
                                  memout=self.job.memout, initialdir=initialdir))
-        tools.setExecutable(os.path.join(path, "condor_0.submit"))
+        #tools.setExecutable(os.path.join(path, "condor_0.submit"))
 
 
 class SeqJob(Job):
@@ -762,7 +763,7 @@ class SeqJob(Job):
     Describes a sequential job.
     """
 
-    def __init__(self, name, timeout, runs, parallel, attr):
+    def __init__(self, name, memout, timeout, runs, parallel, attr):
         """
         Initializes a sequential job description.  
         
@@ -773,7 +774,7 @@ class SeqJob(Job):
         parallel - The number of runs that can be started in parallel
         attr     - A dictionary of arbitrary attributes
         """
-        Job.__init__(self, name, timeout, runs, attr)
+        Job.__init__(self, name, memout, timeout, runs, attr)
         self.parallel = parallel
 
     def scriptGen(self):
@@ -812,10 +813,9 @@ class PbsJob(Job):
         walltime    - The walltime for a job submitted via PBS 
         attr        - A dictionary of arbitrary attributes
         """
-        Job.__init__(self, name, timeout, runs, attr)
+        Job.__init__(self, name, memout, timeout, runs, attr)
         self.script_mode = script_mode
         self.walltime = walltime
-        self.memout = memout
 
     def toXml(self, out, indent):
         """
@@ -853,12 +853,11 @@ class CondorJob(Job):
         walltime    - The walltime for a job submitted via PBS
         attr        - A dictionary of arbitrary attributes
         """
-        Job.__init__(self, name, timeout, runs, attr)
+        Job.__init__(self, name, memout, timeout, runs, attr)
         self.script_mode = script_mode
         self.walltime = walltime
         self.condortemplate = condortemplate
         self.basedir = basedir
-        self.memout = memout
 
     def toXml(self, out, indent):
         """
@@ -1033,7 +1032,7 @@ class Benchmark(Sortable):
             root - The root path
             path - Some path relative to the root path
             """
-            if path == ".svn":
+            if path in (".svn", ".git") or path.startswith("._") or path.startswith("0arch"):
                 return True
             path = os.path.normpath(os.path.join(root, path))
             return path in self.prefixes
@@ -1445,6 +1444,8 @@ class Runscript:
                         out.write('\t\t\t<class id="{0.id}">\n'.format(classname))
                         instances = runspec.benchmark.instances[classname]
                         for instance in instances:
+                            if instance.instance == '.DS_Store':
+                                continue
                             out.write('\t\t\t\t<instance id="{0.id}">\n'.format(instance))
                             jobGen.evalResults(out, "\t\t\t\t\t", runspec, instance)
                             out.write('\t\t\t\t</instance>\n')

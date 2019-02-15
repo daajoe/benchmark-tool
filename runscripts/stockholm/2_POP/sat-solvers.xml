@@ -1,0 +1,66 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="2x4xE5520@2.27GHz" memory="16GB"/>
+
+    <!-- PLOT INFOS see:
+            b: blue
+            g: green
+            r: red
+            c: cyan
+            m: magenta
+            y: yellow
+            k: black
+            w: white
+            ['-', '- -', '-.', ':'])
+            https://xkcd.com/color/rgb/
+
+            cm = plt.get_cmap('gist_rainbow')
+
+            ax.set_prop_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            marker = cycle(('.', 'p', '^', '*', 'd', 's', 'o'))  # (',', '+', '.', 'o', '*'))
+            marker = cycle(('.', 'p', '^'))  # (',', '+', '.', 'o', '*'))
+            ax.set_color_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            ...
+            linestyle='', marker=marker.next()
+
+            TODO: define cycle
+            https://matplotlib.org/users/colormaps.html
+            TODO: define plot config and default plot config
+            TODO: move Latex Fonts to xml
+
+    -->
+
+	<!--<seqjob name="seq-generic" timeout="120" runs="1" parallel="1"/>-->
+	<config name="condor-generic" template="templates/condor/runsolver_template_sat.py"/>
+
+	<!--<system name="clasp" version="3.3.2" measures="clasp" config="seq-generic">-->
+	<system name="clasp" version="3.3.2" measures="clasp" config="condor-generic">
+ 	  <setting name="default" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="default"/>
+ 	  <setting name="vsids" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsids"/>
+ 	  <setting name="vsids10" tag="sat" cmdline="--stat=2 --heuristic=Vsids,10" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsids10"/>
+ 	  <setting name="vsids25" tag="sat" cmdline="--stat=2 --heuristic=Vsids,25" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsids25"/>
+ 	  <setting name="vsids50" tag="sat" cmdline="--stat=2 --heuristic=Vsids,50" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsids50"/>
+ 	  <setting name="vsids75" tag="sat" cmdline="--stat=2 --heuristic=Vsids,75" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsids75"/>
+ 	  <setting name="vsids90" tag="sat" cmdline="--stat=2 --heuristic=Vsids,90" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsdis90"/>
+ 	  <setting name="vsids91" tag="sat" cmdline="--stat=2 --heuristic=Vsids,91" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsids91"/>
+ 	  <setting name="vsids98" tag="sat" cmdline="--stat=2 --heuristic=Vsids,98" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="vsids98"/>
+ 	  <setting name="berkmin" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="berkmin"/>
+ 	  <setting name="few_del" tag="sat" cmdline="--stat=2 --heuristic=Vsids,95 --restarts=L,60 --deletion=basic,50 --del-max=200000  --del-cfl=+,2000,100,20 --del-grow=0 --del-glue=2,0" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="few_del"/>
+ 	  <setting name="no_del" tag="sat" cmdline="--stat=2 --heuristic=Vsids,95 --restarts=L,60 --deletion=no" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="no_del"/>
+ 	  <setting name="aft" tag="sat" cmdline="--stat=2 --heuristic=Vsids,95 --restarts=F,1 --deletion=no" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="aft"/>
+ 	  <setting name="no_res" tag="sat" cmdline="--stat=2 --heuristic=Vsids,95 --restarts=no" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="no_res"/>
+ 	</system>
+
+
+	<!-- todo condor job priority -->
+	<condorjob name="condor-generic" memout="8192" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool
+"/>
+
+	<benchmark name="pop">
+	  <folder path="benchmarks/sat/crafted/pop/"/>
+	</benchmark>
+
+	<project name="clasp_pop" job="condor-generic">
+	  <runtag machine="cobra" benchmark="pop" tag="*all*"/>
+	</project>
+</runscript>

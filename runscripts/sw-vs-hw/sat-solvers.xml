@@ -2,17 +2,41 @@
 
 	<machine name="cobra" cpu="24x8xE5520@2.27GHz" memory="24GB"/>
 
+    <!-- PLOT INFOS see:
+            b: blue
+            g: green
+            r: red
+            c: cyan
+            m: magenta
+            y: yellow
+            k: black
+            w: white
+            ['-', '- -', '-.', ':'])
+            https://xkcd.com/color/rgb/
+
+            cm = plt.get_cmap('gist_rainbow')
+
+            ax.set_prop_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            marker = cycle(('.', 'p', '^', '*', 'd', 's', 'o'))  # (',', '+', '.', 'o', '*'))
+            marker = cycle(('.', 'p', '^'))  # (',', '+', '.', 'o', '*'))
+            ax.set_color_cycle([cm(1. * i / NUM_COLORS) for i in range(NUM_COLORS)])
+            ...
+            linestyle='', marker=marker.next()
+
+            TODO: define cycle
+            https://matplotlib.org/users/colormaps.html
+            TODO: define plot config and default plot config
+            TODO: move Latex Fonts to xml
+
+    -->
+
 	<config name="condor-generic" template="templates/condor/runsolver_template_sat.py"/>
-	<!--TODO: measures-->
-	<!--
 	<system name="glucose" version="4.1" measures="sat" config="condor-generic">
- 	  <setting name="glucose" tag="sat" cmdline="" ppn="4" procs="1"/>		
-	  <setting name="glucose-syrup" tag="sat" cmdline="" ppn="4" procs="1"/>
- 	</system>
- 	-->
-	<system name="minisat" version="2.2.0" measures="minisat" config="condor-generic">
- 	  <setting name="minisat" tag="sat" cmdline="" ppn="4" procs="1"/>		
+ 	  <setting name="glucose" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="*" plot_name="glucose"/>
+	  <setting name="glucose-syrup" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="r" plot_type="-" plot_name="glucose-syrup"/>
+ 	  <setting name="minisat" tag="sat" cmdline="" ppn="4" procs="1" plot_show="1" plot_color="b" plot_type=":" plot_name="minisat"/>
 	</system>
+
 	<!--
 	<system name="cryptominisat" version="5.0.1" measures="sat" config="condor-generic">
  	  <setting name="cryptominisat" tag="sat" cmdline="" ppn="4" procs="1"/>		
@@ -33,19 +57,19 @@
   	  <setting name="berkmin" tag="sat" cmdline="" ppn="4" procs="1"/>	
  	  </system>
 	-->
-	<!--
+
+
 	<system name="zchaff32" version="2001.2.17" measures="zchaff" config="condor-generic">
-  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1"/>
+  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1" plot_color="k" plot_type="*" plot_name="zchaff32.01"/>
  	  </system>
 	<system name="zchaff32" version="2004.11.15" measures="zchaff" config="condor-generic">
-  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1"/>
+  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1" plot_color="k" plot_type=":" plot_name="zchaff32.04"/>
  	</system>
-	<system name="zchaff64" version="2007.3.12" measures="sat" config="condor-generic">
-  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1"/>
+	<system name="zchaff64" version="2007.3.12" measures="zchaff" config="condor-generic">
+  	  <setting name="zchaff32" tag="sat" cmdline="" ppn="4" procs="1" plot_color="k" plot_type="-" plot_name="zchaff64.07"/>
  	</system>
-	-->
 	<system name="zchaff64" version="2008.10.12" measures="zchaff" config="condor-generic">
-  	  <setting name="zchaff64" tag="sat" cmdline="" ppn="4" procs="1"/>
+  	  <setting name="zchaff64" tag="sat" cmdline="" ppn="4" procs="1" plot_color="k" plot_type="--" plot_name="zchaff64.08"/>
  	</system>
 
 
@@ -96,7 +120,7 @@
 
 	<project name="sw-vs-hw" job="condor-generic">
 	  <runtag machine="cobra" benchmark="dimacs93" tag="*all*"/>
-	  <!--<runtag machine="cobra" benchmark="sat17" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="sat17" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="sat16" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="sat15" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="sat14" tag="*all*"/>
@@ -107,6 +131,6 @@
 	  <runtag machine="cobra" benchmark="sat05" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="sat04" tag="*all*"/>
 	  <runtag machine="cobra" benchmark="sat03" tag="*all*"/>
-	  <runtag machine="cobra" benchmark="sat02" tag="*all*"/>-->
+	  <runtag machine="cobra" benchmark="sat02" tag="*all*"/>
 	</project>
 </runscript>

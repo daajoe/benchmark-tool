@@ -1,0 +1,42 @@
+<runscript output="output">
+
+    <machine name="mylocalmachine" cpu="24x8xE5520@2.27GHz" memory="8GB"/>
+
+    <config name="local" template="templates/sudoku2019.sh"/>
+
+    <!-- <system name="sudoku_dummy" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="default" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+    </system> -->
+
+    <system name="sudoku_team1" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+      <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
+    </system>
+
+    <system name="sudoku_team4" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+      <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
+    </system>
+
+    <system name="sudoku_team6" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+      <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
+    </system>
+
+    <system name="sudoku_team7" version="1.0" measures="sudokuresultparser" config="local">
+      <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
+      <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
+    </system>
+
+    <seqjob name="local" timeout="900" memout="8192" runs="1" parallel="2"/>
+
+    <benchmark name="example_sudokus">
+        <folder path="benchmarks/sudoku2019/sudokus">
+            <ignore prefix="."/>
+        </folder>
+    </benchmark>
+
+    <project name="sudoku" job="local">
+        <runtag machine="mylocalmachine" benchmark="example_sudokus" tag="*all*"/>
+    </project>
+</runscript>

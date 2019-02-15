@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cat ~/benchmark-tool//benchmarks/sudoku2019/bsp-sudoku-output.txt
+

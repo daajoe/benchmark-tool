@@ -1,0 +1,174 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="24x8xE5520@2.27GHz" memory="8GB"/>
+
+	<config name="condor-generic" template="templates/seq-tw-LI.sh"/>
+
+	<system name="trellis" version="1.0" measures="trellis" config="condor-generic">
+ 	  <setting name="tamaki16-b50" tag="sat" cmdline=" -lw 900 -lb 50 -ni 10 -ls Tamaki2016" ppn="1" procs="1"/>
+ 	  <setting name="tamaki16-b75" tag="sat" cmdline=" -lw 900 -lb 75 -ni 10 -ls Tamaki2016" ppn="1" procs="1"/>
+ 	  <setting name="tamaki16-b100" tag="sat" cmdline=" -lw 900 -lb 100 -ni 10 -ls Tamaki2016" ppn="1" procs="1"/>
+ 	  <setting name="tamaki16-b125" tag="sat" cmdline=" -lw 900 -lb 125 -ni 10 -ls Tamaki2016" ppn="1" procs="1"/>
+ 	  <setting name="tamaki16-b150" tag="sat" cmdline=" -lw 900 -lb 150 -ni 10 -ls Tamaki2016" ppn="1" procs="1"/>
+ 	  <setting name="tamaki17-b50" tag="sat" cmdline=" -lw 900 -lb 50 -ni 10 -ls Tamaki2017" ppn="1" procs="1"/>
+ 	  <setting name="tamaki17-b75" tag="sat" cmdline=" -lw 900 -lb 75 -ni 10 -ls Tamaki2017" ppn="1" procs="1"/>
+ 	  <setting name="tamaki17-b100" tag="sat" cmdline=" -lw 900 -lb 100 -ni 10 -ls Tamaki2017" ppn="1" procs="1"/>
+ 	  <setting name="tamaki17-b125" tag="sat" cmdline=" -lw 900 -lb 125 -ni 10 -ls Tamaki2017" ppn="1" procs="1"/>
+ 	  <setting name="tamaki17-b150" tag="sat" cmdline=" -lw 900 -lb 150 -ni 10 -ls Tamaki2017" ppn="1" procs="1"/>
+	  
+	  <setting name="jdrasil16-b25" tag="sat" cmdline=" -lw 1800 -lb 25 -ni 10 -ls Jdrasil2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil16-b50" tag="sat" cmdline=" -lw 1800 -lb 50 -ni 10 -ls Jdrasil2016 -la opt1" ppn="1" procs="1"/>	
+	  <setting name="jdrasil16-b75" tag="sat" cmdline=" -lw 1800 -lb 75 -ni 10 -ls Jdrasil2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil16-b100" tag="sat" cmdline=" -lw 1800 -lb 100 -ni 10 -ls Jdrasil2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil16-b125" tag="sat" cmdline=" -lw 1800 -lb 125 -ni 10 -ls Jdrasil2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil16-b150" tag="sat" cmdline=" -lw 1800 -lb 150 -ni 10 -ls Jdrasil2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil17-b25" tag="sat" cmdline=" -lw 1800 -lb 25 -ni 10 -ls Jdrasil2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil17-b50" tag="sat" cmdline=" -lw 1800 -lb 50 -ni 10 -ls Jdrasil2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil17-b75" tag="sat" cmdline=" -lw 1800 -lb 75 -ni 10 -ls Jdrasil2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil17-b100" tag="sat" cmdline=" -lw 1800 -lb 100 -ni 10 -ls Jdrasil2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil17-b125" tag="sat" cmdline=" -lw 1800 -lb 125 -ni 10 -ls Jdrasil2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="jdrasil17-b150" tag="sat" cmdline=" -lw 1800 -lb 150 -ni 10 -ls Jdrasil2017 -la opt1" ppn="1" procs="1"/>
+
+	  <!-- TODO: requires testing
+	  <setting name="jdrasil-b75t1800" tag="sat" cmdline="-w 3600 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 1800 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+	  <setting name="jdrasil-b75t90r40" tag="sat" cmdline="-w 180 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 90 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+	  -->
+
+	  <setting name="htd16-b50" tag="sat" cmdline=" -lw 1800 -lb 50 -ni 10 -ls HTD2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd16-b75" tag="sat" cmdline=" -lw 1800 -lb 75 -ni 10 -ls HTD2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd16-b100" tag="sat" cmdline=" -lw 1800 -lb 100 -ni 10 -ls HTD2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd16-b125" tag="sat" cmdline=" -lw 1800 -lb 125 -ni 10 -ls HTD2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd16-b150" tag="sat" cmdline=" -lw 1800 -lb 150 -ni 10 -ls HTD2016 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd17-b50" tag="sat" cmdline=" -lw 1800 -lb 50 -ni 10 -ls HTD2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd17-b75" tag="sat" cmdline=" -lw 1800 -lb 75 -ni 10 -ls HTD2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd17-b100" tag="sat" cmdline=" -lw 1800 -lb 100 -ni 10 -ls HTD2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd17-b125" tag="sat" cmdline=" -lw 1800 -lb 125 -ni 10 -ls HTD2017 -la opt1" ppn="1" procs="1"/>
+	  <setting name="htd17-b150" tag="sat" cmdline=" -lw 1800 -lb 150 -ni 10 -ls HTD2017 -la opt1" ppn="1" procs="1"/>
+	</system>
+
+	<!-- todo condor job priority -->
+	<!-- todo timeout/memout -->
+	<!-- todo: ignore files -->
+	<!-- read benchmark instances from folder -->
+	<condorjob name="condor-generic" memout="16384" timeout="3600" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/jfichte/src/benchmark-tool
+"/>
+
+	<benchmark name="pace2016-selection">
+	  <!--<folder path="benchmarks/test"/>-->
+	  <folder path="benchmarks/graphs/pace2016/selection"/>
+	</benchmark>
+	<benchmark name="pace2016-all">
+	  <folder path="benchmarks/graphs/pace2016/all/100"/>
+	  <folder path="benchmarks/graphs/pace2016/all/1000"/>
+	  <folder path="benchmarks/graphs/pace2016/all/3600"/>
+	</benchmark>
+	<benchmark name="famous-tw">
+	  <folder path="benchmarks/graphs/famous-tw">
+            <ignore prefix="readme.txt"/>
+            <ignore prefix="."/>
+	  </folder>
+	</benchmark>
+	<benchmark name="selection-at-most200">
+	  <folder path="benchmarks/graphs/selection/atmost-numV-200-renamed-tw/">
+            <ignore prefix="readme.txt"/>
+            <ignore prefix="."/>
+	  </folder>
+	</benchmark>
+	
+	<benchmark name="transit-old">
+	  <folder path="benchmarks/graphs/benchmarks/transit-tw/">
+            <ignore prefix="."/>
+            <ignore prefix="lessthan20"/>
+            <ignore prefix="atmost50"/>
+            <ignore prefix="atmost100"/>
+	  </folder>
+	</benchmark>
+	
+	<benchmark name="twlib">
+	  <folder path="benchmarks/graphs/benchmarks/twlib-graphs">
+          <ignore prefix="."/>
+          <ignore prefix="lessthan20"/>
+          <ignore prefix="atmost50"/>
+          <ignore prefix="atmost100"/>
+          <!--<ignore prefix="atmost200"/>-->
+	  </folder>
+	</benchmark>
+	
+	<benchmark name="pace2016">
+	  <folder path="benchmarks/graphs/benchmarks/pace2016">
+            <ignore prefix="."/>
+            <ignore prefix="lessthan20"/>
+            <ignore prefix="atmost50"/>
+            <ignore prefix="atmost100"/>
+	  </folder>
+	</benchmark>
+	
+	<benchmark name="networks">
+  	  <folder path="benchmarks/graphs/benchmarks/networks">
+            <ignore prefix="."/>
+            <ignore prefix="lessthan20"/>
+            <ignore prefix="atmost50"/>
+            <ignore prefix="atmost100"/>
+        </folder>
+	</benchmark>
+
+	<benchmark name="pace2017">
+  	  <folder path="benchmarks/graphs/treewidth_benchmarks/PACE-2017-TrackA-instances/gr">
+            <ignore prefix="sources.txt"/>
+          </folder>
+	</benchmark>
+	
+	<benchmark name="uai2014">
+  	  <folder path="benchmarks/graphs/treewidth_benchmarks/UAI-2014-competition-graphs/gr">
+            <ignore prefix="sources.txt"/>
+          </folder>
+	</benchmark>
+
+	<benchmark name="road">
+  	  <folder path="benchmarks/graphs/treewidth_benchmarks/road-graphs-pace16">
+            <ignore prefix="sources.txt"/>
+          </folder>
+	</benchmark>
+	
+	<benchmark name="named">
+  	  <folder path="benchmarks/graphs/treewidth_benchmarks/named-graphs">
+            <ignore prefix="sources.txt"/>
+          </folder>
+	</benchmark>
+
+	<benchmark name="transit">
+  	  <folder path="benchmarks/graphs/treewidth_benchmarks/transit_graphs/gr/">
+            <ignore prefix="sources.txt"/>
+          </folder>
+	</benchmark>
+	
+	<benchmark name="pace2017-bonus">
+  	  <folder path="benchmarks/graphs/treewidth_benchmarks/Treewidth-PACE-2017-bonus-instances/gr/">
+            <ignore prefix="sources.txt"/>
+          </folder>
+	</benchmark>
+
+	<benchmark name="cfgs">
+  	  <folder path="benchmarks/graphs/treewidth_benchmarks/CFGs/gr/">
+            <ignore prefix="sources.txt"/>
+          </folder>
+	</benchmark>
+
+	<project name="trellis-2017-oct-ac_collection" job="condor-generic">
+	  <!--<runtag machine="cobra" benchmark="famous-tw" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="twlib" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="pace2016" tag="*all*"/>
+	  -->
+	  <runtag machine="cobra" benchmark="transit" tag="*all*"/>
+	  <!--
+	  <runtag machine="cobra" benchmark="networks" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="pace2017" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="uai2014" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="road" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="named" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="transit" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="pace2017-bonus" tag="*all*"/>
+	  <runtag machine="cobra" benchmark="cfgs" tag="*all*"/>
+	  -->
+	</project>
+</runscript>

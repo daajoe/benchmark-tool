@@ -29,6 +29,15 @@ from benchmarktool.resultparser.sat import sat
 from benchmarktool.resultparser.minisat import minisat
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.zchaff import zchaff
+# noinspection PyUnresolvedReferences
+#from benchmarktool.resultparser.trellis import trellis
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.fhtd import fhtd
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.detkdecomp import detkdecomp
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.sudokuresultparser import sudokuresultparser
+
 
 
 claspre_features 	= re.compile(r"^Features[ ]*:[ ]*(([0-9]+\.?[0-9]*)([,](.+\.?.*))*)\+?[ ]*$")

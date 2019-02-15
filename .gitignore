@@ -87,3 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Emacs backup files
+*~
+
+# Benchmark-tool output
+output

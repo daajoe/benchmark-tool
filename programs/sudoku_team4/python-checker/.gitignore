@@ -1,0 +1,13 @@
+# virtualenv
+.env
+venv
+
+# pycharm
+.idea
+
+# python
+__pycache__
+*.pyc
+
+# output
+out

@@ -3,7 +3,7 @@
 	<machine name="houat" cpu="8xE5520@2.27GHz" memory="24GB"/>
 	
 	<config name="seq-generic" template="templates/seq-generic.sh"/>
-	<system name="clasp" version="1.3.2" measures="clasp" config="seq-generic">
+	<system name="clasp" version="3.3.4" measures="clasp" config="seq-generic">
 		<!-- optionally allows for tagging settings -->
 		<setting name="default"  cmdline="--stats 1"/>
 		<setting name="vsids"    cmdline="--stats --heu=vsids 1"/>

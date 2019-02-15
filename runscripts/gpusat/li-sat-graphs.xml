@@ -1,0 +1,79 @@
+<runscript output="output">
+
+	<machine name="cobra" cpu="24x8xE5520@2.27GHz" memory="128GB"/>
+
+	<config name="condor-generic" template="templates/seq-tw-LI-output.sh"/>
+	<!--templates/runsolver_template.py-->
+	<!--TODO: measures-->
+	<system name="trellis" version="1.0" measures="trellis" config="condor-generic">
+ 		<!--<setting name="default" tag="sat" cmdline="-w 900 -b -1" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+ 		<!--<setting name="roofy5" tag="sat" cmdline="-w 900 -b -1 -r 5" ppn="4" procs="1"/>
+ 		<setting name="roofy10" tag="sat" cmdline="-w 900 -b -1 -r 10" ppn="4" procs="1"/>
+ 		<setting name="roofy20" tag="sat" cmdline="-w 900 -b -1 -r 20" ppn="4" procs="1"/>
+ 		-->
+		<!--<setting name="boozy75" tag="sat" cmdline="-w 900 -b 75 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy100" tag="sat" cmdline="-w 900 -b 100 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy125" tag="sat" cmdline="-w 900 -b 125 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy150" tag="sat" cmdline="-w 900 -b 150 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy175" tag="sat" cmdline="-w 900 -b 175 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		<setting name="boozy200" tag="sat" cmdline="-w 900 -b 200 -r 10" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+ 		-->
+		<!--<setting name="htd-boozy75" tag="sat" cmdline="-w 900 -b 75 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy100" tag="sat" cmdline="-w 900 -b 100 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy150" tag="sat" cmdline="-w 900 -b 150 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy175" tag="sat" cmdline="-w 900 -b 175 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+                <setting name="htd-boozy200" tag="sat" cmdline="-w 900 -b 200 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		-->
+
+ 		<!--<setting name="fc-tcs-b125" tag="sat" cmdline="-w 900 -b 125 -r 10 -p flow_cutter -x 20" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="fc-htd-b125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s htd_main -p flow_cutter -x 20" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="fc-jdrasil-b75" tag="sat" cmdline="-w 1800 -b 75 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;' -p flow_cutter -x 20" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="fc-jdrasil-b100" tag="sat" cmdline="-w 1800 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;' -p flow_cutter -x 20" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+
+
+ 		<setting name="tamaki-b125" tag="sat" cmdline=" -lw 900 -lb 125 -ni 10 -ls Tamaki2017" ppn="1" procs="1"/>
+		<setting name="jdrasil-b100" tag="sat" cmdline=" -lw 1800 -lb 125 -ni 10 -ls Jdrasil2017 -la opt1" ppn="1" procs="1"/>
+
+		<!--<setting name="htd-b125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s htd_main" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		<setting name="jdrasil-b75" tag="sat" cmdline="-w 1800 -b 75 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		<setting name="jdrasil-b75t1800" tag="sat" cmdline="-w 3600 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 1800 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>
+		<setting name="jdrasil-b75t90r40" tag="sat" cmdline="-w 180 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 90 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="fc-b125" tag="sat" cmdline="-w 900 -b 125 -r 10 -s flow_cutter" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		
+
+		<!--<setting name="jdrasil-boozy100" tag="sat" cmdline="-w 1800 -b 100 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="jdrasil-b125" tag="sat" cmdline="-w 1800 -b 125 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="jdrasil-boozy150" tag="sat" cmdline="-w 1800 -b 150 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="jdrasil-boozy175" tag="sat" cmdline="-w 1800 -b 175 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+		<!--<setting name="jdrasil-boozy200" tag="sat" cmdline="-w 1800 -b 200 -r 10 -s jdrasil -a '&quot; -log -t 900 -e PBLib_incremental &quot;'" ppn="1" procs="1" pbstemplate="templates/single-behemoth-LI.pbs"/>-->
+
+	</system>
+
+	<!-- todo condor job priority -->
+	<condorjob name="condor-generic" memout="16384" timeout="3600" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/jfichte/src/benchmark-tool
+"/>
+
+	<!--<condorjob name="condor-generic" memout="4096" timeout="7200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/home/jfichte/src/benchmark-tool/"/>-->
+	<!--<condorjob name="condor-generic" memout="2048" timeout="900" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/Users/fichte/decodyn/src/benchmark-tool
+"/>-->
+	<!--<pbsjob name="pbs-generic" timeout="7200" memout="8192" runs="1" script_mode="timeout" walltime="2:30:00"/>-->
+
+    <benchmark name="primal">
+      <folder path="benchmarks/gpusat/satcnf_graphs/gpusat/primal/">
+        <ignore prefix="."/>
+      </folder>
+    </benchmark>
+
+    <benchmark name="incidence">
+      <folder path="benchmarks/gpusat/satcnf_graphs/gpusat/incidence/">
+        <ignore prefix="."/>
+      </folder>
+    </benchmark>
+
+
+	<project name="gpusat-li" job="condor-generic">
+		<runtag machine="cobra" benchmark="primal" tag="*all*"/>
+		<runtag machine="cobra" benchmark="incidence" tag="*all*"/>
+	</project>
+</runscript>
