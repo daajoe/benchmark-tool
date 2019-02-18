@@ -4,7 +4,7 @@ function check_python() {
 	PYTHON=$1
 	shift
 	if [ -x "$PYTHON" ] && echo "import lxml" | "$PYTHON" &> /dev/null; then
-		PYTHONPATH="src" exec "$PYTHON" src/beval.py "$@"
+		PYTHONPATH="src:." exec "$PYTHON" src/beval.py "$@"
 	fi
 }
 

@@ -4,7 +4,6 @@ It can be used to create scripts to start a benchmark
 specified by the run script. 
 """
 from itertools import count
-from itertools import izip
 
 __author__ = "Roland Kaminski"
 
@@ -88,8 +87,8 @@ class System(Sortable):
         Keyword arguments:
         name     - The name of the system
         version  - The version of the system
-        measures - A string specifying the measurement function
-                   This must be a function given in the config
+        measures - A string specifying the measurement function path,
+                   e.g. benchmarks.mybenchmark.resultparser.myresultparser
         order    - An integer used to order different system.
                    This integer should denote the occurrence in 
                    the run specification.      
@@ -383,7 +382,8 @@ class ScriptGen:
         """
         for run in range(1, self.job.runs + 1):
             out.write('{0}<run number="{1}">\n'.format(indent, run))
-            result = getattr(benchmarktool.config, runspec.system.measures)(self._path(runspec, instance, run), runspec,
+            measure_function = tools.import_function(runspec.system.measures)
+            result = measure_function(self._path(runspec, instance, run), runspec,
                                                                             instance)
             for key, valtype, val in sorted(result):
                 out.write('{0}<measure name="{1}" type="{2}" val="{3}"/>\n'.format(indent + "\t", key, valtype, val))
@@ -724,7 +724,7 @@ class CondorScriptGen(ScriptGen):
                 run.timelimit = self.job.timeout
                 run.finished = finish
                 startfile.write(template.format(run=run))
-            os.chmod(startpath, 0770)
+            os.chmod(startpath, 0o770)
             self.startfiles.append((runspec, path, "start.py"))
             tools.setExecutable(startpath)
 

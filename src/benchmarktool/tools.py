@@ -7,6 +7,7 @@ Created on Jan 15, 2010
 import os
 import stat
 import random
+import importlib
 
 def mkdir_p(path):
     """
@@ -130,3 +131,9 @@ class Sortable:
 
     def __eq__(self, other):
         return self.__cmp__(other) == 0
+
+
+def import_function(path):
+    module_path, tail = '.'.join(path.split('.')[:-1]), path.split('.')[-1]
+    module = importlib.import_module(module_path)
+    return getattr(module, tail)
