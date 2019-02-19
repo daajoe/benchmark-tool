@@ -9,7 +9,7 @@
       <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
     </system>
 
-    <system name="sudoku_team6" version="1.0" measures="benchmarks.examples.sudokusat2019.resultparser.sudokuresultparser" config="local">
+    <!-- <system name="sudoku_team6" version="1.0" measures="benchmarks.examples.sudokusat2019.resultparser.sudokuresultparser" config="local">
       <setting name="riss" tag="ignore" cmdline="" ppn="1" procs="1" config="local"/>
       <setting name="glucose" tag="ignore" cmdline="-g" ppn="1" procs="1" config="local"/>
     </system>
