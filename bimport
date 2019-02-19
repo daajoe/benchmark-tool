@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+import argparse
+import tarfile
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Import a benchmark archive."
+    )
+
+    parser.add_argument("archive", help="*.tgz benchmark archive file", type=tarfile.open)
+    parser.add_argument("directory", help="Target directory for the imported benchmark")
+    args = parser.parse_args()
+
+    args.archive.extractall(path=args.directory)
