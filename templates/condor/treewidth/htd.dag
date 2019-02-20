@@ -1,3 +1,0 @@
-Job  Run htd.run.submit
-Job  Sum htd.sum.submit
-PARENT Run CHILD Sum

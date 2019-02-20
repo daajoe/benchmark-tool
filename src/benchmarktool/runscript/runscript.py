@@ -4,7 +4,6 @@ It can be used to create scripts to start a benchmark
 specified by the run script. 
 """
 from itertools import count
-from itertools import izip
 
 __author__ = "Roland Kaminski"
 
@@ -88,8 +87,8 @@ class System(Sortable):
         Keyword arguments:
         name     - The name of the system
         version  - The version of the system
-        measures - A string specifying the measurement function
-                   This must be a function given in the config
+        measures - A string specifying the measurement function path,
+                   e.g. benchmarks.mybenchmark.resultparser.myresultparser
         order    - An integer used to order different system.
                    This integer should denote the occurrence in 
                    the run specification.      
@@ -208,7 +207,7 @@ class Job(Sortable):
     Base class for all jobs. 
     """
 
-    def __init__(self, name, timeout, runs, attr):
+    def __init__(self, name, memout, timeout, runs, attr):
         """
         Initializes a job.
         
@@ -222,6 +221,7 @@ class Job(Sortable):
         self.timeout = timeout
         self.runs = runs
         self.attr = attr
+        self.memout = memout
 
     def _toXml(self, out, indent, xmltag, extra):
         """
@@ -382,7 +382,8 @@ class ScriptGen:
         """
         for run in range(1, self.job.runs + 1):
             out.write('{0}<run number="{1}">\n'.format(indent, run))
-            result = getattr(benchmarktool.config, runspec.system.measures)(self._path(runspec, instance, run), runspec,
+            measure_function = tools.import_function(runspec.system.measures)
+            result = measure_function(self._path(runspec, instance, run), runspec,
                                                                             instance)
             for key, valtype, val in sorted(result):
                 out.write('{0}<measure name="{1}" type="{2}" val="{3}"/>\n'.format(indent + "\t", key, valtype, val))
@@ -723,7 +724,7 @@ class CondorScriptGen(ScriptGen):
                 run.timelimit = self.job.timeout
                 run.finished = finish
                 startfile.write(template.format(run=run))
-            os.chmod(startpath, 0770)
+            os.chmod(startpath, 0o770)
             self.startfiles.append((runspec, path, "start.py"))
             tools.setExecutable(startpath)
 
@@ -754,7 +755,7 @@ class CondorScriptGen(ScriptGen):
                     condorsubmitfile.write(
                         t.render(instances=chunk, timeout=self.job.timeout,
                                  memout=self.job.memout, initialdir=initialdir))
-        tools.setExecutable(os.path.join(path, "condor_0.submit"))
+        #tools.setExecutable(os.path.join(path, "condor_0.submit"))
 
 
 class SeqJob(Job):
@@ -762,7 +763,7 @@ class SeqJob(Job):
     Describes a sequential job.
     """
 
-    def __init__(self, name, timeout, runs, parallel, attr):
+    def __init__(self, name, memout, timeout, runs, parallel, attr):
         """
         Initializes a sequential job description.  
         
@@ -773,7 +774,7 @@ class SeqJob(Job):
         parallel - The number of runs that can be started in parallel
         attr     - A dictionary of arbitrary attributes
         """
-        Job.__init__(self, name, timeout, runs, attr)
+        Job.__init__(self, name, memout, timeout, runs, attr)
         self.parallel = parallel
 
     def scriptGen(self):
@@ -812,10 +813,9 @@ class PbsJob(Job):
         walltime    - The walltime for a job submitted via PBS 
         attr        - A dictionary of arbitrary attributes
         """
-        Job.__init__(self, name, timeout, runs, attr)
+        Job.__init__(self, name, memout, timeout, runs, attr)
         self.script_mode = script_mode
         self.walltime = walltime
-        self.memout = memout
 
     def toXml(self, out, indent):
         """
@@ -853,12 +853,11 @@ class CondorJob(Job):
         walltime    - The walltime for a job submitted via PBS
         attr        - A dictionary of arbitrary attributes
         """
-        Job.__init__(self, name, timeout, runs, attr)
+        Job.__init__(self, name, memout, timeout, runs, attr)
         self.script_mode = script_mode
         self.walltime = walltime
         self.condortemplate = condortemplate
         self.basedir = basedir
-        self.memout = memout
 
     def toXml(self, out, indent):
         """
@@ -1033,7 +1032,7 @@ class Benchmark(Sortable):
             root - The root path
             path - Some path relative to the root path
             """
-            if path == ".svn":
+            if path in (".svn", ".git") or path.startswith("._") or path.startswith("0arch"):
                 return True
             path = os.path.normpath(os.path.join(root, path))
             return path in self.prefixes
@@ -1445,6 +1444,8 @@ class Runscript:
                         out.write('\t\t\t<class id="{0.id}">\n'.format(classname))
                         instances = runspec.benchmark.instances[classname]
                         for instance in instances:
+                            if instance.instance == '.DS_Store':
+                                continue
                             out.write('\t\t\t\t<instance id="{0.id}">\n'.format(instance))
                             jobGen.evalResults(out, "\t\t\t\t\t", runspec, instance)
                             out.write('\t\t\t\t</instance>\n')

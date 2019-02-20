@@ -97,7 +97,7 @@ class Parser:
         </xs:choice>
         <xs:attribute name="name" type="nameType" use="required"/>
         <xs:attribute name="version" type="versionType" use="required"/>
-        <xs:attribute name="measures" type="nameType" use="required"/>
+        <xs:attribute name="measures" type="pythonPathType" use="required"/>
         <xs:attribute name="config" type="nameType" use="required"/>
     </xs:complexType>
 
@@ -231,6 +231,12 @@ class Parser:
             <xs:pattern value="[A-Za-z_\-0-9]*"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:simpleType name="pythonPathType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\w+(\.\w+)*"/>
+        </xs:restriction>
+    </xs:simpleType>
     
     <!-- the root element -->
     <xs:element name="runscript" type="runscriptType">
@@ -308,8 +314,8 @@ class Parser:
             run.addJob(job)
 
         for node in root.xpath("./seqjob"):
-            attr = self._filterAttr(node, ["name", "timeout", "runs", "parallel"])
-            job = SeqJob(node.get("name"), tools.xmlTime(node.get("timeout")), int(node.get("runs")), int(node.get("parallel")), attr)
+            attr = self._filterAttr(node, ["name", "memout", "timeout", "runs", "parallel"])
+            job = SeqJob(node.get("name"), tools.xmlTime(node.get("memout")), tools.xmlTime(node.get("timeout")), int(node.get("runs")), int(node.get("parallel")), attr)
             run.addJob(job)
         
         for node in root.xpath("./machine"):

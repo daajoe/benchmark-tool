@@ -7,6 +7,7 @@ Created on Jan 15, 2010
 import os
 import stat
 import random
+import importlib
 
 def mkdir_p(path):
     """
@@ -29,7 +30,9 @@ def xmlTime(strRep):
     """
     Converts [[h:]m:]s time format to integer value in seconds. 
     """
-    timeout = strRep.split(":")
+    # print strRep
+    if strRep:
+        timeout = strRep.split(":")
     seconds = int(timeout[-1])
     minutes = hours = 0
     if len(timeout) > 1: minutes = int(timeout[-2]) 
@@ -128,3 +131,9 @@ class Sortable:
 
     def __eq__(self, other):
         return self.__cmp__(other) == 0
+
+
+def import_function(path):
+    module_path, tail = '.'.join(path.split('.')[:-1]), path.split('.')[-1]
+    module = importlib.import_module(module_path)
+    return getattr(module, tail)
