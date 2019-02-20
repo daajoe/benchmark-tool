@@ -1,6 +1,9 @@
 *
 
 !*/
-!examples/*
 !.gitignore
+
+!examples/*
+!examples/**/*
+examples/**/output/
 

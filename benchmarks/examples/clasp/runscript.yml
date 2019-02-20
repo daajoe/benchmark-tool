@@ -1,0 +1,111 @@
+base_dir: benchmarks/examples/clasp
+output_dir: output
+
+machines:
+  houat:
+    cpu: 8xE5520@2.27GHz
+    memory: 24GB
+  zuse:
+    cpu: 24xE5520@2.27GHz
+    memory: 24GB
+
+configs:
+  seq-generic:
+    template: templates/seq-generic.sh
+  pbs-generic:
+    template: templates/pbs-generic.sh
+
+systems:
+  - name: clasp
+    version: 1.3.2
+    measures: .resultparsers.clasp
+    config: seq-generic
+    settings:
+      - name: default
+        tag: seq
+        cmdline: '--stats 1'
+      - name: vsids
+        tag: seq
+        cmdline: '--stats --heu=vsids 1'
+      - name: progress
+        tag: seq
+        cmdline: '--stats --save-progress 1'
+      - name: estimate
+        tag: seq
+        cmdline: '--stats --estimate 1'
+      - name: recstr
+        tag: seq
+        cmdline: '--stats --recursive-str 1'
+      - name: nodel
+        tag: seq
+        cmdline: '--stats --del=no 1'
+      - name: norest
+        tag: seq
+        cmdline: '--stats --restarts=no 1'
+  - name: claspar
+    version: 2.1.0
+    measures: .resultparsers.claspar
+    config: pbs-generic
+    settings:
+      - name: one-as
+        tag: par one-as
+        cmdline: '--stats 1'
+        ppn: 2
+        procs: 1 2 4 8
+        pbstemplate: templates/impi.pbs
+      - name: all-as
+        tag: par all-as
+        cmdline: '--stats -q 0'
+        ppn: 2
+        procs: 1 2 4 8
+        pbstemplate: templates/impi.pbs
+
+jobs:
+  seq-generic:
+    type: seq
+    timeout: 120
+    runs: 1
+    parallel: 8
+  pbs-generic:
+    type: pbs
+    timeout: 120
+    runs: 1
+    script_mode: timeout
+    walltime: 23:59:59
+
+benchmarks:
+  seq-suite:
+    - type: folder
+      path: instances
+      ignore_prefixes:
+        - pigeons
+    - type: files
+      path: instances
+      files:
+        - pigeons/pigeonhole10-unsat.lp
+        - pigeons/pigeonhole11-unsat.lp
+  pbs-suite:
+    - type: folder
+      path: instances
+
+projects:
+  clasp-big:
+    job: seq-generic
+    runtags:
+      - machine: houat
+        benchmark: seq-suite
+        tag: seq
+  claspar-all-as:
+    job: pbs-generic
+    runtags:
+      - machine: houat
+        benchmark: pbs-suite
+        tag: par all-as
+  claspar-one-as:
+    job: pbs-generic
+    runspecs:
+      - machine: zuse
+        benchmark: pbs-suite
+        system: claspar
+        version: 2.1.0
+        setting: one-as
