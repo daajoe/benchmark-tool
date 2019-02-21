@@ -60,7 +60,7 @@ systems:
 jobs:
   local:
     type: seq
-    timeout: 900
+    timeout: 10
     memout: 8192
     runs: 1
     parallel: 2
@@ -73,5 +73,9 @@ benchmarks:
         - .
 
 projects:
-  default:
+  sudoku:
     job: local
+    runtags:
+      - machine: mylocalmachine
+        benchmark: example_sudokus
+        tag: "*all*"

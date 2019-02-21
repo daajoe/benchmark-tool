@@ -1,3 +1,5 @@
 [submodule "external-tools/runsolver"]
 	path = external-tools/runsolver
 	url = git@github.com:daajoe/runsolver.git
+	ignore = dirty
+

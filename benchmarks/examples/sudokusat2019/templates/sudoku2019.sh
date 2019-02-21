@@ -11,7 +11,7 @@ cd "$(dirname $0)"
 printf 'hostname is ' >> runsolver.err
 hostname >> runsolver.err
 
-[[ -e .finished ]] ||  "{run.root}/external-tools/src/runsolver" \
+[[ -e .finished ]] ||  "{run.root}/external-tools/runsolver/src/runsolver" \
 	-M 8192 \
 	-w runsolver.watcher \
 	-W {run.timeout} \

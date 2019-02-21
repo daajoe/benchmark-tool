@@ -47,7 +47,8 @@ def sudokuresultparser(root, runspec, instance):
         'run': ('int', 0),
         'objective': ('int', 0),
         'error': ('int', 0),
-        'status': ('int', -1)
+        'status': ('int', -1),
+        'error_str': ('str', ''),
     }
 
     instance_str = instance.instance
@@ -122,7 +123,7 @@ def sudokuresultparser(root, runspec, instance):
     try:
         instance_output = codecs.open(os.path.join(root, 'runsolver.solver'), encoding='utf-8').read()
         output_file = os.path.join(root, 'runsolver.solver')
-        validator = 'benchmarks/sudokusat2019/bin/sudoku_validate-1.0'
+        validator = 'benchmarks/examples/sudokusat2019/bin/sudoku_validate-1.0'
         validator_output = subprocess.check_output("./%s -f %s" % (validator, output_file), shell=True, encoding='utf-8')
     except IOError:
         sys.stderr.write('Instance %s did not finish properly. Missing output file.\n' % root)

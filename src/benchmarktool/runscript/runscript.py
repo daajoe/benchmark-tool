@@ -167,9 +167,10 @@ class Setting(Sortable):
         self.cmdline = escape(cmdline)
         self.tag = tag
         self.order = order
-        self.procs = kwargs.get("procs")
-        self.ppn = kwargs.get("ppn")
-        self.pbstemplate = kwargs.get("pbstemplate")
+        self.procs = kwargs.pop("procs", None)
+        self.ppn = kwargs.pop("ppn", None)
+        self.pbstemplate = kwargs.pop("pbstemplate", None)
+        self.attr = kwargs
 
     def toXml(self, out, indent):
         """
