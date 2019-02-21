@@ -1,3 +1,4 @@
+<!-- TODO: convert to yaml -->
 <runscript output="benchmarks/examples/sw-vs-hw/output">
 
 	<machine name="cobra" cpu="24x8xE5520@2.27GHz" memory="24GB"/>

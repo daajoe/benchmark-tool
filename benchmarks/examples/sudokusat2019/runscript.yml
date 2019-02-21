@@ -1,0 +1,81 @@
+base_dir: benchmarks/examples/sudokusat2019
+output_dir: output
+
+machines:
+  mylocalmachine:
+    cpu: 24x8xE5520@2.27GHz
+    memory: 8GB
+
+configs:
+  local:
+    template: templates/sudoku2019.sh
+
+systems:
+  - name: sudoku_team1
+    version: '1.0'
+    measures: resultparser.sudokuresultparser
+    config: local
+    settings:
+      - name: riss
+        cmdline: ''
+        tag: ignore
+        ppn: 1
+        procs: 1
+      - name: glucose
+        cmdline: '-g'
+        tag: ignore
+        ppn: 1
+        procs: 1
+  - name: sudoku_team6
+    version: '1.0'
+    measures: resultparser.sudokuresultparser
+    config: local
+    settings:
+      - name: riss
+        cmdline: ''
+        tag: ignore
+        ppn: 1
+        procs: 1
+      - name: glucose
+        cmdline: '-g'
+        tag: ignore
+        ppn: 1
+        procs: 1
+  - name: sudoku_team7
+    version: '1.0'
+    measures: resultparser.sudokuresultparser
+    config: local
+    settings:
+      - name: riss
+        cmdline: ''
+        tag: ignore
+        ppn: 1
+        procs: 1
+      - name: glucose
+        cmdline: '-g'
+        tag: ignore
+        ppn: 1
+        procs: 1
+
+jobs:
+  local:
+    type: seq
+    timeout: 10
+    memout: 8192
+    runs: 1
+    parallel: 2
+
+benchmarks:
+  example_sudokus:
+    - type: folder
+      path: instances
+      ignore_prefixes:
+        - .
+
+projects:
+  sudoku:
+    job: local
+    runtags:
+      - machine: mylocalmachine
+        benchmark: example_sudokus
+        tag: "*all*"

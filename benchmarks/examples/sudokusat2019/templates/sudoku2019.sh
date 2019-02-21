@@ -11,10 +11,10 @@ cd "$(dirname $0)"
 printf 'hostname is ' >> runsolver.err
 hostname >> runsolver.err
 
-[[ -e .finished ]] ||  "{run.root}/programs/runsolver-3.4.0" \
+[[ -e .finished ]] ||  "{run.root}/external-tools/runsolver/src/runsolver" \
 	-M 8192 \
 	-w runsolver.watcher \
 	-W {run.timeout} \
-	"{run.root}/benchmarks/sudokusat2019/bin/{run.solver}" {run.args} "{run.file}" > runsolver.solver 2>>runsolver.err
+	"{run.root}/benchmarks/examples/sudokusat2019/bin/{run.solver}" {run.args} "{run.file}" > runsolver.solver 2>>runsolver.err
 
 touch .finished

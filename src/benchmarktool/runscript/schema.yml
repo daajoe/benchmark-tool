@@ -1,0 +1,175 @@
+# root
+type: map
+mapping:
+  base_dir:
+    type: str
+  output_dir:
+    type: str
+    required: true
+  machines:
+    type: map
+    mapping:
+      regex;.*:
+        include: machine
+  configs:
+    type: map
+    mapping:
+      regex;.*:
+        include: config
+  systems:
+    type: seq
+    sequence:
+      - include: system
+  jobs:
+    type: map
+    mapping:
+      regex;.*:
+        include: job
+  benchmarks:
+    type: map
+    mapping:
+      regex;.*:
+        include: benchmark
+  projects:
+    type: map
+    mapping:
+      regex;.*:
+        include: project
+
+# partial schemas
+schema;machine:
+  type: map
+  allowempty: true
+  mapping:
+    cpu:
+      type: str
+      required: true
+    memory:
+      type: str
+      required: true
+
+schema;config:
+  type: map
+  allowempty: true
+  mapping:
+    template:
+      type: str
+
+schema;setting:
+  type: map
+  allowempty: true
+  mapping:
+    name:
+      type: str
+      required: true
+    tag:
+      type: str
+    cmdline:
+      type: str
+      required: true
+
+schema;system:
+  type: map
+  allowempty: true
+  mapping:
+    name:
+      type: str
+      required: true
+    version:
+      type: str
+      required: true
+    measures:
+      type: str
+      required: true
+    config:
+      type: str
+      required: true
+    settings:
+      type: seq
+      sequence:
+        - include: setting
+
+schema;job:
+  type: map
+  allowempty: true
+  mapping:
+    type:
+      type: str
+      enum: ['seq', 'pbs', 'condor']
+      required: true
+    timeout:
+      type: int
+      required: true
+    memout:
+      type: int
+    runs:
+      type: int
+      required: true
+
+schema;benchmark:
+  type: seq
+  sequence:
+    - type: map
+      mapping:
+        type:
+          type: str
+          enum: ['folder', 'files']
+          required: true
+        path:
+          type: str
+        ignore_prefixes:
+          type: seq
+          sequence:
+            - type: str
+        files:
+          type: seq
+          sequence:
+            - type: str
+
+schema;runtag:
+  type: map
+  mapping:
+    machine:
+      type: str
+      required: true
+    benchmark:
+      type: str
+      required: true
+    tag:
+      type: str
+      required: true
+
+schema;runspec:
+  type: map
+  mapping:
+    machine:
+      type: str
+      required: true
+    benchmark:
+      type: str
+      required: true
+    system:
+      type: str
+      required: true
+    version:
+      type: str
+      required: true
+    setting:
+      type: str
+      required: true
+
+schema;project:
+  type: map
+  allowempty: true
+  mapping:
+    job:
+      type: str
+      required: true
+    runtags:
+      type: seq
+      sequence:
+        - include: runtag
+    runspecs:
+      type: seq
+      sequence:
+        - include: runspec
