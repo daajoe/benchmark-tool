@@ -18,7 +18,7 @@ configs:
 systems:
   - name: clasp
     version: 1.3.2
-    measures: .resultparsers.clasp
+    measures: resultparsers.clasp
     config: seq-generic
     settings:
       - name: default
@@ -44,7 +44,7 @@ systems:
         cmdline: '--stats --restarts=no 1'
   - name: claspar
     version: 2.1.0
-    measures: .resultparsers.claspar
+    measures: resultparsers.claspar
     config: pbs-generic
     settings:
       - name: one-as
