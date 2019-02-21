@@ -5,4 +5,4 @@
 ./beval benchmarks/.../runscript.yml > evaluation.xml
 ```
 
-This script will collect statistics from the runs like its time and memory usage, errors etc according to the [result parser](../result-parser.md) defined in the system measures.
+This script will collect statistics from the runs like its time and memory usage, errors etc according to the [result parser](#) defined in the system measures.

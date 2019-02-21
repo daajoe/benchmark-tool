@@ -24,7 +24,7 @@ Description of the system (tools/solvers) on which the benchmark instances will 
 
 ### system.measures
 
-Module path to the python function of the [result parser](../result-parser.md) that will be used to measure the result of this system, relative to [base_dir](#base_dir). For example, a value of `resultparser.sudokuresultparser` will use the function `sudokuresultparser` defined in `[base_dir]/resultparser.py`.
+Module path to the python function of the [result parser](#) that will be used to measure the result of this system, relative to [base_dir](#base_dir). For example, a value of `resultparser.sudokuresultparser` will use the function `sudokuresultparser` defined in `[base_dir]/resultparser.py`.
 
 ### system.settings
 
@@ -32,7 +32,7 @@ Description of the system's various settings, such as the `cmdline` options, `ta
 
 ## jobs
 
-Description of various [jobs](../jobs/index.md), including its type and resource limits.
+Description of various [jobs](#), including its type and resource limits.
 
 ## benchmarks
 

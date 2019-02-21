@@ -93,3 +93,6 @@ ENV/
 
 # Benchmark-tool output
 output
+
+# Docs
+site/

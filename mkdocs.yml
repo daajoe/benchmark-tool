@@ -13,4 +13,5 @@ nav:
       - '2 - Generating scripts': 'how-to/generating-scripts.md'
       - '3 - Running the benchmark': 'how-to/running-benchmark.md'
       - '4 - Evaluating the results': 'how-to/evaluating-results.md'
+      - '5 - Summarizing evaluations': 'how-to/summarize-evaluation.md'
   - Export / Import: 'export-import/index.md'
