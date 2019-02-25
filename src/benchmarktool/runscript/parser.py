@@ -11,6 +11,7 @@ import yaml
 from dotmap import DotMap
 from pykwalify.core import Core as SchemaValidator
 from benchmarktool.runscript.runscript import Runscript, Project, Benchmark, Config, System, Setting, CondorJob, PbsJob, SeqJob, Machine
+from benchmarktool.runscript.benchmark.specs import FolderSpec, DOISpec
 import benchmarktool.tools as tools
 try: from StringIO import StringIO
 except: from io import StringIO
@@ -103,20 +104,16 @@ class Parser:
                 
             run.addSystem(system, system_desc.config)
         
-        for benchmark_name, benchmark_descs in runscript.benchmarks.items():
+        for benchmark_name, benchmark_specs in runscript.benchmarks.items():
             benchmark = Benchmark(benchmark_name)
-            for desc in benchmark_descs:
-                path = os.path.join(runscript.base_dir, desc.path)
-                element = None
-                if desc.type == "folder":
-                    element = Benchmark.Folder(path)
-                    for ignore in desc.ignore_prefixes:
-                        element.addIgnore(ignore)
-                elif desc.type == "files":
-                    element = Benchmark.Files(path)
-                    for file in desc.files:
-                        element.addFile(file)
-                benchmark.addElement(element)
+            for spec in benchmark_specs:
+                spec.path = os.path.join(runscript.base_dir, spec.path)
+                specification = None
+                if spec.type == "folder":
+                    specification = FolderSpec(**spec)
+                elif spec.type == "doi":
+                    specification = DOISpec(**spec)
+                benchmark.addSpecification(specification)
             run.addBenchmark(benchmark)
 
         for project_name, project_desc in runscript.projects.items():

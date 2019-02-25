@@ -8,6 +8,8 @@ import os
 import stat
 import random
 import importlib
+import requests
+from tqdm import tqdm
 
 def mkdir_p(path):
     """
@@ -137,3 +139,26 @@ def import_function(path):
     module_path, tail = '.'.join(path.split('.')[:-1]), path.split('.')[-1]
     module = importlib.import_module(module_path)
     return getattr(module, tail)
+
+
+def copyfileobj(fsrc, fdst, callback, length=16*1024):
+    copied = 0
+    while True:
+        buf = fsrc.read(length)
+        if not buf:
+            break
+        fdst.write(buf)
+        callback(len(buf))
+
+def download_file(url, dest):
+    r = requests.get(url, stream=True)
+
+    with tqdm(
+        total=int(r.headers['content-length']),
+        unit='B',
+        unit_scale=True,
+        unit_divisor=1024,
+    ) as pbar:
+        pbar.set_postfix(file=dest, refresh=False)
+        with open(dest, "wb") as f:
+            copyfileobj(r.raw, f, pbar.update)

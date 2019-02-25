@@ -67,10 +67,12 @@ jobs:
 
 benchmarks:
   example_sudokus:
-    - type: folder
-      path: instances
-      ignore_prefixes:
-        - .
+    - type: doi
+      doi: 10.5072/zenodo.261834
+      path: ./instances
+      extract_archives: true
+      patterns:
+        - sudoku/*.txt
 
 projects:
   sudoku:
@@ -78,4 +80,4 @@ projects:
     runtags:
       - machine: mylocalmachine
         benchmark: example_sudokus
-        tag: "*all*"
+        tag: '*all*'

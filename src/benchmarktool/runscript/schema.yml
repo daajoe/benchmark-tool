@@ -110,10 +110,11 @@ schema;benchmark:
   type: seq
   sequence:
     - type: map
+      allowempty: true
       mapping:
         type:
           type: str
-          enum: ['folder', 'files']
+          enum: ['folder', 'doi']
           required: true
         path:
           type: str
