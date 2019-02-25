@@ -36,7 +36,7 @@ Description of various [jobs](#), including its type and resource limits.
 
 ## benchmarks
 
-Description of various benchmark instances through specifications. Currently the specification type can be either `folder` or `files`.
+Description of various benchmark instances through [specifications](#). Currently the specification type can be either `folder` or `doi`.
 
 ## projects
 

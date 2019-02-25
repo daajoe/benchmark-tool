@@ -73,6 +73,7 @@ benchmarks:
       extract_archives: true
       patterns:
         - sudoku/*.txt
+        - '!**/*.zip'
 
 projects:
   sudoku:
