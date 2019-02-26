@@ -425,18 +425,18 @@ class Benchmark(Sortable):
         name - The name of the benchmark set
         """
         self.name = name
-        self.elements = []
+        self.specifications = []
         self.instances = {}
         self.initialized = False
 
-    def addElement(self, element):
+    def addSpecification(self, specification):
         """
-        Adds elements to the benchmark, e.g, files or folders.
+        Adds specification to the benchmark, e.g, files or folders.
         
         Keyword arguments:
-        element - The element to add
+        specification - The specification to add
         """
-        self.elements.append(element)
+        self.specifications.append(specification)
 
     def addInstance(self, root, relroot, filename):
         """
@@ -459,7 +459,9 @@ class Benchmark(Sortable):
         benchmark elements added.
         """
         if not self.initialized:
-            for element in self.elements: element.init(self)
+            for specification in self.specifications:
+                specification.setup(self)
+
             classid = 0
             for classname in sorted(self.instances.keys()):
                 classname.id = classid

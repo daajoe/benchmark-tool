@@ -77,11 +77,8 @@ benchmarks:
   seq-suite:
     - type: folder
       path: instances
-      ignore_prefixes:
-        - pigeons
-    - type: files
-      path: instances
-      files:
+      patterns:
+        - '!**/pigeons/*'
         - pigeons/pigeonhole10-unsat.lp
         - pigeons/pigeonhole11-unsat.lp
   pbs-suite:

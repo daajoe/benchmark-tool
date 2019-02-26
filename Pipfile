@@ -12,6 +12,9 @@ jinja2 = "*"
 pyyaml = "*"
 pykwalify = "*"
 dotmap = "*"
+requests = "*"
+tqdm = "*"
+pathspec = "*"
 
 [requires]
 python_version = "3"
