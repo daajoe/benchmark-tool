@@ -1,34 +1,8 @@
-# Welcome to benchmark-tool
+# Welcome to benchmark-tool's documentation
 
-## Installation
-
-Clone the repository:
-
-```bash
-git clone git@github.com:daajoe/benchmark-tool.git
-```
-
-Installing the dependencies can be done with [Pipenv](https://github.com/pypa/pipenv) (preferred)
-or pip + virtualenv.
-
-### Pipenv
-
-```bash
-pipenv install
-```
-
-### pip + virtualenv
-
-```bash
-python3 -m pip install -r requirements.txt
-```
-
-## How to use
-
-1. [Writing a runscript](how-to/writing-runscript.md)
-2. [Generate scripts with `./bgen`](how-to/generating-scripts.md)
-3. [Running the benchmarks](how-to/running-benchmark.md)
-4. [Evaluating the results with `./beval`](how-to/evaluating-results.md)
+- [Installation](installation.md)
+- [Quickstart](quickstart.md)
+- [Export/Import](export-import.md)
 
 ## Project layout
 

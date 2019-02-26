@@ -7,11 +7,13 @@ theme:
     - python
 repo_url: https://github.com/daajoe/benchmark-tool/
 nav:
-  - Home: 'index.md'
-  - How to run your benchmark:
-      - '1 - Writing a runscript': 'how-to/writing-runscript.md'
-      - '2 - Generating scripts': 'how-to/generating-scripts.md'
-      - '3 - Running the benchmark': 'how-to/running-benchmark.md'
-      - '4 - Evaluating the results': 'how-to/evaluating-results.md'
-      - '5 - Summarizing evaluations': 'how-to/summarize-evaluation.md'
-  - Export / Import: 'export-import/index.md'
+  - installation.md
+  - quickstart.md
+  - resultparser.md
+  - jobs.md
+  - instance-specs.md
+  - export-import.md
+markdown_extensions:
+  - toc:
+      permalink: True
+  - admonition
