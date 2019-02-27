@@ -158,7 +158,8 @@ def sudokuresultparser(root, runspec, instance):
         return result
 
     # Validate if output is consistent with input
-    instance_input = codecs.open(os.path.join(instance.location, instance.instance), encoding='utf-8').read()
+    instance_path = os.path.join(instance.location, instance.classname.name, instance.instance)
+    instance_input = codecs.open(instance_path, encoding='utf-8').read()
 
     instance_output = clean_empty_lines(instance_output.split('\n'))
     instance_input = clean_empty_lines(instance_input.split('\n'))
