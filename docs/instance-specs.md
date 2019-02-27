@@ -1,5 +1,5 @@
 ---
-title: Specifying benchmark instances
+title: Specifying Benchmark Instances
 ---
 
 Benchmark instances can be specified by one or more of these specification type:

@@ -2,7 +2,10 @@
 
 - [Installation](installation.md)
 - [Quickstart](quickstart.md)
-- [Export/Import](export-import.md)
+- [Writing a Result Parser](resultparser.md)
+- [Specifying Benchmark Jobs](jobs.md)
+- [Specifying Benchmark Instances](instance-specs.md)
+- [Importing/Exporting](export-import.md)
 
 ## Project layout
 
