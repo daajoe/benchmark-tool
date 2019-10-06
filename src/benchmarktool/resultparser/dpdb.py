@@ -30,7 +30,7 @@ runsolver_re = {
 dpdb_re = {
     "time": ("float", re.compile(r"^Real time \(s\): (?P<val>[0-9]+(\.[0-9]+)?)$"), lambda x: x),
     "memerror": ("string", re.compile(r"^Maximum VSize (?P<val>exceeded): sending SIGTERM then SIGKILL"), lambda x: x),
-    "models": ("float", re.compile(r"^\[INFO\] dpdb\.problems\.sharpsat: Problem has (?P<val>[0-9]+) models"), lambda x: x)
+    "objective": ("float", re.compile(r"^\[INFO\] dpdb\.problems\.sharpsat: Problem has (?P<val>[0-9]+) models"), lambda x: x)
 }
 
 def dpdb(root, runspec, instance):

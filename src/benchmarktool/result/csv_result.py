@@ -148,8 +148,8 @@ class Table:
         # TODO(1): move sort order to xml-file: use parameter keys
         # TODO(3): sort order depending on by-instance, by-whatever
         basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'ubound',
-                            'abs_improvement', 'rel_improvement', 'solved', 'time',
-                            'time', 'solver', 'solver_config', 'error_code']
+                            'abs_improvement', 'rel_improvement', 'solved', 'wall',
+                            'wall', 'solver', 'solver_config', 'error_code']
         sum_order = ['avg', 'min', 'max', 'stdev']
         sort_order = []
         for i in basic_sort_order:
@@ -232,8 +232,8 @@ class InstanceTable(ResultTable):
             return
         # TODO(1): move sort order to xml-file: use parameter keys
         basic_sort_order = ['instance', 'benchmark_name', 'class', 'number_of_instances', 'width', 'ubound',
-                            'abs_improvement', 'rel_improvement', 'solved', 'time',
-                            'time', 'solver', 'solver_config', 'error_code']
+                            'abs_improvement', 'rel_improvement', 'solved', 'wall',
+                            'wall', 'solver', 'solver_config', 'error_code']
         sum_order = ['', 'mean', 'count', 'count_nonzero', 'sum', 'amin', 'amax', 'std']
         sort_order = []
         for i in basic_sort_order:
@@ -247,7 +247,7 @@ class InstanceTable(ResultTable):
         header = sorted(columns, key=lambda val: sort_order[val])
         return header
 
-    def output_cactus_plot(self, plots, filename, benchmark, mapping, indices=('time', 'memusage'), ignore_vbest=False,
+    def output_cactus_plot(self, plots, filename, benchmark, mapping, indices=('wall',), ignore_vbest=False,
                            limit=5):
         if 'vbest' not in mapping:
             mapping['vbest'] = (True, 'vbest', 'm', ':')
@@ -375,41 +375,35 @@ class InstanceTable(ResultTable):
         nonmemout.drop_duplicates().reset_index(drop=True).to_csv(output_path('nomemout'), index=False)
 
         # TODO: generalize to xml file
-        df_mem_range = df.copy()
-        df_mem_range['mem_range'] = df['memusage']
-        df_mem_range['mem_range'] = pd.cut(df_mem_range['memusage'], np.arange(0, 10000, 250))
-        output['by-mem'] = df_mem_range.groupby(
-            ['benchmark_name', 'mem_range', 'solver_config', 'solver', 'solver_args']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum}).reset_index()
+        print df.columns
 
         df_time_range = df.copy()
-        df_time_range['time_range'] = df['time']
-        df_time_range['time_range'] = pd.cut(df_mem_range['time'], np.arange(0, 1800, 120))
+        df_time_range['time_range'] = df['wall']
+        df_time_range['time_range'] = pd.cut(df_time_range['wall'], np.arange(0, 1800, 120))
         output['by-time'] = df_time_range.groupby(
             ['benchmark_name', 'time_range', 'solver_config', 'solver', 'solver_args']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std], 'solved': np.sum}).reset_index()
+            {'instance': 'count', 'wall': [np.mean, np.max, np.min, np.std, np.sum], 'error': [np.mean, np.max],
+             'solved': np.sum}).reset_index()
 
         output['by-run'] = df
         output['by-instance'] = df.groupby(['instance', 'benchmark_name', 'class', 'solver_config', 'solver',
                                             'solver_args', 'status', 'timelimit', 'memlimit', 'solved']).agg(
-            {'run': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+            {'run': 'count', 'wall': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
+             }).reset_index()
 
         output['by-class'] = df.groupby(
             ['benchmark_name', 'class', 'solver_config', 'solver', 'solver_args', 'status', 'timelimit',
              'memlimit']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+            {'instance': 'count', 'wall': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
+             }).reset_index()
 
         output['by-benchmark'] = df.groupby(['benchmark_name', 'solver_config', 'status', 'timelimit', 'memlimit']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+            {'instance': 'count', 'wall': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
+             }).reset_index()
 
         output['by-all'] = df.groupby(['solver_config']).agg(
-            {'instance': 'count', 'time': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
-             'memusage': [np.mean, np.max, np.min, np.std]}).reset_index()
+            {'instance': 'count', 'wall': [np.mean, np.max, np.min, np.std], 'error': [np.mean, np.max],
+             }).reset_index()
 
         for k in output.iterkeys():
             with open(os.path.join(prefix, '%s-%s%s' % (project_name, k, suffix)), 'w') as outfile:
@@ -418,32 +412,32 @@ class InstanceTable(ResultTable):
                 output[k] = output[k].reindex_axis(col_ord, axis=1)
                 # order values
                 if k == 'by-run':
-                    output[k].sort_values(by=['instance', 'time'], inplace=True)
+                    output[k].sort_values(by=['instance', 'wall'], inplace=True)
                 elif k == 'by-instance':
-                    output[k].sort_values(by=[('instance', ''), ('time', 'mean'), ('memusage', 'mean')], inplace=True)
+                    output[k].sort_values(by=[('instance', ''), ('wall', 'mean'), ], inplace=True)
                 elif k == 'by-class':
                     output[k].sort_values(
-                        by=['benchmark_name', 'class', ('time', 'mean'), ('memusage', 'mean')],
-                        ascending=[True, True, True, True], inplace=True)
+                        by=['benchmark_name', 'class', ('wall', 'mean'), ],
+                        ascending=[True, True, True], inplace=True)
                     output[k].reset_index()
                 elif k == 'by-time':
                     output[k].sort_values(
-                        by=['benchmark_name', 'time_range', ('time', 'mean'), ('memusage', 'mean')],
-                        ascending=[True, True, False, True], inplace=True)
+                        by=['benchmark_name', 'time_range', ('wall', 'mean'), ],
+                        ascending=[True, True, False], inplace=True)
                     output[k].reset_index()
                 elif k == 'by-mem':
                     output[k].sort_values(
-                        by=['benchmark_name', 'mem_range', ('time', 'mean'), ('memusage', 'mean')],
-                        ascending=[True, True, True, True], inplace=True)
+                        by=['benchmark_name', 'mem_range', ('wall', 'mean'), ],
+                        ascending=[True, True, True], inplace=True)
                     output[k].reset_index()
                 elif k == 'by-benchmark':
                     output[k].sort_values(
-                        by=['benchmark_name', ('instance', 'count'), ('time', 'mean'), ('memusage', 'mean')],
-                        ascending=[True, False, True, True], inplace=True)
+                        by=['benchmark_name', ('instance', 'count'), ('wall', 'mean'), ],
+                        ascending=[True, False, True], inplace=True)
                 elif k == 'by-all':
                     output[k].sort_values(
-                        by=[('instance', 'count'), ('time', 'mean'), ('memusage', 'mean')],
-                        ascending=[False, True, True], inplace=True)
+                        by=[('instance', 'count'), ('wall', 'mean'), ],
+                        ascending=[False, True], inplace=True)
 
                 # vbest_all, vbest_improved_all = self.compute_vbest_solution_quality_all(df)
                 # output csv
@@ -451,14 +445,14 @@ class InstanceTable(ResultTable):
                 output[k].to_csv(outfile, index=False)
 
                 # output a minimal attribute file
-                max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'time', 'solved',
+                max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'wall', 'solved',
                             'solver_config']
                 av_cols = map(lambda x: x[0] if isinstance(x, tuple) else x, list(output[k].columns.values))
                 sel_cols = [item for item in max_cols if item in av_cols]
 
                 output[k][sel_cols].to_csv(self.ext(outfile.name, 'short'), index=False)
 
-        key1 = 'time'
+        key1 = 'wall'
         vbest, vbest_improved = self.compute_vbest(df, key1)
         vbest.to_csv(output_path('vbest'))
         vbest_improved.to_csv(output_path('vbest-improved'))
@@ -488,14 +482,14 @@ class InstanceTable(ResultTable):
 
     def compute_short_df(self, df, vbest):
         # take short vbest
-        vbest_short = vbest[['instance', 'solver_config', 'time', 'memusage']]
+        vbest_short = vbest[['instance', 'solver_config', 'wall']]
         # ignore warning deliberately
         pd.options.mode.chained_assignment = None
         vbest_short['solver_config'] = 'vbest'
         pd.options.mode.chained_assignment = 'warn'
-        short_df = df[['instance', 'solver_config', 'time', 'memusage']]
+        short_df = df[['instance', 'solver_config', 'wall']]
         short_df = short_df.append(vbest_short)
-        short_df = short_df.reindex_axis(['solver_config', 'instance', 'time', 'memusage'], axis=1)
+        short_df = short_df.reindex_axis(['solver_config', 'instance', 'wall'], axis=1)
         return short_df
 
     def compute_vbest_solution_quality(self, df):
@@ -608,7 +602,7 @@ class InstanceTable(ResultTable):
                                             'solver_args']).agg(
             {'run': 'count', 'width': [np.mean, np.max, np.min, np.std],
              'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
-             'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std],
+             'wall': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std],
              'error': [np.max]})
 
         output['by-instance'].reset_index(inplace=True)
@@ -616,7 +610,7 @@ class InstanceTable(ResultTable):
             ['benchmark_name', 'class', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
              'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
-             'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std]}).reset_index()
+             'wall': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         # TODO: move ranges to xml file parameter
         # Group by treewidth/ubound ranges
@@ -629,18 +623,18 @@ class InstanceTable(ResultTable):
             ['benchmark_name', 'tw_range', 'solver_config', 'solver', 'solver_args']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
              'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
-             'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std, np.sum],
+             'wall': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std, np.sum],
              'solved': np.sum}).reset_index()
 
         output['by-benchmark'] = df.groupby(['benchmark_name', 'solver_config']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
              'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
-             'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std]}).reset_index()
+             'wall': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         output['by-all'] = df.groupby(['solver_config']).agg(
             {'instance': 'count', 'width': [np.mean, np.max, np.min, np.std],
              'ubound': [np.mean, np.max, np.min, np.std], 'abs_improvement': [np.max, np.count_nonzero, np.sum],
-             'wall': [np.mean, np.max, np.min, np.std], 'time': [np.mean, np.max, np.min, np.std]}).reset_index()
+             'wall': [np.mean, np.max, np.min, np.std], 'wall': [np.mean, np.max, np.min, np.std]}).reset_index()
 
         for k in output.iterkeys():
             with open(os.path.join(prefix, '%s-%s%s' % (project_name, k, suffix)), 'w') as outfile:
@@ -651,36 +645,36 @@ class InstanceTable(ResultTable):
                     # order values
                     if k == 'by-run':
                         filter = 'abs_improvement'
-                        output[k].sort_values(by=['instance', 'abs_improvement', 'time'], inplace=True)
+                        output[k].sort_values(by=['instance', 'abs_improvement', 'wall'], inplace=True)
                     elif k == 'by-instance':
                         filter = ('abs_improvement', 'amax')
-                        output[k].sort_values(by=[('instance', ''), ('abs_improvement', 'amax'), ('time', 'mean')],
+                        output[k].sort_values(by=[('instance', ''), ('abs_improvement', 'amax'), ('wall', 'mean')],
                                               inplace=True)
                     elif k == 'by-class':
                         filter = ('abs_improvement', 'amax')
-                        # output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('time', 'mean')], inplace=True)
+                        # output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('wall', 'mean')], inplace=True)
                         output[k].sort_values(
-                            by=['benchmark_name', 'class', ('abs_improvement', 'sum'), ('time', 'mean')],
+                            by=['benchmark_name', 'class', ('abs_improvement', 'sum'), ('wall', 'mean')],
                             ascending=[True, True, False, True], inplace=True)
                         output[k].reset_index()
                     elif k == 'by-width':
                         filter = ('abs_improvement', 'amax')
-                        # output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('time', 'mean')], inplace=True)
+                        # output[k].sort_values(by=['class', ('abs_improvement', 'amax'), ('wall', 'mean')], inplace=True)
                         output[k].sort_values(
-                            by=['benchmark_name', 'tw_range', ('abs_improvement', 'sum'), ('time', 'mean')],
+                            by=['benchmark_name', 'tw_range', ('abs_improvement', 'sum'), ('wall', 'mean')],
                             ascending=[True, True, False, True], inplace=True)
                         output[k].reset_index()
                     elif k == 'by-benchmark':
                         filter = ('abs_improvement', 'amax')
                         # ('abs_improvement', 'amax')
                         output[k].sort_values(
-                            by=['benchmark_name', ('abs_improvement', 'sum'), ('instance', 'count'), ('time', 'mean')],
+                            by=['benchmark_name', ('abs_improvement', 'sum'), ('instance', 'count'), ('wall', 'mean')],
                             ascending=[True, False, False, True], inplace=True)
                     elif k == 'by-all':
                         filter = ('abs_improvement', 'amax')
                         # ('abs_improvement', 'amax')
                         output[k].sort_values(
-                            by=[('abs_improvement', 'sum'), ('instance', 'count'), ('time', 'mean')],
+                            by=[('abs_improvement', 'sum'), ('instance', 'count'), ('wall', 'mean')],
                             ascending=[False, False, True], inplace=True)
 
                         vbest_all, vbest_improved_all = self.compute_vbest_solution_quality_all(df)
@@ -691,7 +685,7 @@ class InstanceTable(ResultTable):
                     output[k].to_csv(outfile, index=False)
 
                     # output a minimal attribute file
-                    max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'time', 'solved',
+                    max_cols = ['instance', 'benchmark_name', 'class', 'tw_range', 'abs_improvement', 'wall', 'solved',
                                 'solver_config']
                     av_cols = map(lambda x: x[0] if isinstance(x, tuple) else x, list(output[k].columns.values))
                     sel_cols = [item for item in max_cols if item in av_cols]
@@ -713,10 +707,10 @@ class InstanceTable(ResultTable):
         self.output_cactus_plot(short_df, output_path('cactus_plot', ''), project_name)
         self.output_cactus_plot(short_df_non_zero, output_path('cactus_plot_improved', ''), project_name)
         self.output_cactus_plot(short_df2, output_path('cactus_plot_improved_cum', ''), project_name,
-                                indices=('cum_sum_abs_improvement', 'time'))
+                                indices=('cum_sum_abs_improvement', 'wall'))
         # print short_df2
 
-    def output_cactus_plot_trellis(self, plots, filename, benchmark, indices=('abs_improvement', 'time'),
+    def output_cactus_plot_trellis(self, plots, filename, benchmark, indices=('abs_improvement', 'wall'),
                                    ignore_vbest=False,
                                    limit=5):
         for index in indices:
@@ -821,7 +815,7 @@ class InstanceTable(ResultTable):
                 plot.sort_values(by=[index], inplace=True)
                 pd.options.mode.chained_assignment = 'warn'
                 plot.reset_index(inplace=True)
-                # ts = pd.Series(plot['time'])
+                # ts = pd.Series(plot['wall'])
                 ts = pd.Series(plot[index])
                 # linestyle='', marker=marker.next()
                 label = lfont(mapping[key]) if mapping.has_key(key) else key
@@ -859,14 +853,14 @@ class InstanceTable(ResultTable):
 
     def compute_cum_non_zero_trellis(self, df, vbest):
         # take short vbest
-        vbest_short = vbest[['instance', 'solver_config', 'abs_improvement', 'time']]
+        vbest_short = vbest[['instance', 'solver_config', 'abs_improvement', 'wall']]
         # ignore warning deliberately
         pd.options.mode.chained_assignment = None
         vbest_short['solver_config'] = 'vbest'
         pd.options.mode.chained_assignment = 'warn'
-        short_df = df[['instance', 'solver_config', 'abs_improvement', 'time']]
+        short_df = df[['instance', 'solver_config', 'abs_improvement', 'wall']]
         short_df = short_df.append(vbest_short)
-        short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'time'], axis=1)
+        short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'wall'], axis=1)
 
         short_df = short_df[(short_df['abs_improvement'] > 0)]
         short_df.sort_values(by=['abs_improvement'], ascending=[True], inplace=True)
@@ -890,14 +884,14 @@ class InstanceTable(ResultTable):
 
     def compute_short_df_trellis(self, df, vbest):
         # take short vbest
-        vbest_short = vbest[['instance', 'solver_config', 'abs_improvement', 'time']]
+        vbest_short = vbest[['instance', 'solver_config', 'abs_improvement', 'wall']]
         # ignore warning deliberately
         pd.options.mode.chained_assignment = None
         vbest_short['solver_config'] = 'vbest'
         pd.options.mode.chained_assignment = 'warn'
-        short_df = df[['instance', 'solver_config', 'abs_improvement', 'time']]
+        short_df = df[['instance', 'solver_config', 'abs_improvement', 'wall']]
         short_df = short_df.append(vbest_short)
-        short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'time'], axis=1)
+        short_df = short_df.reindex_axis(['solver_config', 'instance', 'abs_improvement', 'wall'], axis=1)
         return short_df
 
 
@@ -937,11 +931,11 @@ class Summary(ResultTable):
     #     for k in output.iterkeys():
     #         with open(os.path.join(prefix, '%s-solution_quality-%s%s' % (project_name, k, suffix)), 'w') as outfile:
     #             if k in ('by-instance', 'by-run'):
-    #                 output[k].sort(key=itemgetter('instance', 'time'))
+    #                 output[k].sort(key=itemgetter('instance', 'wall'))
     #             if k == 'by-class':
-    #                 output[k].sort(key=itemgetter('class', 'time'))
+    #                 output[k].sort(key=itemgetter('class', 'wall'))
     #             if k == 'by-benchmark':
-    #                 output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'time'))
+    #                 output[k].sort(key=itemgetter('benchmark_name', 'number_of_instances', 'wall'))
     #             ResultTable.printSheet(self, out=outfile, results=output[k])
     #
     #     #TODO: compute cactus plots
