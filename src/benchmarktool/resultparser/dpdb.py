@@ -201,7 +201,9 @@ def dpdb(root, runspec, instance):
 
     # PROBLEM/SOLVER SPECIFIC OUTPUT
     if error == 0:
-        res['objective'] = nan_or_value(('float', 'width'), stats)
+        #TODO: fixme
+        if not res.has_key('objective'):
+            res['objective'] = 'nan'
 
         try:
             res['hash'] = ('string', stats['hash'][0:16] + '*')
