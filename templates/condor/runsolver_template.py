@@ -45,7 +45,7 @@ class dotdict(dict):
   __delattr__ = dict.__delitem__
 
 args=dotdict()
-args.runsolver = '{run.root}/programs/runsolver-3.3.5'
+args.runsolver = '{run.root}/programs/runsolver-3.4.0'
 args.memlimit = '{run.memlimit}'
 args.timelimit = '{run.timelimit}'
 args.solver = '{run.root}/programs/{run.solver}'
@@ -98,7 +98,7 @@ def main(args):
   sys.stderr.write(args.solver_args)
   sys.stderr.write('\n')
 
-  cmd = '%s -M %s -W %s -w %s %s %s -t %s --runid %s -f %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, ''.join(args.solver_args), tmp, args.run, ' '.join(args.filename), args.stdout, args.stderr)
+  cmd = '%s -M %s -W %s -w %s %s -t %s --runid %s -f %s %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, tmp, args.run, ' '.join(args.filename),''.join(args.solver_args), args.stdout, args.stderr)
   sys.stderr.write('COMMAND=%s\n' %cmd)
 
   p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
