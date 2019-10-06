@@ -111,9 +111,12 @@ class CSV:
                     row = {}
                     for name, value_type, value in run.iter(self.measures):
                         if value_type == 'int':
-                            row[name] = int(value)
+                            try:
+                                row[name] = np.int(value)
+                            except ValueError, e:
+                                row[name] = np.nan
                         elif value_type == 'float':
-                            row[name] = float(value)
+                            row[name] = np.float(value)
                         else:
                             row[name] = value
                     runs[run.number] = row

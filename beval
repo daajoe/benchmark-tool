@@ -8,8 +8,8 @@ function check_python() {
 	fi
 }
 
-check_python "$(which python)" "$@"
-check_python "$(which python3)" "$@"
+check_python "$(which python2)" "$@"
+#check_python "$(which python3)" "$@"
 
 echo "error: no python interpreter with lxml module found"
 exit 1
