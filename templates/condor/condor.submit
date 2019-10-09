@@ -1,6 +1,6 @@
 universe = vanilla 
-requirements = machine != "cobra-submit.kr.tuwien.ac.at"
-request_memory = +8172
+#requirements = machine != "cobra-submit.kr.tuwien.ac.at"
+request_memory = +262000
 
 #TODO: check cluster timeout and memlimit
 #periodic_remove = (CurrentTime - JobCurrentStartDate) >= {{timeout}}
@@ -11,8 +11,8 @@ request_memory = +8172
 remove_kill_sig = 15
 kill_sig = 15
 nice_user = True
-priority = -20
-job_max_vacate_time = 60
+priority = -10
+job_max_vacate_time = 3600
 
 #=========================================================================
 # PATHS
