@@ -1,6 +1,6 @@
 universe = vanilla 
 #requirements = machine != "cobra-submit.kr.tuwien.ac.at"
-request_memory = +262000
+request_memory = +250G
 
 #TODO: check cluster timeout and memlimit
 #periodic_remove = (CurrentTime - JobCurrentStartDate) >= {{timeout}}
