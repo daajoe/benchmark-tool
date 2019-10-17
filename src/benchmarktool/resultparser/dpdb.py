@@ -11,6 +11,7 @@ import os
 import re
 from base64 import b64encode
 from benchmarktool.tools import escape
+import csv
 
 # Child status: 0
 runsolver_re = {
@@ -32,7 +33,17 @@ runsolver_re = {
 
 dpdb_re = {
     "objective": (
-    "float", re.compile(r"^\[INFO\] dpdb\.problems\.sharpsat: Problem has (?P<val>[0-9]+) models"), lambda x: x)
+    "float", re.compile(r"^\[INFO\] dpdb\.problems\.sharpsat: Problem has (?P<val>[0-9]+) models"), lambda x: x),
+    "bags": (
+    "int", re.compile(r"^\[INFO\] dpdb: #bags: (?P<val>[0-9]+) tree_width: [0-9]+ #vertices: [0-9]+ #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
+    "tree_width": (
+    "int", re.compile(r"^\[INFO\] dpdb: #bags: [0-9]+ tree_width: (?P<val>[0-9]+) #vertices: [0-9]+ #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
+    "vertices": (
+    "int", re.compile(r"^\[INFO\] dpdb: #bags: [0-9]+ tree_width: [0-9]+ #vertices: (?P<val>[0-9]+) #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
+    "leafs": (
+    "int", re.compile(r"^\[INFO\] dpdb: #bags: [0-9]+ tree_width: [0-9]+ #vertices: [0-9]+ #leafs: (?P<val>[0-9]+) #edges: [0-9]+"), lambda x: x),
+    "edges": (
+    "int", re.compile(r"^\[INFO\] dpdb: #bags: [0-9]+ tree_width: [0-9]+ #vertices: [0-9]+ #leafs: [0-9]+ #edges: (?P<val>[0-9]+)"), lambda x: x),
 }
 
 dpdb_err_re = {
@@ -43,8 +54,31 @@ dpdb_err_re = {
     "string", re.compile(r"^\[ERROR\] dpdb.reader: No type found in DIMACS file!(?P<val>)"), lambda x: 1),
     "err_parse_reader": (
     "string", re.compile(r"^\[WARNING\] dpdb.reader: Invalid content in preamble at line 0:(?P<val>)"), lambda x: 1),
+    "err_list_index": (
+    "string", re.compile(r"^IndexError: list index out of range(?P<val>)"), lambda x: 1),
 }
 
+def read_default_instance_info():
+    inst_info_dict = dict()
+
+    infofile = os.path.join('/home/decodyn/src/benchmark-tool/output/dpdb', 'width_CSAT_pmc.csv')
+    with open(infofile, mode='r') as csv_file:
+	csv_reader = csv.DictReader(csv_file)
+	for row in csv_reader:
+	    inst_info_dict[os.path.basename(row['file'])] = row
+    return inst_info_dict
+
+def read_empty_pmc():
+    empty_pmc = set()
+    infofile = os.path.join('/home/decodyn/src/benchmark-tool/output/dpdb', 'empty_pmc.txt')
+    with open(infofile, mode='r') as f:
+	for line in f:
+           line = line.rstrip()
+           empty_pmc.add(line)
+    return empty_pmc
+
+inst_info_dict = read_default_instance_info()
+empty_pmc = read_empty_pmc()
 
 def dpdb(root, runspec, instance):
     """
@@ -76,7 +110,13 @@ def dpdb(root, runspec, instance):
         'error': ('int', 0),
         'error_str': ('string', ''),
         'stderr': ('string', ''),
-        'status': ('int', -1)
+        'status': ('int', -1),
+        'bags': ('int', -1),
+        'tree_width': ('int', -1),
+        'vertices': ('int', -1),
+        'leafs': ('int', -1),
+        'edges': ('int', -1),
+        'pmc_time': ('float', 'nan')
     }
 
     # boxing = lambda x: (type(x).__name__, x)
@@ -183,6 +223,21 @@ def dpdb(root, runspec, instance):
     try:
         if res['objective'][1] != 'nan':
             res['solved'] = ('int', 1)
+        if res['tree_width'][1] == -1:
+            res['tree_width'] = ('int', inst_info_dict[instance.instance]['width'])
+
+        res['pmc_time'] = ('float', inst_info_dict[instance.instance]['time'])
+
+        # this error occured on older versions of dpdb when the instance was solved by pre-processing
+        if res.has_key('err_list_index'):
+            res['solved'] = ('int', 1)
+
+	# this error occured on old versions of dpdb when the instance was unsat (by pre-processing)
+	# the same error occures also for empty files (those should not be counted as solved)
+        if res.has_key('err_parse_no_type'):
+            if instance.instance not in empty_pmc:
+                res['solved'] = ('int', 1)
+
     except KeyError, e:
         pass
 
