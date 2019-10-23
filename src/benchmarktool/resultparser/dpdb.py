@@ -34,6 +34,8 @@ runsolver_re = {
 dpdb_re = {
     "objective": (
     "float", re.compile(r"^\[INFO\] dpdb\.problems\.sharpsat: Problem has (?P<val>[0-9]+) models"), lambda x: x),
+    "objective_presolved": (
+    "float", re.compile(r"^\[INFO\] dpdb\.reader: Problem has (?P<val>[0-9]+) models \(solved by pre-processing\)"), lambda x: x),
     "bags": (
     "int", re.compile(r"^\[INFO\] dpdb: #bags: (?P<val>[0-9]+) tree_width: [0-9]+ #vertices: [0-9]+ #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
     "tree_width": (
@@ -221,6 +223,9 @@ def dpdb(root, runspec, instance):
     res['error'] = ('int', error)
 
     try:
+        if res.has_key('objective_presolved'):
+            res['objective'] = ('float',res['objective_presolved'][1])
+            res['solved'] = ('int', 1)
         if res['objective'][1] != 'nan':
             res['solved'] = ('int', 1)
         if res['tree_width'][1] == -1:
