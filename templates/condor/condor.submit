@@ -10,8 +10,8 @@ request_memory = +250G
 #remove_kill_sig   = SIGTERM
 remove_kill_sig = 15
 kill_sig = 15
-nice_user = True
-priority = -10
+nice_user = False
+priority = -20
 job_max_vacate_time = 3600
 
 #=========================================================================
@@ -25,7 +25,7 @@ initialdir = {{initialdir}}
 # ENVIRONMENT
 #=========================================================================
 getenv=True
-environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/:/home/jfichte/src/benchmark-tool/programs/treewidth/:/home/jfichte/bin/jdk1.8.0_121/bin LD_LIBRARY_PATH=:/home/jfichte/.local/lib"
+environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/:/home/jfichte/src/benchmark-tool/programs/treewidth/:/home/jfichte/bin/jdk1.8.0_121/bin LD_LIBRARY_PATH=:/usr/local/lib/:/home/jfichte/.local/lib"
 
 #=========================================================================
 # NOTIFICATION

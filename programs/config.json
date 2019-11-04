@@ -21,7 +21,7 @@
   "htd": {
     "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/htd_main",
     "parameters": [
-      "--child-limit","5"
+      "--child-limit","6"
     ]
   },
   "dpdb": {
