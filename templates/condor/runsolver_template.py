@@ -46,6 +46,7 @@ class dotdict(dict):
 
 args=dotdict()
 args.runsolver = '{run.root}/programs/runsolver-3.4.0'
+args.solverprepare = '{run.root}/programs/purgedb.sh'
 args.memlimit = '{run.memlimit}'
 args.timelimit = '{run.timelimit}'
 args.solver = '{run.root}/programs/{run.solver}'
@@ -53,8 +54,10 @@ args.watcher= '{run.root}/{run.path}/{run.instancebase}.watcher'
 args.solver_args='{run.args}'
 args.filename = ['{run.root}/{run.instance}']
 args.stdout='{run.root}/{run.path}/{run.instancebase}.txt'
+args.stdoutprepare='{run.root}/{run.path}/{run.instancebase}.prep.txt'
 #args.stdout='/dev/stdout'
 args.stderr='{run.root}/{run.path}/{run.instancebase}.err'
+args.stderrprepare='{run.root}/{run.path}/{run.instancebase}.prep.err'
 #args.stderr='/dev/stderr'
 args.finished = '{run.root}/{run.finished}'
 # args.debug=True
@@ -73,6 +76,11 @@ def main(args):
   if not args.runsolver:
     sys.stderr.write('\nRunsolver not found. bin=%s\nExiting\n' %args.runsolver)
     exit(1)
+
+  if not args.runsolver:
+    sys.stderr.write('\nSolverprepare not found. bin=%s\nExiting\n' %args.runsolver)
+    exit(1)
+
 
   if not args.solver:
     sys.stderr.write('\nSolver not found. bin=%s\nExiting\n' %args.solver)
@@ -97,6 +105,22 @@ def main(args):
   sys.stderr.write('args=%s\n' %sys.argv[1:])
   sys.stderr.write(args.solver_args)
   sys.stderr.write('\n')
+
+  
+
+  cmd = '%s > %s 2>> %s' % (args.solverprepare, args.stdoutprepare, args.stderrprepare)
+  sys.stderr.write('COMMAND=%s\n' %cmd)
+
+  p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
+  output, err = p_solver.communicate()
+  sys.stdout.write('%s PREPRETCODE %s\n' % ('*' * 40, '*' * 40))
+  sys.stdout.write('prepret=%s\n' %p_solver.returncode)
+  sys.stdout.write('%s PREPSTDOUT %s\n' %('*'*40, '*'*40))
+  sys.stdout.write(output)
+  sys.stderr.write('%s PREPSTDERR %s\n' %('*'*40, '*'*40))
+  sys.stderr.write(err)
+
+
 
   cmd = '%s -M %s -W %s -w %s %s -t %s --runid %s -f %s %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, tmp, args.run, ' '.join(args.filename),  ''.join(args.solver_args), args.stdout, args.stderr)
   sys.stderr.write('COMMAND=%s\n' %cmd)
