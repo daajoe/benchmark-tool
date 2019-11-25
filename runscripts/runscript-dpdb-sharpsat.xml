@@ -5,7 +5,7 @@
     <config name="condor-generic" template="templates/condor/runsolver_template.py"/>
 	
     <system name="dpdb" measures="dpdb" version="1.0" config="condor-generic">
-        <setting name="dpdb" cmdline="--config /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/config.json sharpsat"/>
+        <setting name="dpdb" cmdline="--faster --config /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/config.json sharpsat"/>
     </system>
 
 
@@ -72,13 +72,13 @@
     <!-- ./beval ./runscripts/runscript-gpusat_cobra_All_Count_pmc.xml > ./eval_cobra_All_Count_pmc.xml -->
 	<condorjob name="condor-generic" memout="14336" timeout="1200" runs="3" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
 
-	<benchmark name="all_Count_pmc_ramdisk2_opt_pg12_parallel6">
+	<benchmark name="all_Count_pmc_ramdisk4_opt_pg12_parallel6">
 		<folder path="benchmarks/all_Count_pmc"/>
 		<!--<folder path="benchmarks/all_Count_pmc"/>-->
 	</benchmark>
 
 	<project name="dpdb" job="condor-generic">
-	  	<runtag machine="cobra" benchmark="all_Count_pmc_ramdisk2_opt_pg12_parallel6" tag="*all*"/>
+	  	<runtag machine="cobra" benchmark="all_Count_pmc_ramdisk4_opt_pg12_parallel6" tag="*all*"/>
 	</project>
 
 </runscript>
