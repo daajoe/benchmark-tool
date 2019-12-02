@@ -5,7 +5,7 @@ import random
 random.seed(int(sys.argv[2]))
 
 for p in range(2,15,2):
-	for tr in range(1,5,1):
+	for tr in range(1,3,1):
 		f = file(sys.argv[1], "r")
 		pth = "proj{0}".format(p)
 		try:
