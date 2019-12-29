@@ -1,0 +1,30 @@
+{
+  "db": {
+    "dsn": {
+      "host": "localhost",
+      "port": 5432,
+      "database": "pthier", 
+      "user": "pthier", 
+      "password": "pthier",
+      "application_name": "dpdb"
+    },
+    "max_connections": 100
+  },
+  "db_admin": {
+      "host": "localhost",
+      "port": 5432,
+      "database": "pthier",
+      "user": "pthier",
+      "password": "pthier",
+      "application_name": "dpdb-admin"
+  },
+  "htd": {
+    "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/htd_main",
+    "parameters": [
+      "--child-limit","6"
+    ]
+  },
+  "dpdb": {
+    "max_worker_threads": 24
+  }
+}

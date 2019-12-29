@@ -20,7 +20,7 @@ sudo -u postgres sudo chgrp postgres /run/hecher/postgres-data
 sudo -u postgres sudo chmod 700 /run/hecher/postgres-data
 
 #sudo -u postgres mkdir /run/hecher/postgres-data
-sudo -u postgres /usr/local/e192/postgres/bin/initdb -D /run/hecher/postgres-data 
+sudo -u postgres /usr/local/e192/postgres/bin/initdb -D /run/hecher/postgres-data --no-locale 
 #-l #$1
 
 #langsamer:

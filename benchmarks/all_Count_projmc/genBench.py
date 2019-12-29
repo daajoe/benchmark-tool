@@ -18,7 +18,7 @@ for p in range(2,15,2):
 			if r.startswith("p "):
 				ls = r.split(" ")
 				spl = random.sample(list(range(1,int(ls[2]) + 1,1)), p)
-				f2.write("a {0} 0\n".format(" ".join(map(str,spl))))
+				f2.write("c ind {0} 0\n".format(" ".join(map(str,spl))))
 		f2.close()
 		f.close()
 

@@ -28,44 +28,13 @@
     "max_worker_threads": 12
   },
   "problem_specific": {
-     "sharpsatext": {
-      "preprocessor": {
-        "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/pmc-1.0",
-	"args": "-vivification -eliminateLit -litImplied -iterate=10 -equiv -orGate -affine"
-      },
-      "sat_solver": {
-        "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/picosat-1.0",
-        "seed_arg": "-s",
-        "output_parser": {
-          "class": "RegExReader",
-          "args": {
-            "pattern": "(?sm)# solutions.*?\\n(\\d+)\\n# END"
-          },
-          "result":"result"
-        }
-      },
-      "asp": {
-        "encodings": [
-          { 
-            "file": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/guess_min_degree.lp",
-            "size": 32,
-            "timeout": 30
-          },
-          { 
-            "file": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/guess_v2.lp",
-            "size": 8
-          }
-        ]
-      },
-      "max_solver_threads": 12
-    },
     "pmcext": {
       "preprocessor": {
         "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/pmc-1.0",
 	"args": "-vivification -eliminateLit -litImplied -iterate=10 -equiv -orGate -affine"
       },
       "sat_solver": {
-        "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/projMC-1.0",
+        "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/picosat-1.0",
         "seed_arg": "-s",
         "output_parser": {
           "class": "RegExReader",
