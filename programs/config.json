@@ -49,28 +49,24 @@
           { 
             "file": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/guess_min_degree.lp",
             "size": 32,
-            "timeout": 30
+            "timeout": 10
           },
           { 
             "file": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/guess_v2.lp",
-            "size": 8
+            "size": 8,
+            "timeout" : 12
           }
         ]
       },
       "max_solver_threads": 12
     },
     "pmcext": {
-      "preprocessor": {
-        "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/pmc-1.0",
-	"args": "-vivification -eliminateLit -litImplied -iterate=10 -equiv -orGate -affine"
-      },
       "sat_solver": {
-        "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/projMC-1.0",
-        "seed_arg": "-s",
+        "path": "/mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/projMC-wrapper-1.0",
         "output_parser": {
           "class": "RegExReader",
           "args": {
-            "pattern": "(?sm)# solutions.*?\\n(\\d+)\\n# END"
+            "pattern": "s (\\d+)\\n"
           },
           "result":"result"
         }

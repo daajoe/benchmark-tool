@@ -8,16 +8,17 @@ import subprocess
 fo = tempfile.NamedTemporaryFile()
 fp = tempfile.NamedTemporaryFile()
 
-f = sys.stdin
+f = sys.stdin if len(sys.argv) == 1 else file(sys.argv[1], "rb")
 proj = []
 for r in f:
 	fo.write("{0}\n".format(r))
+        #print(r)
 	if r.startswith("c ind"):
 		var = r.split(" ")[2:-1]
 		proj += var
 
 #print proj
-fp.write("{0}\n".format("".join(proj)))
+fp.write("{0}\n".format(",".join(proj)))
 fp.flush()
 fp.seek(0)
 fp.flush()
@@ -25,6 +26,9 @@ fp.flush()
 fo.flush()
 fo.seek(0)
 fo.flush()
+
+if len(sys.argv) > 1:
+    f.close()
 
 pmc = subprocess.Popen(["/mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/projMC-1.0", fo.name, "-fpv={0}".format(fp.name)], stdout=sys.stdout, stderr=sys.stderr)
 pmc.wait()
