@@ -72,7 +72,7 @@
     <!-- ./beval ./runscripts/runscript-gpusat_cobra_All_Count_pmc.xml > ./eval_cobra_All_Count_pmc.xml -->
 	<condorjob name="condor-generic" memout="14336" timeout="1200" runs="3" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
 
-	<benchmark name="all_Count_projmc_ext_french4">
+	<benchmark name="all_Count_projmc_ext_french_clingo_subsetnon6">
 		<folder path="benchmarks/pmc_circuit"/>
 		<folder path="benchmarks/pmc_random"/>
 		<!--<folder path="benchmarks/all_Count_projmc/proj14"/>-->
@@ -80,7 +80,7 @@
 	</benchmark>
 
 	<project name="dpdb" job="condor-generic">
-	  	<runtag machine="cobra" benchmark="all_Count_projmc_ext_french4" tag="*all*"/>
+	  	<runtag machine="cobra" benchmark="all_Count_projmc_ext_french_clingo_subsetnon6" tag="*all*"/>
 	</project>
 
 </runscript>

@@ -5,14 +5,23 @@ import random
 import tempfile
 import subprocess
 
-fo = tempfile.NamedTemporaryFile()
-fp = tempfile.NamedTemporaryFile()
 
-f = sys.stdin if len(sys.argv) == 1 else file(sys.argv[1], "rb")
+fo = tempfile.NamedTemporaryFile()#delete=False)
+fp = tempfile.NamedTemporaryFile()#delete=False)
+
+fi = 1
+rarg = 2020
+if len(sys.argv) > 3:
+	#rarg = int(sys.argv[2])
+	rarg = random.randrange(13423423471) #int(sys.argv[2])
+	#random.seed(int(sys.argv[2]))
+	fi = 3
+ 
+f = sys.stdin if len(sys.argv) == fi else file(sys.argv[fi], "rb")
 proj = []
 for r in f:
-	fo.write("{0}\n".format(r))
-        #print(r)
+	fo.write(r)
+        #print("c {}".format(r)),
 	if r.startswith("c ind"):
 		var = r.split(" ")[2:-1]
 		proj += var
@@ -27,12 +36,14 @@ fo.flush()
 fo.seek(0)
 fo.flush()
 
-if len(sys.argv) > 1:
+if len(sys.argv) > fi:
     f.close()
 
-pmc = subprocess.Popen(["/mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/projMC-1.0", fo.name, "-fpv={0}".format(fp.name)], stdout=sys.stdout, stderr=sys.stderr)
+print("c /mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/projMC-1.0 {} -fpv={} -rnd-seed{}", fo.name, fp.name, rarg)
+pmc = subprocess.Popen(["/mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/projMC-1.0", "-rnd-init", "-rnd-seed={}".format(rarg), fo.name, "-fpv={0}".format(fp.name)], stdout=sys.stdout, stderr=sys.stderr)
 pmc.wait()
 
 fo.close()
 fp.close()
+sys.exit(pmc.returncode)
 
