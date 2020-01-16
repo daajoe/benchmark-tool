@@ -33,6 +33,8 @@ from benchmarktool.resultparser.zchaff import zchaff
 #from benchmarktool.resultparser.trellis import trellis
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.dpdb import dpdb
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.projmc import projMC
 
 
 
