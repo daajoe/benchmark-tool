@@ -45,8 +45,9 @@ fo.flush()
 if len(sys.argv) > fi:
     f.close()
 
-print("c /mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/clingo --project=show -n 0 {}", fo.name)
-pmc = subprocess.Popen(["/mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/clingo", "--project=show", "-n 0", fo.name], stdout=sys.stdout, stderr=sys.stderr)
+ergs = ["/mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/clingo", "--project=show", "-n 0", "--quiet", fo.name]
+print(ergs)
+pmc = subprocess.Popen(ergs, stdout=sys.stdout, stderr=sys.stderr)
 pmc.wait()
 
 fo.close()

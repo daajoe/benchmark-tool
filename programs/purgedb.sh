@@ -7,7 +7,6 @@
 
 #echo "Script Ok"
 
-
 sudo -u postgres /usr/local/bin/psql pthier -c 'select pg_kill_all_sessions('"'"'pthier'"'"','"'"'dpdb'"'"');'
 sleep 1
 
@@ -90,3 +89,14 @@ language plpgsql security definer volatile set search_path = pg_catalog;
 grant execute on function pg_kill_all_sessions(varchar,varchar) to pthier;
 EOF
 
+
+
+rm -rf /tmp/tmp*
+killall -9 python3
+killall -9 projMC-1.0
+killall -9 clingo
+killall -9 miniC2D-1.0.0
+killall -9 picosat-965
+killall -9 sharpSAT-git
+killall -9 cachet-1.21
+killall -9 pmc-1.0
