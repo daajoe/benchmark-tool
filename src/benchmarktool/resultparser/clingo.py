@@ -65,3 +65,9 @@ def clingo(root, runspec, instance):
     for key, val in accu.items():
         res[key] = ("float", val)
     return [(key, val[0], val[1]) for key, val in res.items()]
+
+
+def projClingo(root, runspec, instance):
+    return clingo(root, runspec, instance)
+
+

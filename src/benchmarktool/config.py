@@ -20,6 +20,8 @@ from benchmarktool.resultparser.claspD import claspD
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.clingo import clingo
 # noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.projClingo import projClingo
+# noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.pace_jkf import pace_jkf
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.dynasp_jkf import dynasp_jkf
@@ -35,7 +37,8 @@ from benchmarktool.resultparser.zchaff import zchaff
 from benchmarktool.resultparser.dpdb import dpdb
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.projmc import projMC
-
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.ganak import ganak
 
 
 claspre_features 	= re.compile(r"^Features[ ]*:[ ]*(([0-9]+\.?[0-9]*)([,](.+\.?.*))*)\+?[ ]*$")

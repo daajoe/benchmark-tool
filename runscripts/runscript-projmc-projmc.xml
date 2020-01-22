@@ -73,17 +73,18 @@
 	<condorjob name="condor-generic" memout="14336" timeout="1200" runs="3" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
 
 	<benchmark name="projmc_depots">
-		<!--<folder path="benchmarks/pmc_circuit"/>
-		<folder path="benchmarks/pmc_random"/>-->
-		<!--<folder path="benchmarks/all_Count_projmc/proj6"/>
-		<folder path="benchmarks/all_Count_projmc/proj10"/>
-		<folder path="benchmarks/all_Count_projmc/proj14"/>-->
-		<!--<folder path="benchmarks/projmc_freymont" />-->
 		<folder path="benchmarks/pmc_depots"/>
-
-<!--<folder path="benchmarks/all_Count_projmc/proj14"/>-->
-		<!--<folder path="benchmarks/all_Count_pmc"/>-->
 	</benchmark>
+
+        <benchmark name="projmc_freymont">
+		<folder path="benchmarks/projmc_freymont" />
+	</benchmark>
+
+        <benchmark name="all_Count_projmc_french">
+		<folder path="benchmarks/pmc_circuit" />
+		<folder path="benchmarks/pmc_random" />
+	</benchmark>
+
 
 
 	<!--<benchmark name="all_Count_pmc_projMC">
@@ -93,6 +94,8 @@
 	<project name="projMC" job="condor-generic">
 	  	<!--<runtag machine="cobra" benchmark="all_Count_projmc" tag="*all*"/>-->
 	  	<runtag machine="cobra" benchmark="projmc_depots" tag="*all*"/>
+	  	<runtag machine="cobra" benchmark="projmc_freymont" tag="*all*"/>
+	  	<runtag machine="cobra" benchmark="all_Count_projmc_french" tag="*all*"/>
 	</project>
 
 </runscript>

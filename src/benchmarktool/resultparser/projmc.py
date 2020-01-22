@@ -133,7 +133,7 @@ def projMC(root, runspec, instance):
 
     # ERROR HANDLING
     try:
-        logfile = os.path.join(root, '%s.err' % instance_str)
+        logfile = os.path.join(root, '%s.txt' % instance_str)
         err_content = codecs.open(logfile, errors='ignore', encoding='utf-8').read()
         err_content = err_content.replace(",\n]", "\n]", 1)
         for line in err_content.splitlines():
@@ -144,7 +144,7 @@ def projMC(root, runspec, instance):
             # noinspection DuplicatedCode
             for val, reg in projmc_re.items():
                 m = reg[1].match(line)
-                if m and res[val][1] == -1: res[val] = (reg[0], reg[2](m.group("val")))
+                if m and (res[val][1] == -1 or res[val][1] == 'nan'): res[val] = (reg[0], reg[2](m.group("val")))
 
     except IOError:
         sys.stderr.write('Missing Error file for instance %s.\n' % root)

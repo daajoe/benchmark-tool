@@ -2,10 +2,10 @@
 
 	<machine name="cobra" cpu="8xE5520@2.27GHz" memory="16GB"/>
 
-    <config name="condor-generic" template="templates/condor/runsolver_template_projMC.py"/>
+    <config name="condor-generic" template="templates/condor/runsolver_template.py"/>
 	
-    <system name="projMC" measures="projMC" version="1.0" config="condor-generic">
-        <setting name="projMC" cmdline=""/>
+    <system name="dpdb" measures="dpdb" version="1.3" config="condor-generic">
+        <setting name="dpdb" cmdline="--faster --config /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/config_nested1_b_8.json"/>
     </system>
 
 
@@ -70,29 +70,19 @@
 
     <!-- ./beval ./runscripts/runscript-gpusat_cobra_All_Count_pmc.xml | ./bconv > ./result_cobra_All_Count_pmc.ods -->
     <!-- ./beval ./runscripts/runscript-gpusat_cobra_All_Count_pmc.xml > ./eval_cobra_All_Count_pmc.xml -->
-	<condorjob name="condor-generic" memout="14336" timeout="1200" runs="3" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
+	<condorjob name="condor-generic" memout="32336" timeout="950" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
 
-	<benchmark name="projmc_depots">
-		<!--<folder path="benchmarks/pmc_circuit"/>
-		<folder path="benchmarks/pmc_random"/>-->
-		<!--<folder path="benchmarks/all_Count_projmc/proj6"/>
-		<folder path="benchmarks/all_Count_projmc/proj10"/>
-		<folder path="benchmarks/all_Count_projmc/proj14"/>-->
-		<!--<folder path="benchmarks/projmc_freymont" />-->
+	<benchmark name="all_Count_projmc_ext_french_clingo_subsetnon_larger_proj_hybrid_pmc_28">
+		<folder path="benchmarks/pmc_circuit"/>
+		<folder path="benchmarks/pmc_random"/>
 		<folder path="benchmarks/pmc_depots"/>
-
-<!--<folder path="benchmarks/all_Count_projmc/proj14"/>-->
+		<folder path="benchmarks/projmc_freymont"/>
+		<!--<folder path="benchmarks/all_Count_projmc/proj14"/>-->
 		<!--<folder path="benchmarks/all_Count_pmc"/>-->
 	</benchmark>
 
-
-	<!--<benchmark name="all_Count_pmc_projMC">
-		<folder path="benchmarks/all_Count_pmc"/>
-	</benchmark>-->
-
-	<project name="projMC" job="condor-generic">
-	  	<!--<runtag machine="cobra" benchmark="all_Count_projmc" tag="*all*"/>-->
-	  	<runtag machine="cobra" benchmark="projmc_depots" tag="*all*"/>
+	<project name="dpdb" job="condor-generic">
+	  	<runtag machine="cobra" benchmark="all_Count_projmc_ext_french_clingo_subsetnon_larger_proj_hybrid_pmc_28" tag="*all*"/>
 	</project>
 
 </runscript>

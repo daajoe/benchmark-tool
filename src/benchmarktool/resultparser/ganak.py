@@ -31,24 +31,24 @@ runsolver_re = {
     "status": ("int", re.compile(r"Child status: (?P<val>[0-9]+)"), lambda x: x),
 }
 
-dpdb_re = {
+projmc_re = {
     "objective": (
-    "float", re.compile(r"^\[INFO\] nestHDB: PMC: (?P<val>[0-9E+.]+)"), lambda x: x),
+    "float", re.compile(r"^(?P<val>\d+)"), lambda x: x),
     #"objective_presolved": (
     #"float", re.compile(r"^\[INFO\] dpdb\.reader: Problem has (?P<val>[0-9]+) models \(solved by pre-processing\)"), lambda x: x),
-    "bags": (
-    "int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: (?P<val>[0-9]+) tree_width: [0-9]+ #vertices: [0-9]+ #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
-    "tree_width": (
-    "int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: (?P<val>[0-9]+) #vertices: [0-9]+ #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
-    "vertices": (
-    "int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: [0-9]+ #vertices: (?P<val>[0-9]+) #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
-    "leafs": (
-    "int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: [0-9]+ #vertices: [0-9]+ #leafs: (?P<val>[0-9]+) #edges: [0-9]+"), lambda x: x),
-    "edges": (
-    "int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: [0-9]+ #vertices: [0-9]+ #leafs: [0-9]+ #edges: (?P<val>[0-9]+)"), lambda x: x),
+    #"bags": (
+    #"int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: (?P<val>[0-9]+) tree_width: [0-9]+ #vertices: [0-9]+ #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
+    #"tree_width": (
+    #"int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: (?P<val>[0-9]+) #vertices: [0-9]+ #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
+    #"vertices": (
+    #"int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: [0-9]+ #vertices: (?P<val>[0-9]+) #leafs: [0-9]+ #edges: [0-9]+"), lambda x: x),
+    #"leafs": (
+    #"int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: [0-9]+ #vertices: [0-9]+ #leafs: (?P<val>[0-9]+) #edges: [0-9]+"), lambda x: x),
+    #"edges": (
+    #"int", re.compile(r"^\[INFO\] common: Tree decomposition #bags: [0-9]+ tree_width: [0-9]+ #vertices: [0-9]+ #leafs: [0-9]+ #edges: (?P<val>[0-9]+)"), lambda x: x),
 }
 
-dpdb_err_re = {
+projmc_err_re = {
     "err_db": ("float", re.compile(r"^\[INFO\] dpdb.problem (?P<val>)"), lambda x: 1),
     "err_db_conn": ("string", re.compile(r"^\[WARNING\] dpdb: Killing all connections(?P<val>)"), lambda x: 1),
     "err_thread": ("string", re.compile(r"^\[ERROR\] dpdb.problem: Error in worker thread(?P<val>)"), lambda x: 1),
@@ -82,11 +82,11 @@ def read_empty_pmc():
 inst_info_dict = read_default_instance_info()
 empty_pmc = read_empty_pmc()
 
-def dpdb(root, runspec, instance):
+def ganak(root, runspec, instance):
     """
     Extracts some clingo statistics.
     """
-
+    #print("called")
     # DEFAULT VALUES
     res = {
         'instance': ('string', instance.instance),
@@ -133,21 +133,34 @@ def dpdb(root, runspec, instance):
 
     # ERROR HANDLING
     try:
-        logfile = os.path.join(root, '%s.err' % instance_str)
+        logfile = os.path.join(root, '%s.txt' % instance_str)
         err_content = codecs.open(logfile, errors='ignore', encoding='utf-8').read()
         err_content = err_content.replace(",\n]", "\n]", 1)
+        foundprev = False
+        lines = 0
         for line in err_content.splitlines():
-            for val, reg in dpdb_err_re.items():
+            for val, reg in projmc_err_re.items():
                 m = reg[1].match(line)
                 if m: res[val] = (reg[0], reg[2](m.group("val")))
 
             # noinspection DuplicatedCode
-            for val, reg in dpdb_re.items():
+            for val, reg in projmc_re.items():
                 m = reg[1].match(line)
+                if m and reg[0] == "objective" and foundprev == False:
+                    continue
                 if m and (res[val][1] == -1 or res[val][1] == 'nan'): res[val] = (reg[0], reg[2](m.group("val")))
+            foundprev = line.startswith("# solutions")
+            lines += 1
+                 
 
     except IOError:
         sys.stderr.write('Missing Error file for instance %s.\n' % root)
+
+    if lines <= 2 and instance.instance not in empty_pmc:
+        res['solved'] = ('int', 1)
+        res['time'] = ('float', 0.1)
+        res['timeout'] = ('int', 0)
+
 
     runsolver_error = False
     # WATCHER DATA HANDLING
@@ -242,10 +255,11 @@ def dpdb(root, runspec, instance):
         if res.has_key('err_parse_no_type'):
             if instance.instance not in empty_pmc:
                 res['solved'] = ('int', 1)
-
+        
     except KeyError, e:
         pass
 
+    
     def nan_or_value(tpl, stats):
         try:
             return (tpl[0], stats[tpl[1]])

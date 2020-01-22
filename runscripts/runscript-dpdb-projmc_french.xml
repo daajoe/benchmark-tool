@@ -4,8 +4,8 @@
 
     <config name="condor-generic" template="templates/condor/runsolver_template.py"/>
 	
-    <system name="dpdb" measures="dpdb" version="1.0" config="condor-generic">
-        <setting name="dpdb" cmdline="--faster --config /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/config.json pmcext"/>
+    <system name="dpdb" measures="dpdb" version="1.2" config="condor-generic">
+        <setting name="dpdb" cmdline="--faster --config /mnt/vg01/lv01/home/decodyn/src/benchmark-tool/programs/config_nested1_b.json"/>
     </system>
 
 
@@ -70,17 +70,19 @@
 
     <!-- ./beval ./runscripts/runscript-gpusat_cobra_All_Count_pmc.xml | ./bconv > ./result_cobra_All_Count_pmc.ods -->
     <!-- ./beval ./runscripts/runscript-gpusat_cobra_All_Count_pmc.xml > ./eval_cobra_All_Count_pmc.xml -->
-	<condorjob name="condor-generic" memout="14336" timeout="1200" runs="3" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
+	<condorjob name="condor-generic" memout="32336" timeout="1200" runs="1" script_mode="timeout" walltime="23:59:59" condortemplate="templates/condor/condor.submit" basedir="/mnt/vg01/lv01/home/decodyn/src/benchmark-tool"/>
 
-	<benchmark name="all_Count_projmc_ext_french_clingo_subsetnon6">
+	<benchmark name="all_Count_projmc_ext_french_clingo_subsetnon_larger_proj_hybrid_10">
 		<folder path="benchmarks/pmc_circuit"/>
 		<folder path="benchmarks/pmc_random"/>
+		<folder path="benchmarks/pmc_depots"/>
+		<folder path="benchmarks/projmc_freymont_light"/>
 		<!--<folder path="benchmarks/all_Count_projmc/proj14"/>-->
 		<!--<folder path="benchmarks/all_Count_pmc"/>-->
 	</benchmark>
 
 	<project name="dpdb" job="condor-generic">
-	  	<runtag machine="cobra" benchmark="all_Count_projmc_ext_french_clingo_subsetnon6" tag="*all*"/>
+	  	<runtag machine="cobra" benchmark="all_Count_projmc_ext_french_clingo_subsetnon_larger_proj_hybrid_10" tag="*all*"/>
 	</project>
 
 </runscript>

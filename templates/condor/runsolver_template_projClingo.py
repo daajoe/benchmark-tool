@@ -46,7 +46,7 @@ class dotdict(dict):
 
 args=dotdict()
 args.runsolver = '{run.root}/programs/runsolver-3.4.0'
-args.solverprepare = '{run.root}/programs/purgedb.sh'
+args.solverprepare = '{run.root}/programs/parseproj'
 args.memlimit = '{run.memlimit}'
 args.timelimit = '{run.timelimit}'
 args.solver = '{run.root}/programs/{run.solver}'
@@ -108,21 +108,19 @@ def main(args):
 
   
 
-  cmd = '%s > %s 2>> %s' % (args.solverprepare, args.stdoutprepare, args.stderrprepare)
-  sys.stderr.write('COMMAND=%s\n' %cmd)
+  #cmd = '%s %s > %s 2>> %s' % (args.solverprepare, ' '.join(args.filename), args.stdoutprepare, args.stderrprepare)
+  #sys.stderr.write('COMMAND=%s\n' %cmd)
 
-  p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
-  output, err = p_solver.communicate()
-  sys.stdout.write('%s PREPRETCODE %s\n' % ('*' * 40, '*' * 40))
-  sys.stdout.write('prepret=%s\n' %p_solver.returncode)
-  sys.stdout.write('%s PREPSTDOUT %s\n' %('*'*40, '*'*40))
-  sys.stdout.write(output)
-  sys.stderr.write('%s PREPSTDERR %s\n' %('*'*40, '*'*40))
-  sys.stderr.write(err)
+  #p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
+  #output, err = p_solver.communicate()
+  #sys.stdout.write('%s PREPRETCODE %s\n' % ('*' * 40, '*' * 40))
+  #sys.stdout.write('prepret=%s\n' %p_solver.returncode)
+  #sys.stdout.write('%s PREPSTDOUT %s\n' %('*'*40, '*'*40))
+  #sys.stdout.write(output)
+  #sys.stderr.write('%s PREPSTDERR %s\n' %('*'*40, '*'*40))
+  #sys.stderr.write(err)
 
-
-
-  cmd = '%s -M %s -W %s -w %s %s -t %s --runid %s -f %s %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, tmp, int(args.run) + 1, ' '.join(args.filename),  ''.join(args.solver_args), args.stdout, args.stderr)
+  cmd = '%s -M %s -W %s -w %s %s %s %s > %s 2>> %s' % (args.runsolver, args.memlimit, args.timelimit, args.watcher, args.solver, ''.join(args.solver_args), ' '.join(args.filename), args.stdout, args.stderr)
   sys.stderr.write('COMMAND=%s\n' %cmd)
 
   p_solver = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
