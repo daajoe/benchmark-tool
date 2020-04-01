@@ -1,0 +1,57 @@
+#!/usr/bin/python
+import sys
+import os.path
+import random
+import tempfile
+import subprocess
+
+
+fo = tempfile.NamedTemporaryFile()#delete=False)
+
+fi = 1
+rarg = 2020
+if len(sys.argv) > 3:
+	#rarg = int(sys.argv[2])
+	rarg = random.randrange(13423423471) #int(sys.argv[2])
+	#random.seed(int(sys.argv[2]))
+	fi = 3
+ 
+f = sys.stdin if len(sys.argv) == fi else file(sys.argv[fi], "rb")
+svar = set()
+fo.write("#show x/0.\n")
+for r in f:
+	#print("c {}".format(r)),
+	if r.startswith("vp"):
+		row = r.split(" ")[2:-1]
+		for v in row:
+			fo.write("#show v{}/0.\n".format(v))
+			svar.add(int(v))
+	elif r.startswith("c") or r.startswith("p"):
+		continue
+	else:
+		row = r.split(" ")[:-1]
+		fo.write(":- ");
+		first = False
+		for l in row:
+			v = int(l)
+			svar.add(abs(v))
+			fo.write("{}{} v{} ".format("," if first else "", "not " if v > 0 else "", abs(v)))
+			first = True
+		fo.write(".\n")
+
+for i in svar:
+	fo.write("{{v{}}}.\n".format(i))
+
+fo.flush()
+
+if len(sys.argv) > fi:
+    f.close()
+
+ergs = ["/mnt/vg01/lv01/home/hecher/decodyn/src/benchmark-tool/programs/clingo", "--project=show", "-n 0", "--quiet", fo.name]
+print(ergs)
+pmc = subprocess.Popen(ergs, stdout=sys.stdout, stderr=sys.stderr)
+pmc.wait()
+
+fo.close()
+sys.exit(pmc.returncode)
+
