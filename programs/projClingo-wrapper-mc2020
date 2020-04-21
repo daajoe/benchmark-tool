@@ -22,7 +22,7 @@ fo.write("#show x/0.\n")
 for r in f:
 	#print("c {}".format(r)),
 	if r.startswith("vp"):
-		row = r.split(" ")[2:-1]
+		row = r.split(" ")[1:-1]
 		for v in row:
 			fo.write("#show v{}/0.\n".format(v))
 			svar.add(int(v))

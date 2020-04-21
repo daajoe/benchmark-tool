@@ -18,12 +18,14 @@ if len(sys.argv) > 3:
  
 f = sys.stdin if len(sys.argv) == fi else file(sys.argv[fi], "rb")
 svar = set()
+fo.write("#show x/0.\n")
 for r in f:
 	#print("c {}".format(r)),
 	if r.startswith("c ind"):
 		row = r.split(" ")[2:-1]
 		for v in row:
 			fo.write("#show v{}/0.\n".format(v))
+			svar.add(int(v))
 	elif r.startswith("c") or r.startswith("p"):
 		continue
 	else:
