@@ -1,6 +1,6 @@
 universe = vanilla 
-#requirements = machine != "cobra-submit.kr.tuwien.ac.at"
-request_memory = +250G
+#requirements = machine != "cobra-node08.kr.tuwien.ac.at" && machine != "cobra-node09.kr.tuwien.ac.at" && machine != "cobra-node10.kr.tuwien.ac.at"  
+request_memory = +17G
 
 #TODO: check cluster timeout and memlimit
 #periodic_remove = (CurrentTime - JobCurrentStartDate) >= {{timeout}}
@@ -11,8 +11,8 @@ request_memory = +250G
 remove_kill_sig = 15
 kill_sig = 15
 nice_user = False
-priority = -20
-job_max_vacate_time = 3600
+priority = -13
+job_max_vacate_time = 7210
 
 #=========================================================================
 # PATHS
@@ -25,7 +25,7 @@ initialdir = {{initialdir}}
 # ENVIRONMENT
 #=========================================================================
 getenv=True
-environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/:/home/jfichte/src/benchmark-tool/programs/treewidth/:/home/jfichte/bin/jdk1.8.0_121/bin LD_LIBRARY_PATH=:/usr/local/lib/:/home/jfichte/.local/lib"
+environment = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/jfichte/bin:/home/jfichte/.local/bin:/home/jfichte/src/benchmark-tool/programs/:/home/jfichte/src/benchmark-tool/programs/treewidth/:/home/jfichte/bin/jdk1.8.0_121/bin LD_LIBRARY_PATH=:/usr/local/lib/:/home/jfichte/.local/lib:/usr/local/e192/postgres-12.0/lib/ LIBRARY_PATH=:/home/hecher/root/usr/lib:/usr/local/e192/postgres-12.0/lib/"
 
 #=========================================================================
 # NOTIFICATION

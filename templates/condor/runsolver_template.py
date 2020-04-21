@@ -133,6 +133,16 @@ def main(args):
   sys.stdout.write(output)
   sys.stderr.write('%s STDERR %s\n' %('*'*40, '*'*40))
   sys.stderr.write(err)
+  # 
+  p_solver = Popen(["df", "-h"], stdout=PIPE, stderr=PIPE, shell=True, close_fds=True)
+  output, err = p_solver.communicate()
+  sys.stdout.write('%s DF_RETCODE %s\n' % ('*' * 40, '*' * 40))
+  sys.stdout.write('ret=%s\n' %p_solver.returncode)
+  sys.stdout.write('%s DF_STDOUT %s\n' %('*'*40, '*'*40))
+  sys.stdout.write(output)
+  sys.stderr.write('%s DF_STDERR %s\n' %('*'*40, '*'*40))
+  sys.stderr.write(err)
+
   childreturncode=0
   with open(args.watcher) as f:
     for line in f:
