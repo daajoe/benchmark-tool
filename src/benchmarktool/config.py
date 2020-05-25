@@ -39,6 +39,9 @@ from benchmarktool.resultparser.dpdb import dpdb
 from benchmarktool.resultparser.projmc import projMC
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.ganak import ganak
+# noinspection PyUnresolvedReferences
+from benchmarktool.resultparser.fhtd import fhtd
+
 
 
 claspre_features 	= re.compile(r"^Features[ ]*:[ ]*(([0-9]+\.?[0-9]*)([,](.+\.?.*))*)\+?[ ]*$")
