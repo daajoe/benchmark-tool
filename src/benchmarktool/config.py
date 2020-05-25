@@ -40,7 +40,8 @@ from benchmarktool.resultparser.projmc import projMC
 # noinspection PyUnresolvedReferences
 from benchmarktool.resultparser.ganak import ganak
 # noinspection PyUnresolvedReferences
-from benchmarktool.resultparser.fhtd import fhtd
+from benchmarktool.resultparser.frasmt import frasmt
+from benchmarktool.resultparser.triangulator import triangulator
 
 
 
